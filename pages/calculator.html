@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👩‍💻 程序员计算器 Pro</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root {
+  --bg: #eef2f7;
+  --surface: #ffffff;
+  --surface2: #f6f9fc;
+  --border: #e0e6ed;
+  --border-focus: #6a8fc0;
+  --text: #1a2634;
+  --text2: #5a6f88;
+  --text3: #8a9fb0;
+  --accent: #4a7ab5;
+  --accent2: #6a8fc0;
+  --accent-bg: #e3ecf7;
+  --key-bg: #f4f7fb;
+  --key-hover: #e8eef5;
+  --key-active: #d8e0ec;
+  --key-op-bg: #e3ecf7;
+  --key-op-color: #2a6a8a;
+  --key-fn-bg: #f0ecf8;
+  --key-fn-color: #6a4a9a;
+  --key-eq-bg: #4a7ab5;
+  --key-eq-color: #fff;
+  --key-clear-bg: #fae8e8;
+  --key-clear-color: #b84a4a;
+  --key-shift-bg: #f8f0e4;
+  --key-shift-color: #b0782a;
+  --bit-0-bg: #f0f4f9;
+  --bit-1-bg: #c8d8ec;
+  --bit-1-border: #7a9abb;
+  --history-bg: #f8faff;
+  --shadow: 0 8px 32px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.03);
+  --shadow-hover: 0 12px 40px rgba(0,0,0,0.10);
+  --radius: 18px;
+  --radius-sm: 10px;
+  --radius-xs: 7px;
+  --transition: 0.2s cubic-bezier(0.22,1,0.36,1);
+}
+.dark {
+  --bg: #0f1419;
+  --surface: #1a2230;
+  --surface2: #1e2838;
+  --border: #2a3448;
+  --border-focus: #5a7aa0;
+  --text: #d8e2ee;
+  --text2: #8a9eb8;
+  --text3: #5a6f88;
+  --accent: #5a8ac8;
+  --accent2: #7aa0d0;
+  --accent-bg: #1e2a40;
+  --key-bg: #222c3e;
+  --key-hover: #2a3448;
+  --key-active: #324060;
+  --key-op-bg: #1a2840;
+  --key-op-color: #7ab0d0;
+  --key-fn-bg: #282040;
+  --key-fn-color: #9a7ac8;
+  --key-eq-bg: #3a6aaa;
+  --key-eq-color: #fff;
+  --key-clear-bg: #3a2028;
+  --key-clear-color: #d87a7a;
+  --key-shift-bg: #3a2e1a;
+  --key-shift-color: #d0a04a;
+  --bit-0-bg: #1a2230;
+  --bit-1-bg: #2a3a5a;
+  --bit-1-border: #4a6a8a;
+  --history-bg: #1a2230;
+  --shadow: 0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+  --shadow-hover: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',Roboto,sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 16px; transition: background var(--transition);
+}
+
+/* ===== Calc Container ===== */
+.calc {
+  width: 100%; max-width: 520px;
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px 16px; box-shadow: var(--shadow);
+  border: 1px solid var(--border); position: relative;
+  transition: all var(--transition);
+}
+.calc:hover { box-shadow: var(--shadow-hover); }
+
+/* ===== Header ===== */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.header .title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.header .title .icon { font-size: 20px; }
+.header-actions { display: flex; gap: 6px; align-items: center; }
+.header-badge {
+  font-size: 10px; padding: 3px 12px; border-radius: 10px;
+  background: var(--accent-bg); color: var(--text2); border: 1px solid var(--border);
+  font-weight: 600; letter-spacing: 0.3px;
+}
+.theme-btn {
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); color: var(--text2);
+}
+.theme-btn:hover { background: var(--key-hover); border-color: var(--accent); transform: rotate(15deg); }
+
+/* ===== Display ===== */
+.display {
+  background: var(--surface2); border-radius: 14px;
+  padding: 12px 16px 10px; margin-bottom: 10px;
+  border: 1px solid var(--border); position: relative;
+  min-height: 80px; transition: all var(--transition);
+}
+.display:focus-within { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(74,122,181,0.08); }
+
+/* ===== Display+History Row ===== */
+.display-row {
+  display: flex; gap: 8px;
+}
+.display-row .display { flex: 1; min-width: 0; }
+
+/* ===== History ===== */
+.hist-toggle {
+  background: var(--accent-bg); border: 1px solid var(--border); border-radius: 8px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); color: var(--text2); flex-shrink: 0;
+}
+.hist-toggle:hover { background: var(--key-hover); border-color: var(--accent); }
+.hist-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.hist-dropdown {
+  display: none; position: absolute; top: 48px; right: 16px; z-index: 100;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-hover);
+  min-width: 240px; max-width: 300px; max-height: 260px; overflow-y: auto;
+  padding: 8px;
+}
+.hist-dropdown.show { display: block; animation: fadeSlideIn 0.15s ease; }
+.hist-dropdown .clear-btn {
+  font-size: 11px; color: var(--key-clear-color);
+  cursor: pointer; padding: 2px 10px; border-radius: 4px;
+  border: 1px solid var(--border); background: var(--key-clear-bg);
+  font-family: inherit; font-weight: 600; transition: all var(--transition);
+  margin-bottom: 6px; width: 100%; text-align: center;
+}
+.hist-dropdown .clear-btn:hover { filter: brightness(0.9); }
+.hist-dropdown .history-list {
+  font-size: 11px; font-family: 'JetBrains Mono',Consolas,monospace;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hist-dropdown .history-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3px 8px; border-radius: 4px; border-left: 3px solid var(--accent);
+  color: var(--text); cursor: pointer; transition: all 0.15s;
+}
+.hist-dropdown .history-item:hover { background: var(--key-hover); border-left-color: var(--accent2); }
+.hist-dropdown .history-item .h-expr { color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 6px; font-size: 10px; }
+.hist-dropdown .history-item .h-result { font-weight: 600; color: var(--text); white-space: nowrap; font-size: 11px; }
+.hist-dropdown .history-empty { color: var(--text3); font-size: 11px; text-align: center; padding: 6px 0; }
+
+.display .expr {
+  font-size: 18px; font-family: 'JetBrains Mono','Fira Code',Consolas,monospace;
+  color: var(--text3); min-height: 26px; word-break: break-all;
+  transition: color var(--transition);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: 0.5px;
+}
+.display .expr.active { color: var(--accent); font-weight: 600; }
+
+/* 显示区闪烁反馈 */
+.display.flash {
+  animation: dispFlash 0.2s ease;
+}
+@keyframes dispFlash {
+  0% { background: var(--accent-bg); border-color: var(--accent); }
+  100% { background: var(--surface2); border-color: var(--border); }
+}
+.display .value {
+  font-size: 30px; font-weight: 700;
+  font-family: 'JetBrains Mono','Fira Code',Consolas,monospace;
+  color: var(--text); word-break: break-all; line-height: 1.2;
+  min-height: 40px; transition: color var(--transition), font-size 0.15s;
+}
+.display .value.small { font-size: 22px; }
+.display .value .sep {
+  font-size: 0.55em; opacity: 0.5;
+  font-weight: 400; vertical-align: middle;
+}
+
+.copy-btn {
+  position: absolute; right: 12px; bottom: 12px;
+  background: var(--accent-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-xs); padding: 4px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  cursor: pointer; display: none; transition: all var(--transition);
+  font-family: inherit; opacity: 0; transform: translateY(4px);
+}
+.copy-btn.show { display: block; opacity: 1; transform: translateY(0); }
+.copy-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ===== Multi-base Display ===== */
+.sub-info {
+  display: flex; flex-wrap: wrap; gap: 10px 22px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; font-family: 'JetBrains Mono',Consolas,monospace;
+  color: var(--text2); transition: all var(--transition);
+}
+.sub-info .label { color: var(--text3); font-weight: 500; margin-right: 3px; }
+.sub-info .val { color: var(--text); font-weight: 600; cursor: pointer; padding: 1px 4px; border-radius: 4px; transition: background 0.15s; }
+.sub-info .val:hover { background: var(--key-hover); }
+.sub-info .val.hex { color: #3a7aaa; }
+.dark .sub-info .val.hex { color: #6aaad8; }
+.sub-info .val.bin { color: #3a8a4a; }
+.dark .sub-info .val.bin { color: #5aba6a; }
+.sub-info .uval { color: var(--text); font-weight: 600; font-size: 13px; }
+
+/* ===== Bit View ===== */
+.bit-view {
+  margin-top: 10px; padding: 10px 8px;
+  background: var(--surface); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); overflow-x: auto;
+  display: none; transition: all var(--transition);
+}
+.bit-view.show { display: block; animation: fadeSlideIn 0.2s ease; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bit-row { display: flex; gap: 0; justify-content: center; flex-wrap: nowrap; margin-bottom: 2px; }
+.bit-group { display: flex; flex-direction: column; align-items: center; padding: 0 1px; flex-shrink: 0; }
+.bit-group .g-label {
+  font-size: 7px; font-weight: 700; color: var(--text3);
+  line-height: 11px; height: 11px; pointer-events: none; text-align: center;
+  letter-spacing: 0.5px; margin-bottom: 1px;
+}
+.bit-group .bits { display: flex; gap: 0; }
+.bit-cell {
+  width: 13px; height: 20px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+  font-family: 'JetBrains Mono',Consolas,monospace;
+  border-radius: 3px; cursor: pointer; user-select: none;
+  transition: all 0.12s; border: 1px solid transparent;
+  background: var(--bit-0-bg); color: var(--text);
+}
+.bit-cell-wrapper {
+  display: flex; flex-direction: column; align-items: center; width: 13px; flex-shrink: 0;
+}
+.bit-cell.b1 { background: var(--bit-1-bg); border-color: var(--bit-1-border); color: var(--text); }
+.bit-cell:hover { transform: scale(1.15); z-index: 5; box-shadow: 0 0 0 2px rgba(74,122,181,0.25); }
+.bit-cell:active { transform: scale(0.85); }
+.bit-idx { font-size: 5px; color: var(--text3); line-height: 8px; height: 8px; text-align: center; }
+
+/* ===== Base Selector ===== */
+.base-row {
+  display: flex; gap: 6px; margin-bottom: 12px;
+  flex-wrap: wrap; align-items: center;
+}
+.base-btn {
+  padding: 5px 16px; border-radius: var(--radius-xs);
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+  font-family: inherit;
+}
+.base-btn:hover { background: var(--key-hover); color: var(--text); }
+.base-btn.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff; box-shadow: 0 2px 8px rgba(74,122,181,0.2);
+}
+.base-btn.bit-op {
+  margin-left: auto; border-color: var(--border);
+  color: var(--key-fn-color); background: var(--key-fn-bg);
+  font-size: 12px; padding: 5px 12px;
+}
+.base-btn.bit-op:hover { border-color: var(--key-fn-color); }
+
+/* ===== Input Row ===== */
+.input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.input-row input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  font-size: 15px; font-family: 'JetBrains Mono',Consolas,monospace;
+  color: var(--text); outline: none;
+  transition: all var(--transition); min-width: 0;
+}
+.input-row input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(74,122,181,0.1); }
+.input-row input::placeholder { color: var(--text3); }
+
+/* ===== Keypad ===== */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px; margin-top: 2px;
+}
+.key {
+  padding: 8px 1px; border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--key-bg); color: var(--text);
+  font-size: 13px; font-weight: 600;
+  font-family: 'JetBrains Mono',Consolas,monospace;
+  cursor: pointer; transition: all 0.12s;
+  text-align: center; user-select: none;
+  min-height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.key::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.key:hover::after { opacity: 1; }
+.key:hover:not(:disabled) {
+  background: var(--key-hover); border-color: var(--border-focus);
+  transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.key:active:not(:disabled) { transform: translateY(1px) scale(0.97); box-shadow: none; }
+.key:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; background: var(--key-bg); color: var(--text3); }
+
+.key.op { background: var(--key-op-bg); color: var(--key-op-color); }
+.key.op:hover:not(:disabled) { background: var(--key-hover); }
+
+.key.fn { background: var(--key-fn-bg); color: var(--key-fn-color); }
+.key.fn:hover:not(:disabled) { background: var(--key-hover); }
+
+.key.eq {
+  background: var(--key-eq-bg); color: var(--key-eq-color);
+  border-color: var(--key-eq-bg); font-size: 20px;
+}
+.key.eq:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,122,181,0.25); }
+
+.key.clear { background: var(--key-clear-bg); color: var(--key-clear-color); }
+.key.clear:hover:not(:disabled) { background: var(--key-clear-bg); filter: brightness(0.92); }
+
+.key.shift { background: var(--key-shift-bg); color: var(--key-shift-color); }
+.key.shift:hover:not(:disabled) { background: var(--key-shift-bg); filter: brightness(0.95); }
+
+.key.hex { color: var(--key-op-color); font-size: 14px; }
+.key.bin { color: #3a8a4a; }
+.dark .key.bin { color: #5aba6a; }
+
+/* ===== Status Bar ===== */
+.status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text3); flex-wrap: wrap; gap: 6px;
+  transition: all var(--transition);
+}
+.status-bar .hint { display: flex; gap: 10px; flex-wrap: wrap; }
+.status-bar .hint kbd {
+  background: var(--key-bg); padding: 1px 7px; border-radius: 4px;
+  border: 1px solid var(--border); font-size: 10px;
+  color: var(--text2); font-family: inherit;
+}
+.status-bar .bitsize {
+  display: flex; gap: 3px; align-items: center;
+}
+.status-bar .bitsize button {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 8px; font-size: 10px;
+  color: var(--text3); cursor: pointer; font-family: inherit;
+  transition: all var(--transition);
+}
+.status-bar .bitsize button:hover { border-color: var(--accent); color: var(--accent); }
+.status-bar .bitsize button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ===== Responsive ===== */
+@media (max-width: 540px) {
+  .calc { padding: 8px 8px 10px; }
+  .display .value { font-size: 22px; min-height: 30px; }
+  .display .value.small { font-size: 17px; }
+  .key { font-size: 11px; min-height: 32px; padding: 5px 1px; }
+  .keypad { gap: 3px; }
+  .sub-info { font-size: 10px; gap: 4px 6px; }
+  .bit-cell { width: 12px; height: 17px; font-size: 8px; }
+  .bit-cell-wrapper { width: 12px; }
+  .bit-idx { font-size: 5px; height: 7px; line-height: 7px; }
+  .bit-group .g-label { font-size: 5px; height: 7px; line-height: 7px; }
+  .input-row input { font-size: 12px; padding: 5px 8px; }
+  .base-btn { font-size: 10px; padding: 3px 8px; }
+  .header .title { font-size: 13px; }
+  .header { margin-bottom: 6px; padding-bottom: 6px; }
+  .display { padding: 8px 10px 8px; margin-bottom: 6px; min-height: 60px; }
+  .display .expr { font-size: 15px; min-height: 22px; }
+}
+@media (max-width: 420px) {
+  .key { font-size: 10px; min-height: 30px; padding: 3px 0; border-radius: 5px; }
+  .keypad { gap: 2px; }
+  .display .value { font-size: 20px; min-height: 28px; }
+  .display .value.small { font-size: 16px; }
+  .bit-cell { width: 10px; height: 15px; font-size: 7px; border-radius: 2px; }
+  .bit-cell-wrapper { width: 10px; }
+  .input-row { flex-wrap: wrap; }
+  .base-btn.bit-op { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="calc" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="title"><span class="icon">👩‍💻</span> 程序员计算器</div>
+    <div class="header-actions">
+      <span class="header-badge">v2.0</span>
+      <button class="hist-toggle" id="histToggle" title="历史记录">📜</button>
+      <button class="theme-btn" id="themeBtn" title="切换深色/浅色主题">🌙</button>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <div class="display" id="displayArea">
+    <div class="expr" id="exprDisplay"></div>
+    <div class="value" id="mainDisplay">0</div>
+    <button class="copy-btn" id="copyBtn">📋 复制</button>
+    <div class="sub-info">
+      <span><span class="label">DEC</span> <span class="val" id="decVal">0</span></span>
+      <span><span class="label">HEX</span> <span class="val hex" id="hexVal">0x0</span></span>
+      <span><span class="label">BIN</span> <span class="val bin" id="binVal">0b0</span></span>
+      <span><span class="label">工程</span> <span class="uval" id="engVal">0</span></span>
+    </div>
+  </div>
+
+  <!-- History Dropdown -->
+  <div class="hist-dropdown" id="histDropdown">
+    <div class="history-list" id="historyList">
+      <div class="history-empty">暂无记录</div>
+    </div>
+  </div>
+
+  <!-- Bit View -->
+  <div class="bit-view" id="bitView">
+    <div id="bitContainer"></div>
+  </div>
+
+  <!-- Base Selector & Bitwise Ops -->
+  <div class="base-row">
+    <button class="base-btn active" data-base="10">DEC</button>
+    <button class="base-btn" data-base="16">HEX</button>
+    <button class="base-btn" data-base="2">BIN</button>
+    <button class="base-btn bit-op" data-op="and" title="按位与 (AND)">&amp;</button>
+    <button class="base-btn bit-op" data-op="or" title="按位或 (OR)">|</button>
+    <button class="base-btn bit-op" data-op="xor" title="按位异或 (XOR)">^</button>
+    <button class="base-btn bit-op" data-op="not" title="按位取反 (NOT)">~</button>
+  </div>
+
+  <!-- Input -->
+  <div class="input-row">
+    <input type="text" id="inputField" placeholder="输入数值…" spellcheck="false" autofocus>
+  </div>
+
+  <!-- Keypad -->
+  <div class="keypad" id="keypad"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="hint">
+      <span>⌨ <kbd>Enter</kbd> 计算</span>
+      <span><kbd>Esc</kbd> 清空</span>
+      <span><kbd>⌫</kbd> 退格</span>
+    </div>
+    <div class="bitsize">
+      <span style="color:var(--text3);margin-right:4px;">位宽</span>
+      <button data-bits="8">8</button>
+      <button data-bits="16">16</button>
+      <button data-bits="32">32</button>
+      <button data-bits="64" class="active">64</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============================================================
+  // Global error capture
+  // ============================================================
+  window.onerror = function(msg, url, line, col, err) {
+    console.error('🔥 全局错误:', msg, 'at line', line, 'col', col);
+    console.error('  堆栈:', err?.stack);
+    return false;
+  };
+
+  // ============================================================
+  // BigInt check
+  // ============================================================
+  if (typeof BigInt === 'undefined') {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;font-size:18px"><h2>⚠️ 浏览器不支持</h2><p>此计算器需要支持 BigInt 的浏览器（Chrome 67+、Firefox 68+、Edge 79+、Safari 15+）</p></div>';
+    return;
+  }
+
+  // ============================================================
+  // State
+  // ============================================================
+  const state = {
+    value: 0n,
+    base: 10,
+    inputStr: '',
+    pendingOp: null,
+    pendingVal: null,
+    justEvaluated: false,
+    expression: '',
+    bitWidth: 64,
+    dark: false,
+    isFloat: false,
+    error: false,
+    overflow: false,
+  };
+  let history = [];
+
+  // ============================================================
+  // DOM refs
+  // ============================================================
+  const $ = id => document.getElementById(id);
+  const mainDisp = $('mainDisplay');
+  const exprDisp = $('exprDisplay');
+  const decVal = $('decVal');
+  const hexVal = $('hexVal');
+  const binVal = $('binVal');
+  const engVal = $('engVal');
+  const charVal = null;
+  const bitView = $('bitView');
+  const bitCtn = $('bitContainer');
+  const inputFd = $('inputField');
+  const keypad = $('keypad');
+  const copyBtn = $('copyBtn');
+  const displayArea = $('displayArea');
+  const histToggle = $('histToggle');
+  const histDropdown = $('histDropdown');
+  const histList = $('historyList');
+  const themeBtn = $('themeBtn');
+
+  // ============================================================
+  // Utilities
+  // ============================================================
+  function toBigInt(v) {
+    if (typeof v === 'bigint') return v;
+    try { return BigInt(v); } catch (e) { return NaN; }
+  }
+
+  function parseValue(str, base) {
+    if (typeof str !== 'string' || str.trim() === '') return NaN;
+    let s = str.trim();
+    const neg = s.startsWith('-');
+    if (neg) s = s.slice(1);
+
+    if (/^0[Xx]/.test(s)) {
+      const hexPart = s.slice(2);
+      if (!/^[0-9A-Fa-f]+$/.test(hexPart)) return NaN;
+      try { const v = BigInt('0x' + hexPart.toUpperCase()); return neg ? -v : v; }
+      catch(e) { return NaN; }
+    }
+    if (/^0[Bb]/.test(s)) {
+      const binPart = s.slice(2);
+      if (!/^[01]+$/.test(binPart)) return NaN;
+      try { const v = BigInt('0b' + binPart); return neg ? -v : v; }
+      catch(e) { return NaN; }
+    }
+
+    try {
+      if (base === 10) {
+        // Support decimal: if contains '.', parse as float
+        if (s.includes('.')) {
+          const parts = s.split('.');
+          if (parts.length > 2) return NaN;
+          // Strip commas and validate
+          const intPart = (parts[0]||'').replace(/,/g, '');
+          const fracPart = (parts[1]||'').replace(/,/g, '');
+          if (!/^[0-9]*$/.test(intPart) || !/^[0-9]*$/.test(fracPart)) return NaN;
+          if (intPart.length === 0 && fracPart.length === 0) return NaN;
+          const val = parseFloat((intPart || '0') + '.' + (fracPart || '0'));
+          return neg ? -val : val;
+        }
+        // Strip commas for thousands-separated values
+        const cleanDec = s.replace(/,/g, '');
+        if (!/^[0-9]+$/.test(cleanDec)) return NaN;
+        return neg ? -BigInt(cleanDec) : BigInt(cleanDec);
+      } else if (base === 16) {
+        // Validate: strip 0x prefix then check all chars are valid hex
+        const raw = s.replace(/^0[Xx]/i, '');
+        if (!/^[0-9A-Fa-f]+$/.test(raw)) return NaN;
+        const clean = raw.toUpperCase();
+        if (clean.length === 0) return NaN;
+        return neg ? -BigInt('0x' + clean) : BigInt('0x' + clean);
+      } else if (base === 2) {
+        // Validate: strip 0b prefix then check all chars are 0/1
+        const raw = s.replace(/^0[Bb]/i, '');
+        if (!/^[01]+$/.test(raw)) return NaN;
+        return neg ? -BigInt('0b' + raw) : BigInt('0b' + raw);
+      }
+    } catch (e) { return NaN; }
+    return NaN;
+  }
+
+  function toSigned(v, bits) {
+    if (typeof v !== 'bigint') return v;
+    const limit = 1n << BigInt(bits);
+    const half = 1n << BigInt(bits - 1);
+    if (v >= half) return v - limit;
+    if (v < -half) return v + limit;
+    return v;
+  }
+
+  function applyBitWidth(v, bits) {
+    if (typeof v !== 'bigint') return v;
+    const mask = (1n << BigInt(bits)) - 1n;
+    return v & mask;
+  }
+
+  /** 应用位宽并检测溢出 */
+  function applyWithOverflow(v, bits) {
+    const result = applyBitWidth(v, bits);
+    if (typeof v === 'bigint' && typeof result === 'bigint' && v !== result && v !== 0n) {
+      state.overflow = true;
+    }
+    return result;
+  }
+
+  function formatWithSep(n) {
+    if (typeof n === 'number') {
+      return n.toLocaleString('en-US', { maximumFractionDigits: 10 });
+    }
+    if (typeof n !== 'bigint') return '0';
+    const neg = n < 0n;
+    const s = neg ? (-n).toString() : n.toString();
+    const parts = [];
+    for (let i = s.length; i > 0; i -= 3) {
+      parts.unshift(s.slice(Math.max(0, i - 3), i));
+    }
+    return (neg ? '-' : '') + parts.join(',');
+  }
+
+  // ============================================================
+  // Engineering units (1024-based)
+  // ============================================================
+  function toEngineering(v) {
+    if (typeof v !== 'bigint') return '0';
+    if (v === 0n) return '0';
+    const neg = v < 0n;
+    let a = neg ? -v : v;
+    const units = [
+      [1024n**6n, 'E'],[1024n**5n, 'P'],[1024n**4n, 'T'],
+      [1024n**3n, 'G'],[1024n**2n, 'M'],[1024n, 'K']
+    ];
+    for (const [limit, label] of units) {
+      if (a >= limit) {
+        const val = Number(a) / Number(limit);
+        const ds = val >= 100 ? val.toFixed(1) : val >= 10 ? val.toFixed(2) : val.toFixed(3);
+        return (neg ? '-' : '') + ds + ' ' + label;
+      }
+    }
+    return (neg ? '-' : '') + a.toString();
+  }
+
+  // ============================================================
+  // Character display
+  // ============================================================
+  function toChar(v) {
+    if (typeof v !== 'bigint') return '—';
+    if (v < 0n || v > 0x10FFFFn) return '—';
+    try {
+      const cp = Number(v);
+      if (cp >= 0x20 && cp <= 0x7E) return String.fromCodePoint(cp);
+      if (cp >= 0x80) return String.fromCodePoint(cp);
+      return '␀' + (cp === 0x0A ? '␊' : cp === 0x0D ? '␍' : cp === 0x09 ? '␉' : '');
+    } catch(e) { return '—'; }
+  }
+
+  // ============================================================
+  // Number grouping in display
+  // ============================================================
+    function formatDisplayValue(v, base, bitWidth) {
+    if (typeof v !== 'bigint') {
+      if (typeof v === 'number') {
+        const s = v.toLocaleString('en-US', { maximumFractionDigits: 10, useGrouping: true });
+        return s.replace(/,/g, '<span class="sep">,</span>');
+      }
+      return '0';
+    }
+    // DEC mode: use signed interpretation so +/- shows correct signed value
+    const displayV = (base === 10 && bitWidth) ? toSigned(v, bitWidth) : v;
+    const neg = displayV < 0n;
+    const abs = neg ? -displayV : displayV;
+    if (base === 10) {
+      const s = abs.toString();
+      const parts = [];
+      for (let i = s.length; i > 0; i -= 3) parts.unshift(s.slice(Math.max(0,i-3),i));
+      // 仅对纯数字部分做 htmlEscape（虽数字部分无特殊字符，但保持安全），span 标签保持原样
+      const escapedParts = parts.map(p => htmlEscape(p));
+      return (neg ? '-' : '') + escapedParts.join('<span class="sep">,</span>');
+    }
+    if (base === 16) {
+      const s = abs.toString(16).toUpperCase();
+      const parts = [];
+      for (let i = s.length; i > 0; i -= 4) parts.unshift(s.slice(Math.max(0,i-4),i));
+      return (neg ? '-' : '') + '0x' + parts.join('<span class="sep">_</span>');
+    }
+    if (base === 2) {
+      const s = abs.toString(2);
+      const parts = [];
+      for (let i = s.length; i > 0; i -= 4) parts.unshift(s.slice(Math.max(0,i-4),i));
+      return (neg ? '-' : '') + '0b' + parts.join('<span class="sep">_</span>');
+    }
+    return v.toString();
+  }
+
+  function htmlEscape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ============================================================
+  // History
+  // ============================================================
+  function addHistory(expr, result, rawResult) {
+    history.unshift({ expr, result, raw: rawResult || result.replace(/,/g, '') });
+    if (history.length > 50) history.pop();
+    renderHistory();
+  }
+
+  function clearHistory() { history = []; renderHistory(); histDropdown.classList.remove('show'); histToggle.classList.remove('active'); }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      histList.innerHTML = '<div class="history-empty">暂无记录</div>';
+      return;
+    }
+    let html = '<button class="clear-btn" id="clearHistBtn">清除全部</button>';
+    for (const item of history) {
+      const safeExpr = item.expr.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const safeResult = item.result.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const rawData = item.raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      html += `<div class="history-item" data-raw="${rawData}">
+        <span class="h-expr">${safeExpr}</span>
+        <span class="h-result">= ${safeResult}</span>
+      </div>`;
+    }
+    histList.innerHTML = html;
+    // 绑定清除按钮
+    const clearBtn = histList.querySelector('.clear-btn');
+    if (clearBtn) clearBtn.addEventListener('click', function(e) { e.stopPropagation(); clearHistory(); });
+    // Click to reuse
+    histList.querySelectorAll('.history-item').forEach(el => {
+      el.addEventListener('click', function() {
+        const r = this.dataset.raw;
+        if (!r) return;
+        // raw 始终是十进制字符串，强制用 base=10 解析
+        let parsed = parseValue(r, 10);
+        // 若解析失败（如科学计数法 "1e+21"），尝试用 Number()
+        if (typeof parsed !== 'bigint' && !(typeof parsed === 'number' && !Number.isNaN(parsed))) {
+          const n = Number(r);
+          if (!Number.isNaN(n)) parsed = n;
+        }
+        if (typeof parsed === 'bigint') {
+          state.value = applyWithOverflow(parsed, state.bitWidth);
+          state.inputStr = '';
+          state.justEvaluated = false;
+          state.expression = '';
+          state.isFloat = false;
+          updateDisplay();
+          inputFd.focus();
+        } else if (typeof parsed === 'number' && !Number.isNaN(parsed)) {
+          state.value = parsed;
+          state.inputStr = '';
+          state.justEvaluated = false;
+          state.expression = '';
+          state.isFloat = true;
+          updateDisplay();
+          inputFd.focus();
+        }
+      });
+    });
+  }
+
+  // ============================================================
+  // Bit View
+  // ============================================================
+  function renderBitView() {
+    const v = state.value;
+    // 位视图仅在BIN模式下显示
+    if (typeof v !== 'bigint' || state.base !== 2) { bitView.classList.remove('show'); return; }
+
+    bitView.classList.add('show');
+    bitCtn.innerHTML = '';
+
+    const bits = state.bitWidth;
+    const unsigned = v < 0n ? v + (1n << BigInt(bits)) : v;
+    const binStr = unsigned.toString(2).padStart(bits, '0');
+
+    const unitMap = {};
+    const unitLabels = ['K','M','G','T','P','E'];
+    for (let i = 0; i < unitLabels.length; i++) {
+      const pos = (i + 1) * 10;
+      if (pos < bits) unitMap[pos] = unitLabels[i];
+    }
+
+    // Split into two rows (upper / lower)
+    const mid = Math.floor(bits / 2);
+    const rows = [
+      { start: bits - 1, end: mid },
+      { start: mid - 1, end: 0 }
+    ];
+
+    for (const row of rows) {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'bit-row';
+
+      let group = [];
+      let groupStart = row.start;
+
+      for (let i = row.start; i >= row.end; i--) {
+        const bitChar = binStr[bits - 1 - i];
+        const bitVal = bitChar === '1' ? 1 : 0;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bit-cell-wrapper';
+
+        const idx = document.createElement('div');
+        idx.className = 'bit-idx';
+        // 在 10/20/30/40/50/60 bit 位置显示单位标签
+        idx.textContent = unitMap[i] ? unitMap[i] : i;
+        wrapper.appendChild(idx);
+
+        const cell = document.createElement('div');
+        cell.className = `bit-cell ${bitVal ? 'b1' : 'b0'}`;
+        cell.textContent = bitVal;
+        cell.dataset.bitPos = i;
+        cell.addEventListener('click', function() {
+          const pos = parseInt(this.dataset.bitPos, 10);
+          if (isNaN(pos)) return;
+          const mask = 1n << BigInt(pos);
+          let nv = state.value ^ mask;
+          nv = applyWithOverflow(nv, state.bitWidth);
+          state.value = nv;
+          state.justEvaluated = false;
+          state.inputStr = '';
+          updateDisplay();
+          inputFd.focus();
+        });
+        wrapper.appendChild(cell);
+        group.push(wrapper);
+
+        if (group.length === 4) {
+          const gDiv = document.createElement('div');
+          gDiv.className = 'bit-group';
+
+          // 不再使用 group-level 标签，保留空标签占位
+          const lbl = document.createElement('div');
+          lbl.className = 'g-label';
+          lbl.textContent = '';
+          gDiv.appendChild(lbl);
+
+          const bitsRow = document.createElement('div');
+          bitsRow.className = 'bits';
+          for (const item of group) bitsRow.appendChild(item);
+          gDiv.appendChild(bitsRow);
+          rowDiv.appendChild(gDiv);
+          group = [];
+        }
+      }
+
+      if (group.length > 0) {
+        const gDiv = document.createElement('div');
+        gDiv.className = 'bit-group';
+        const lbl = document.createElement('div');
+        lbl.className = 'g-label';
+        const firstCell = group[0]?.querySelector('.bit-cell');
+        if (firstCell) {
+          // 剩余组的标签为空（单位已在具体 bit-idx 上显示）
+          lbl.textContent = '';
+        }
+        gDiv.appendChild(lbl);
+        const bitsRow = document.createElement('div');
+        bitsRow.className = 'bits';
+        for (const item of group) bitsRow.appendChild(item);
+        gDiv.appendChild(bitsRow);
+        rowDiv.appendChild(gDiv);
+      }
+      bitCtn.appendChild(rowDiv);
+    }
+  }
+
+  // ============================================================
+  // Core arithmetic (BigInt + Number hybrid)
+  // ============================================================
+  function compute(op, a, b) {
+    const aIsNum = typeof a === 'number';
+    const bIsNum = typeof b === 'number';
+    // If either is float, use Number arithmetic
+    if (aIsNum || bIsNum) {
+      const na = aIsNum ? a : Number(a.toString());
+      const nb = bIsNum ? b : Number(b.toString());
+      switch(op) {
+        case '+': return na + nb;
+        case '-': return na - nb;
+        case '*': return na * nb;
+        case '/': return nb === 0 ? undefined : na / nb;
+        case '%': return nb === 0 ? undefined : na % nb;
+        default: return 0;
+      }
+    }
+    // Both BigInt
+    if (typeof a !== 'bigint' || typeof b !== 'bigint') return 0n;
+    switch(op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0n ? undefined : a / b;
+      case '%': return b === 0n ? undefined : a % b;
+      case '<<': { const s = Number(b); if (s < 0) return a; if (s > 1024) return 0n; return a << BigInt(s); }
+      case '>>': { const s = Number(b); if (s < 0) return a; if (s > 1024) return 0n; return a >> BigInt(s); }
+      case '&': return a & b;
+      case '|': return a | b;
+      case '^': return a ^ b;
+      default: return 0n;
+    }
+  }
+
+  function applyPendingOp() {
+    if (state.pendingOp && state.pendingVal !== null) {
+      const op = state.pendingOp;
+      let a = state.pendingVal;
+      let b = state.value;
+      // Float mode: use raw number values
+      const isFloat = typeof a === 'number' || typeof b === 'number';
+      // For BigInt: use signed representation so ± works correctly in arithmetic
+      if (!isFloat) {
+        if (typeof a === 'bigint') a = toSigned(a, state.bitWidth);
+        if (typeof b === 'bigint') b = toSigned(b, state.bitWidth);
+      }
+      const result = isFloat ? compute(op, a, b) : applyWithOverflow(compute(op, a, b), state.bitWidth);
+      // 除零或模零错误检测
+      if (result === undefined) {
+        state.error = true;
+        state.expression = '⚠ 除数不能为 0';
+        state.pendingOp = null;
+        state.pendingVal = null;
+        state.justEvaluated = true;
+        updateDisplay();
+        return;
+      }
+      const expr = `${formatVal(a)} ${op} ${formatVal(b)} = ${formatVal(result)}`;
+      state.value = result;
+      state.expression = expr;
+      state.pendingOp = null;
+      state.pendingVal = null;
+      state.justEvaluated = true;
+      if (isFloat) state.isFloat = true;
+      addHistory(expr, formatVal(result), String(result));
+      updateDisplay();
+    }
+  }
+
+  /** Format a value (BigInt or Number) for expression display, using signed interpretation */
+  function formatVal(v) {
+    if (typeof v === 'number') return v.toString();
+    if (typeof v === 'bigint') {
+      const signed = toSigned(v, state.bitWidth);
+      return formatWithSep(signed);
+    }
+    return String(v);
+  }
+
+  // ============================================================
+  // Actions
+  // ============================================================
+  function handleKeyAction(action, value) {
+    if (action === 'digit') { inputDigit(value); }
+    else if (action === 'op') { inputOperator(value); }
+    else if (action === 'clear') { clearAll(); }
+    else if (action === 'backspace') { backspace(); }
+    else if (action === 'equals') { calculate(); }
+    else if (action === 'negate') { negate(); }
+    else if (action === 'bracket') { /* display only */ }
+  }
+
+  function inputDigit(v) {
+    try {
+      if (state.error) { clearAll(); return; }
+      if (state.justEvaluated) {
+        state.value = 0n; state.inputStr = '';
+        state.pendingOp = null; state.pendingVal = null;
+        state.expression = ''; state.justEvaluated = false;
+        state.isFloat = false;
+      }
+      const base = state.base;
+      if (base === 10) {
+        // Allow "." to enter float mode
+        if (v === '.') {
+          if (state.inputStr.includes('.')) return;
+          state.inputStr += '.';
+          state.isFloat = true;
+          const parsed = parseValue(state.inputStr, base);
+          if ((typeof parsed === 'number' && !Number.isNaN(parsed)) || typeof parsed === 'bigint') {
+            state.value = parsed;
+          }
+          // 即使 parse 返回 NaN（如单独 "."），仍刷新显示以展示输入中的 "." 
+          updateDisplay();
+          return;
+        }
+        if (v === ',') return;
+      } else if (base === 16) {
+        if (!/^[0-9A-F]$/i.test(v)) return;
+      } else if (base === 2) {
+        if (v !== '0' && v !== '1') return;
+      }
+      state.inputStr += v.toUpperCase();
+      const parsed = parseValue(state.inputStr, base);
+      if (typeof parsed === 'bigint') {
+        state.value = applyWithOverflow(parsed, state.bitWidth);
+        state.isFloat = false;
+        updateDisplay();
+      } else if (typeof parsed === 'number' && !Number.isNaN(parsed)) {
+        state.value = parsed;
+        state.isFloat = true;
+        updateDisplay();
+      } else {
+        state.inputStr = state.inputStr.slice(0, -1);
+      }
+    } catch(e) {
+      console.error('❌ inputDigit 出错:', e.message, 'v=', v, 'state=', JSON.stringify({val:String(state.value),base:state.base,str:state.inputStr}));
+    }
+  }
+
+  function inputOperator(op) {
+    if (state.error) { clearAll(); }
+    // 位运算操作符在浮点模式下不执行
+    if ((op === '<<' || op === '>>' || op === '&' || op === '|' || op === '^') &&
+        (state.isFloat || typeof state.value === 'number')) {
+      exprDisp.textContent = '⚠️ 浮点模式不支持位运算';
+      exprDisp.classList.add('active');
+      displayArea.classList.add('flash');
+      setTimeout(() => displayArea.classList.remove('flash'), 300);
+      return;
+    }
+    if (state.justEvaluated) {
+      state.pendingOp = null; state.pendingVal = null;
+      state.justEvaluated = false;
+    }
+    if (state.pendingOp && state.pendingVal !== null) {
+      applyPendingOp();
+    }
+    state.pendingOp = op;
+    state.pendingVal = state.value;
+    // 使用 formatVal（带 toSigned）确保表达式显示有符号值
+    state.expression = formatVal(state.value) + ' ' + op + ' ';
+    state.justEvaluated = false;
+    state.inputStr = '';
+    updateDisplay();
+    inputFd.focus();
+  }
+
+  function calculate() {
+    if (state.error) { clearAll(); return; }
+    if (state.pendingOp && state.pendingVal !== null) {
+      applyPendingOp();
+    } else {
+      if (typeof state.value === 'bigint') {
+        state.value = applyWithOverflow(state.value, state.bitWidth);
+      }
+      state.justEvaluated = true;
+      updateDisplay();
+    }
+    inputFd.focus();
+  }
+
+  function clearAll() {
+    state.value = 0n; state.inputStr = '';
+    state.pendingOp = null; state.pendingVal = null;
+    state.justEvaluated = false; state.expression = '';
+    state.isFloat = false; state.error = false;
+    updateDisplay(); inputFd.focus();
+  }
+
+  function backspace() {
+    if (state.error) { clearAll(); return; }
+    if (state.justEvaluated) { clearAll(); return; }
+    state.inputStr = state.inputStr.slice(0, -1);
+    if (state.inputStr === '') {
+      state.value = 0n;
+      state.isFloat = false;
+    } else {
+      const parsed = parseValue(state.inputStr, state.base);
+      if (typeof parsed === 'bigint') {
+        state.value = applyWithOverflow(parsed, state.bitWidth);
+        state.isFloat = false;
+      } else if (typeof parsed === 'number' && !Number.isNaN(parsed)) {
+        state.value = parsed;
+        state.isFloat = true;
+      } else {
+        state.inputStr = ''; state.value = 0n;
+        state.isFloat = false;
+      }
+    }
+    updateDisplay(); inputFd.focus();
+  }
+
+  function negate() {
+    if (state.error) { clearAll(); return; }
+    if (typeof state.value === 'number') {
+      state.value = -state.value;
+    } else {
+      state.value = applyWithOverflow(-state.value, state.bitWidth);
+    }
+    state.inputStr = '';
+    state.justEvaluated = false;
+    updateDisplay(); inputFd.focus();
+  }
+
+  // ============================================================
+  // Bitwise unary ops
+  // ============================================================
+  function bitwiseUnary(op) {
+    if (state.error) { clearAll(); return; }
+    if (state.isFloat || typeof state.value === 'number') {
+      exprDisp.textContent = '⚠️ 浮点模式不支持位运算';
+      exprDisp.classList.add('active');
+      displayArea.classList.add('flash');
+      setTimeout(() => displayArea.classList.remove('flash'), 300);
+      return;
+    }
+    const v = applyBitWidth(state.value, state.bitWidth);
+    let result, label;
+    if (op === 'not') {
+      const mask = (1n << BigInt(state.bitWidth)) - 1n;
+      result = (~v) & mask;
+      label = 'NOT';
+    } else { return; }
+    state.value = result;
+    state.expression = `${label} ${formatWithSep(toSigned(v, state.bitWidth))} = ${formatWithSep(toSigned(result, state.bitWidth))}`;
+    state.justEvaluated = true;
+    state.inputStr = '';
+    state.pendingOp = null;
+    state.pendingVal = null;
+    addHistory(state.expression, formatWithSep(toSigned(result, state.bitWidth)), result.toString());
+    updateDisplay();
+    inputFd.focus();
+  }
+
+  // ============================================================
+  // Update display
+  // ============================================================
+  function updateDisplay() {
+    try {
+      // 错误状态：显示 Error
+      if (state.error) {
+        mainDisp.innerHTML = '<span style="color:#d44;font-size:0.8em">Error</span>';
+        exprDisp.textContent = state.expression || '⚠ 除数不能为 0';
+        exprDisp.classList.remove('active');
+        decVal.textContent = '—'; hexVal.textContent = '—'; binVal.textContent = '—';
+        engVal.textContent = '—';
+        copyBtn.classList.remove('show');
+        syncInputField();
+        renderBitView();
+        return;
+      }
+      const v = state.value;
+      const isInt = typeof v === 'bigint';
+
+      // Main display with grouped separators (HTML with styled sep spans)
+      const dispHTML = formatDisplayValue(v, state.base, state.bitWidth);
+      // 溢出标记（仅闪烁一次）
+      const overflowHTML = state.overflow
+        ? '<span style="color:#e88;font-size:0.5em;vertical-align:super;margin-left:4px">⚠溢出</span>'
+        : '';
+      state.overflow = false; // 只显示一次
+      const finalHTML = overflowHTML ? dispHTML + overflowHTML : dispHTML;
+      if (mainDisp.innerHTML !== finalHTML) {
+        mainDisp.innerHTML = finalHTML;
+      }
+      mainDisp.classList.toggle('small', dispHTML.replace(/<[^>]+>/g,'').length > 20);
+
+      // Expression area — always recompute from current state
+      refreshExprDisplay();
+
+      // Sub info — plain text
+      if (isInt) {
+        // DEC 子信息使用有符号解释，与主显示保持一致
+        decVal.textContent = formatWithSep(toSigned(v, state.bitWidth));
+        // Use unsigned representation for HEX/BIN display
+        const unsigned = v < 0n ? v + (1n << BigInt(state.bitWidth)) : v;
+        hexVal.textContent = '0x' + unsigned.toString(16).toUpperCase();
+        binVal.textContent = '0b' + unsigned.toString(2);
+      } else if (typeof v === 'number') {
+        // Float (DEC) mode
+        decVal.textContent = v.toLocaleString('en-US', { maximumFractionDigits: 10 });
+        hexVal.textContent = '—';
+        binVal.textContent = '—';
+      } else {
+        decVal.textContent = '0'; hexVal.textContent = '—'; binVal.textContent = '—';
+      }
+
+      // Engineering
+      engVal.textContent = toEngineeringSafe(v);
+
+      // Copy button visibility
+      const showCopy = isInt && !!state.expression && state.expression.includes('=');
+      copyBtn.classList.toggle('show', showCopy);
+
+      syncInputField();
+      renderBitView();
+    } catch (e) {
+      console.error('❌ updateDisplay 出错:', e.message, 'value=', state.value, 'base=', state.base);
+    }
+  }
+
+  /** Safe engineering conversion — no direct Number(bigint) call */
+  function toEngineeringSafe(v) {
+    if (typeof v === 'number') {
+      // Float mode: use standard engineering notation
+      const abs = Math.abs(v);
+      if (abs === 0) return '0';
+      const units = [
+        [1e18, 'E'],[1e15, 'P'],[1e12, 'T'],
+        [1e9, 'G'],[1e6, 'M'],[1e3, 'K'],
+      ];
+      for (const [limit, label] of units) {
+        if (abs >= limit) {
+          const val = v / limit;
+          const ds = Math.abs(val) >= 100 ? val.toFixed(1) : Math.abs(val) >= 10 ? val.toFixed(2) : val.toFixed(3);
+          return ds + ' ' + label;
+        }
+      }
+      return v.toString();
+    }
+    if (typeof v !== 'bigint') return '0';
+    if (v === 0n) return '0';
+    const neg = v < 0n;
+    let a = neg ? -v : v;
+    const units = [
+      [6, 'E'], [5, 'P'], [4, 'T'],
+      [3, 'G'], [2, 'M'], [1, 'K'],
+    ];
+    for (const [exp, label] of units) {
+      const limit = 1024n ** BigInt(exp);
+      if (a >= limit) {
+        const aStr = a.toString();
+        const limitStr = limit.toString();
+        const val = parseFloat(aStr) / parseFloat(limitStr);
+        const ds = val >= 100 ? val.toFixed(1) : val >= 10 ? val.toFixed(2) : val.toFixed(3);
+        return (neg ? '-' : '') + ds + ' ' + label;
+      }
+    }
+    return (neg ? '-' : '') + a.toString();
+  }
+
+  /** Safe character conversion */
+  function toCharSafe(v) {
+    if (typeof v === 'number') return '—';
+    if (typeof v !== 'bigint') return '—';
+    if (v < 0n || v > 0x10FFFFn) return '—';
+    try {
+      const cp = Number(v.toString());
+      if (cp >= 0x20 && cp <= 0x7E) return String.fromCodePoint(cp);
+      if (cp >= 0x80) return String.fromCodePoint(cp);
+      return '␀';
+    } catch(e) { return '—'; }
+  }
+
+  /** Refresh the upper expression display based on current state */
+  function refreshExprDisplay() {
+    const el = exprDisp;
+    // Priority 1: if user typed after an operator, show "expr + input"
+    if (state.expression && state.inputStr && !state.justEvaluated) {
+      el.textContent = state.expression + state.inputStr;
+      el.classList.add('active');
+      return;
+    }
+    // Priority 2: if user is typing first number, show the input
+    if (state.inputStr && !state.justEvaluated) {
+      el.textContent = state.inputStr;
+      el.classList.add('active');
+      return;
+    }
+    // Priority 3: show the expression string (result or pending op)
+    el.textContent = state.expression || '';
+    el.classList.remove('active');
+  }
+
+  function syncInputField() {
+    if (state.error) { inputFd.value = ''; return; }
+    const v = state.value;
+    const base = state.base;
+    let newVal;
+    if (typeof v === 'number') {
+      newVal = state.inputStr || v.toString();
+    } else if (typeof v !== 'bigint') {
+      newVal = '';
+    } else if (base === 10) {
+      newVal = toSigned(v, state.bitWidth).toString();
+    } else {
+      const abs = v < 0n ? -v : v;
+      const sign = v < 0n ? '-' : '';
+      if (base === 16) newVal = sign + abs.toString(16).toUpperCase();
+      else if (base === 2) newVal = sign + abs.toString(2);
+    }
+    // 仅在值不同时设置同步标记，避免循环触发
+    if (newVal !== undefined && inputFd.value !== newVal) {
+      handleInputChange._skipNext = true;
+      inputFd.value = newVal;
+    }
+  }
+
+  // ============================================================
+  // Input field handling
+  // ============================================================
+  function handleInputChange() {
+    // 来自 syncInputField 的程序性同步，跳过以免干扰 state
+    if (handleInputChange._skipNext) { handleInputChange._skipNext = false; return; }
+    // 错误状态: 用户输入即清除
+    if (state.error) { clearAll(); inputFd.value = ''; return; }
+    const raw = inputFd.value.trim();
+    if (raw === '') { state.value = 0n; state.inputStr = ''; state.isFloat = false; state.justEvaluated = false; state.expression = ''; state.pendingOp = null; state.pendingVal = null; updateDisplay(); return; }
+
+    let base = state.base;
+    let parsed = parseValue(raw, base);
+
+    // Auto-detect base when parsing fails for current base
+    if (typeof parsed !== 'bigint' && typeof parsed !== 'number') {
+      const h = parseValue(raw, 16);
+      if (typeof h === 'bigint') { parsed = h; base = 16; }
+      else {
+        const b = parseValue(raw, 2);
+        if (typeof b === 'bigint') { parsed = b; base = 2; }
+      }
+    }
+
+    if (typeof parsed === 'bigint') {
+      // 来自用户的真实输入（非 _skipNext 跳过）→ 清空 evaluated 状态
+      if (state.justEvaluated) {
+        state.justEvaluated = false;
+        state.expression = '';
+        state.pendingOp = null;
+        state.pendingVal = null;
+      }
+      state.value = applyWithOverflow(parsed, state.bitWidth);
+      state.inputStr = raw;
+      state.isFloat = false;
+      if (base !== state.base) setBase(base);
+      else updateDisplay();
+    } else if (typeof parsed === 'number' && !Number.isNaN(parsed)) {
+      if (state.justEvaluated) {
+        state.justEvaluated = false;
+        state.expression = '';
+        state.pendingOp = null;
+        state.pendingVal = null;
+      }
+      state.value = parsed;
+      state.inputStr = raw;
+      state.isFloat = true;
+      if (base !== 10) setBase(10);
+      else updateDisplay();
+    } else {
+      syncInputField();
+    }
+  }
+
+  // ============================================================
+  // Base switching
+  // ============================================================
+  const baseBtns = document.querySelectorAll('.base-row > .base-btn[data-base]');
+  function setBase(base) {
+    state.base = base;
+    // Switching away from DEC: convert float to integer, clear float state
+    if (base !== 10 && state.isFloat) {
+      state.isFloat = false;
+      if (typeof state.value === 'number' && !Number.isNaN(state.value)) {
+        state.value = BigInt(Math.round(state.value));
+        state.value = applyWithOverflow(state.value, state.bitWidth);
+      } else if (Number.isNaN(state.value)) {
+        state.value = 0n;
+      }
+    }
+    baseBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.base) === base));
+    renderKeypad();
+    syncInputField();
+    inputFd.focus();
+    const ph = {10:'输入十进制数…',16:'输入十六进制数 (0-9 A-F)…',2:'输入二进制数 (0-1)…'};
+    inputFd.placeholder = ph[base] || '输入数值…';
+    updateDisplay();
+  }
+
+  // ============================================================
+  // Bitwise operation buttons
+  // ============================================================
+  document.querySelectorAll('.base-btn.bit-op').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const op = this.dataset.op;
+      if (op === 'not') { bitwiseUnary('not'); return; }
+      // Binary bitwise ops: reject float mode
+      if (state.isFloat || typeof state.value === 'number') {
+        exprDisp.textContent = '⚠️ 浮点模式不支持位运算';
+        exprDisp.classList.add('active');
+        displayArea.classList.add('flash');
+        setTimeout(() => displayArea.classList.remove('flash'), 300);
+        return;
+      }
+      // Binary bitwise ops: need a second operand - treat like pending operator
+      if (state.justEvaluated) {
+        state.pendingOp = null; state.pendingVal = null;
+        state.justEvaluated = false;
+      }
+      if (state.pendingOp && state.pendingVal !== null) {
+        applyPendingOp();
+      }
+      const opChar = { and:'&', or:'|', xor:'^' }[op] || op;
+      state.pendingOp = opChar;
+      state.pendingVal = state.value;
+      state.expression = formatVal(state.value) + ' ' + opChar + ' ';
+      state.justEvaluated = false;
+      state.inputStr = '';
+      updateDisplay();
+      inputFd.focus();
+    });
+  });
+
+  // ============================================================
+  // Bit width
+  // ============================================================
+  document.querySelectorAll('.bitsize button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.bitsize button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      state.bitWidth = parseInt(this.dataset.bits, 10);
+      state.value = applyWithOverflow(state.value, state.bitWidth);
+      updateDisplay();
+      inputFd.focus();
+    });
+  });
+
+  // ============================================================
+  // Copy
+  // ============================================================
+  copyBtn.addEventListener('click', handleCopy);
+  function handleCopy() {
+    const base = state.base;
+    const v = state.value;
+    let text;
+    if (typeof v === 'number') {
+      text = v.toString();
+    } else {
+      // DEC 模式复制有符号值，HEX/BIN 用无符号表示
+      const unsigned = v < 0n ? v + (1n << BigInt(state.bitWidth)) : v;
+      if (base === 10) text = toSigned(v, state.bitWidth).toString();
+      else if (base === 16) text = '0x' + unsigned.toString(16).toUpperCase();
+      else text = '0b' + unsigned.toString(2);
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = '✅ 已复制';
+      setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 1200);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      copyBtn.textContent = '✅ 已复制';
+      setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 1200);
+    });
+  }
+
+  // ============================================================
+  // Theme toggle (persisted)
+  // ============================================================
+  function loadTheme() {
+    const saved = localStorage.getItem('calc_theme');
+    if (saved === 'dark') {
+      document.documentElement.classList.add('dark');
+      state.dark = true;
+      themeBtn.textContent = '☀️';
+    }
+  }
+  themeBtn.addEventListener('click', function() {
+    document.documentElement.classList.toggle('dark');
+    state.dark = !state.dark;
+    this.textContent = state.dark ? '☀️' : '🌙';
+    localStorage.setItem('calc_theme', state.dark ? 'dark' : 'light');
+  });
+
+  // ============================================================
+  // Keypad rendering
+  // ============================================================
+  function getKeysForBase(base) {
+    const keys = [
+      { label:'7',act:'digit',val:'7' },
+      { label:'8',act:'digit',val:'8' },
+      { label:'9',act:'digit',val:'9' },
+      { label:'/',act:'op',val:'/',cls:'op' },
+      { label:'A',act:'digit',val:'A',cls:'hex',dis:b=>b!==16 },
+      { label:'B',act:'digit',val:'B',cls:'hex',dis:b=>b!==16 },
+
+      { label:'4',act:'digit',val:'4' },
+      { label:'5',act:'digit',val:'5' },
+      { label:'6',act:'digit',val:'6' },
+      { label:'*',act:'op',val:'*',cls:'op' },
+      { label:'C',act:'digit',val:'C',cls:'hex',dis:b=>b!==16 },
+      { label:'D',act:'digit',val:'D',cls:'hex',dis:b=>b!==16 },
+
+      { label:'1',act:'digit',val:'1' },
+      { label:'2',act:'digit',val:'2' },
+      { label:'3',act:'digit',val:'3' },
+      { label:'-',act:'op',val:'-',cls:'op' },
+      { label:'E',act:'digit',val:'E',cls:'hex',dis:b=>b!==16 },
+      { label:'F',act:'digit',val:'F',cls:'hex',dis:b=>b!==16 },
+
+      { label:'±',act:'negate',val:'neg',cls:'fn' },
+      { label:'0',act:'digit',val:'0' },
+      { label:'⌫',act:'backspace',val:'bksp',cls:'fn' },
+      { label:'+',act:'op',val:'+',cls:'op' },
+      { label:'<<',act:'op',val:'<<',cls:'shift' },
+      { label:'>>',act:'op',val:'>>',cls:'shift' },
+
+      { label:'C',act:'clear',val:'clear',cls:'clear' },
+      { label:'%',act:'op',val:'%',cls:'op' },
+      { label:'&',act:'op',val:'&',cls:'shift' },
+      { label:'=',act:'equals',val:'eq',cls:'eq' },
+      { label:'|',act:'op',val:'|',cls:'shift' },
+      { label:'^',act:'op',val:'^',cls:'shift' },
+    ];
+    return keys.map(def => ({
+      ...def,
+      disabled: def.dis ? def.dis(base) : (base===2 && def.act==='digit' && def.val && /^[2-9]$/.test(def.val))
+    }));
+  }
+
+  function renderKeypad() {
+    const base = state.base;
+    const keys = getKeysForBase(base);
+    keypad.innerHTML = '';
+    for (const def of keys) {
+      const btn = document.createElement('button');
+      btn.className = 'key' + (def.cls ? ' ' + def.cls : '');
+      btn.textContent = def.label;
+      btn.dataset.action = def.act;
+      btn.dataset.value = def.val || '';
+      if (def.disabled) btn.disabled = true;
+      btn.addEventListener('click', function() {
+        handleKeyAction(this.dataset.action, this.dataset.value);
+        // 强制刷新上方表达式显示（双保险）
+        if (this.dataset.action === 'digit' || this.dataset.action === 'op' ||
+            this.dataset.action === 'clear' || this.dataset.action === 'backspace' ||
+            this.dataset.action === 'negate' || this.dataset.action === 'equals') {
+          refreshExprDisplay();
+        }
+      });
+      keypad.appendChild(btn);
+    }
+  }
+
+  // ============================================================
+  // Keyboard events
+  // ============================================================
+  document.addEventListener('keydown', (e) => {
+    const key = e.key;
+    const ctrl = e.ctrlKey || e.metaKey;
+
+    if (ctrl && (key === 'c' || key === 'C')) {
+      if (document.activeElement === inputFd) return; // let browser handle
+      e.preventDefault();
+      handleCopy();
+      return;
+    }
+
+    if (document.activeElement === inputFd) {
+      if (key === 'Enter') { e.preventDefault(); handleInputChange(); calculate(); return; }
+      if (key === 'Escape') { e.preventDefault(); clearAll(); return; }
+      return;
+    }
+
+    if (key === 'Escape') { e.preventDefault(); clearAll(); return; }
+    if (key === 'Enter') { e.preventDefault(); calculate(); return; }
+
+    const digitMap = {
+      '0':'0','1':'1','2':'2','3':'3','4':'4',
+      '5':'5','6':'6','7':'7','8':'8','9':'9',
+      'a':'A','b':'B','c':'C','d':'D','e':'E','f':'F',
+      'A':'A','B':'B','C':'C','D':'D','E':'E','F':'F'
+    };
+    if (key in digitMap) {
+      e.preventDefault();
+      const v = digitMap[key];
+      if (state.base === 2 && !['0','1'].includes(v)) return;
+      if (state.base === 16 && !/^[0-9A-F]$/.test(v)) return;
+      inputDigit(v);
+      inputFd.focus();
+      return;
+    }
+
+    const opMap = {'+':'+','-':'-','*':'*','/':'/','%':'%'};
+    if (key in opMap) { e.preventDefault(); inputOperator(opMap[key]); inputFd.focus(); return; }
+
+    if (key === 'Backspace') { e.preventDefault(); backspace(); inputFd.focus(); return; }
+    if (key === '.') {
+      if (state.base === 10) {
+        e.preventDefault();
+        inputDigit('.');
+        inputFd.focus();
+        return;
+      }
+      e.preventDefault();
+      inputFd.focus();
+      return;
+    }
+  });
+
+  // Also handle clicks on sub-info values (copy to input)
+  [decVal, hexVal, binVal].forEach(el => {
+    el.addEventListener('click', function() {
+      const rawText = this.textContent;
+      if (rawText === '—') return;
+      // 去掉千分位逗号和下划线分隔符，再传入 parseValue
+      const text = rawText.replace(/[,，_\s]/g, '');
+      let parsed = parseValue(text, state.base);
+      // 若当前 base 解析失败，尝试自动检测
+      if (typeof parsed !== 'bigint' && typeof parsed !== 'number') {
+        const h = parseValue(text, 16);
+        if (typeof h === 'bigint') parsed = h;
+        else { const b = parseValue(text, 2); if (typeof b === 'bigint') parsed = b; }
+      }
+      if (typeof parsed === 'bigint') {
+        state.value = applyWithOverflow(parsed, state.bitWidth);
+        state.inputStr = '';
+        state.justEvaluated = false;
+        state.expression = '';
+        state.isFloat = false;
+        updateDisplay();
+        inputFd.focus();
+      } else if (typeof parsed === 'number' && !Number.isNaN(parsed)) {
+        state.value = parsed;
+        state.inputStr = '';
+        state.justEvaluated = false;
+        state.expression = '';
+        state.isFloat = true;
+        updateDisplay();
+        inputFd.focus();
+      }
+    });
+  });
+
+  // ============================================================
+  // Init
+  // ============================================================
+  function init() {
+    // 启动自检：确认核心DOM元素存在
+    const vital = { mainDisp, exprDisp, decVal, hexVal, binVal, inputFd, keypad, bitView };
+    let allOk = true;
+    for (const [name, el] of Object.entries(vital)) {
+      if (!el) { console.error('❌ 缺失DOM元素:', name); allOk = false; }
+    }
+    if (!allOk) {
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#b44"><h2>⚠️ 计算器加载失败</h2><p>核心DOM元素缺失，请检查HTML结构</p></div>';
+      return;
+    }
+
+    loadTheme();
+    setBase(10);
+    state.value = 0n;
+    updateDisplay();
+    renderHistory();
+
+    baseBtns.forEach(btn => {
+      btn.addEventListener('click', () => setBase(parseInt(btn.dataset.base, 10)));
+    });
+    inputFd.addEventListener('input', handleInputChange);
+    inputFd.addEventListener('focus', () => {
+      if (state.justEvaluated) inputFd.select();
+    });
+    // 历史下拉切换
+    histToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      histDropdown.classList.toggle('show');
+      histToggle.classList.toggle('active');
+      renderHistory();
+    });
+    document.addEventListener('click', function(e) {
+      if (!histToggle.contains(e.target) && !histDropdown.contains(e.target)) {
+        histDropdown.classList.remove('show');
+        histToggle.classList.remove('active');
+      }
+    });
+
+    console.log('👩‍💻 程序员计算器 Pro v2.0');
+    console.log('✅ DOM自检通过 | 核心元素就绪');
+    console.log('✅ 点击任意数字键 → 上方表达式区域应实时显示输入');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+</body>
+</html>
