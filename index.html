@@ -205,7 +205,7 @@
             </div>
             <div class="tabs" id="tabContainer" role="tablist" aria-label="页面标签">
                 <div class="tab active" role="tab" aria-selected="true" tabindex="0" data-target="pcie_frame_format_v3d1.html" aria-label="Frame Format 页面">📊 Frame</div>
-                <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="tlp_decoder.html" aria-label="TLP Decoder 页面">🔍 Decoder</div>
+                <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./tlp_decoder.html" aria-label="TLP Decoder 页面">🔍 Decoder</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="tools/ltssm_v0d98.html" aria-label="LTSSM 页面">🔀 LTSSM</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="tools" id="toolsTab" aria-label="工具箱页面">🔧 Tools</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="pages/personal_page_v1d1.html" aria-label="联系方式页面">☎️ Contact</div>
@@ -230,7 +230,7 @@
     <nav class="bottom-nav" id="bottomNav" role="navigation" aria-label="移动端底部导航">
         <div class="nav-items">
             <div class="nav-item active" role="tab" aria-selected="true" tabindex="0" data-target="pcie_frame_format_v3d1.html" aria-label="Frame Format"><span class="nav-icon" aria-hidden="true">📊</span>Frame</div>
-            <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="tlp_decoder.html" aria-label="TLP Decoder"><span class="nav-icon" aria-hidden="true">🔍</span>Decoder</div>
+            <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="./tlp_decoder.html" aria-label="TLP Decoder"><span class="nav-icon" aria-hidden="true">🔍</span>Decoder</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="tools/ltssm_v0d98.html" aria-label="LTSSM"><span class="nav-icon" aria-hidden="true">🔀</span>LTSSM</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="tools" aria-label="工具箱"><span class="nav-icon" aria-hidden="true">🔧</span>Tools</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="pages/personal_page_v1d1.html" aria-label="联系方式"><span class="nav-icon" aria-hidden="true">☎️️</span>Contact</div>
@@ -385,7 +385,7 @@
                 const btn = document.getElementById('historyBtn');
                 const dropdown = document.getElementById('historyDropdown');
                 const countEl = document.getElementById('historyCount');
-                const tabLabels = { 'pcie_frame_format_v3d1.html': 'Frame Format', 'tlp_decoder.html': 'TLP Decoder', 'tools/ltssm_v0d98.html': 'LTSSM', 'tools': '工具箱', 'pages/personal_page_v1d1.html': 'Contact' };
+                const tabLabels = { 'pcie_frame_format_v3d1.html': 'Frame Format', './tlp_decoder.html': 'TLP Decoder', 'tools/ltssm_v0d98.html': 'LTSSM', 'tools': '工具箱', 'pages/personal_page_v1d1.html': 'Contact' };
                 let items = [];
 
                 function add(target) {
@@ -517,8 +517,8 @@
 
                 let currentTarget = '';
                 let touchStartX = 0;
-                const tabOrder = ['pcie_frame_format_v3d1.html', 'tlp_decoder.html', 'tools/ltssm_v0d98.html', 'tools', 'pages/personal_page_v1d1.html'];
-                const tabLabels = { 'pcie_frame_format_v3d1.html': 'Frame Format', 'tlp_decoder.html': 'TLP Decoder', 'tools/ltssm_v0d98.html': 'LTSSM', 'tools': '工具箱', 'pages/personal_page_v1d1.html': 'Contact' };
+                const tabOrder = ['pcie_frame_format_v3d1.html', './tlp_decoder.html', 'tools/ltssm_v0d98.html', 'tools', 'pages/personal_page_v1d1.html'];
+                const tabLabels = { 'pcie_frame_format_v3d1.html': 'Frame Format', './tlp_decoder.html': 'TLP Decoder', 'tools/ltssm_v0d98.html': 'LTSSM', 'tools': '工具箱', 'pages/personal_page_v1d1.html': 'Contact' };
 
                 function updateIndicator(tab) {
                     if (!tab) { indicator.style.opacity = '0'; return; }
