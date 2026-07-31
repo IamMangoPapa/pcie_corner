@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCIe LTSSM 状态跳转图</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC',Roboto,sans-serif;background:#e8edf4;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:8px}
+.app{max-width:1560px;width:100%;background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.08);overflow:hidden;padding:10px 12px 6px}
+.header{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:2px solid #e0e6ee;margin-bottom:6px}
+.header h1{font-size:16px;font-weight:700;color:#1a2a40}
+/* 三栏布局：上85% 下15% */
+.main-layout{display:flex;gap:8px;height:72vh;min-height:340px}
+.left-panel{width:40%;background:#f5f8fc;border-radius:10px;border:1px solid #dce4ee;padding:4px 4px 2px;display:flex;flex-direction:column}
+.mid-panel{width:40%;background:#f5f8fc;border-radius:10px;border:1px solid #dce4ee;padding:4px 6px 2px;display:flex;flex-direction:column;overflow:hidden}
+.right-panel{flex:1;background:#f5f8fc;border-radius:10px;border:1px solid #dce4ee;padding:3px 5px;display:flex;flex-direction:column;overflow:hidden}
+.panel-title{font-size:15px;font-weight:700;color:#1a2a40;padding:2px 2px 4px;flex-shrink:0}
+.svg-wrap{width:100%;flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;background:transparent}
+.svg-wrap svg{width:100%;height:100%;display:block;object-fit:contain}
+.state-node{transition:transform .25s ease,filter .2s;transform-box:fill-box;transform-origin:center;cursor:pointer}
+.state-node:hover{transform:scale(1.12);filter:brightness(1.08)}
+.state-node.active{transform:scale(1.22);filter:drop-shadow(0 0 0 4px rgba(26,90,160,.25)) drop-shadow(0 0 14px rgba(26,90,160,.12))}
+.state-node.playing ellipse{fill:#ffd700!important;stroke:#e6a800!important;stroke-width:3!important;transition:fill .3s}
+.state-node.playing .state-label{fill:#1a2332!important}
+.sub-node-internal.playing ellipse{fill:#ffd700!important;stroke:#e6a800!important;stroke-width:2.5!important}
+.sub-node-internal.playing text{fill:#1a2332!important}
+.state-label{font-size:23px;font-weight:900;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
+.state-label.dark{fill:#1a2332}
+.state-label.light{fill:#fff}
+.tx-arrow{stroke:#4a6a8a;stroke-width:2;fill:none;marker-end:url(#ahd);transition:stroke .3s,stroke-width .3s;cursor:pointer}
+.tx-arrow.highlight{stroke:#1a5a8a;stroke-width:3;filter:drop-shadow(0 0 5px rgba(26,90,138,.3))}
+.tx-arrow.dim{opacity:.15}
+.sub-graph{background:transparent;border-radius:8px;padding:2px;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+.sub-graph svg{width:100%;height:auto;max-height:540px;overflow:visible}
+/* 底部释义：占屏幕15% */
+.bottom-desc{height:14vh;min-height:48px;max-height:100px;background:#f0f4fa;border-radius:8px;border:1px solid #dce4ee;padding:6px 12px;margin-top:5px;font-size:14px;line-height:1.5;color:#2a4058;overflow-y:auto}
+.bottom-desc .dl{font-weight:700;color:#1a3a5a;font-size:15px}
+.sub-node-internal,.sub-node-external{transition:transform .2s ease,filter .2s;transform-box:fill-box;transform-origin:center;cursor:pointer}
+.sub-node-internal:hover,.sub-node-external:hover{transform:scale(1.12)}
+.sub-node-external{opacity:.85}
+.sub-node-external:hover{opacity:1}
+.sub-hl{transform:scale(1.08)!important}
+.sub-arrow{cursor:pointer;stroke-width:2}
+.sub-arrow-hl{stroke:#1a5a8a!important;stroke-width:2.5!important}
+.sub-arrow-dim{opacity:.12!important}
+.sub-label{dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
+/* 状态调整轨迹 */
+.pt-item{padding:5px 8px;border-radius:4px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;width:100%;white-space:nowrap;flex-shrink:0;box-sizing:border-box;margin:1px 0;gap:4px}
+.pt-item.done{color:#4a6a8a;background:#e0e8f2}
+.pt-item.current{color:#fff;background:#2a5a8a;font-weight:800}
+.pt-gen{font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;flex-shrink:0}
+@media(max-width:1100px){.main-layout{flex-direction:column;height:auto}.left-panel,.mid-panel{width:100%;height:360px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🔀 PCIe LTSSM 状态跳转图</h1></div>
+<div class="main-layout">
+  <!-- 左：主状态图 40% -->
+  <div class="left-panel">
+    <div class="panel-title">主状态转移图</div>
+    <div class="svg-wrap" id="mainSvgWrap">
+      <svg id="mainSvg" viewBox="0 0 820 730" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="ahd" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L3,3.5 Z" fill="#4a6a8a"/></marker>
+          <marker id="ahdHl" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 L3.5,4.5 Z" fill="#1a5a8a"/></marker>
+          <filter id="shSub"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity=".1"/></filter>
+        </defs>
+        <rect x="4" y="4" width="812" height="722" rx="6" fill="#fafcfe" stroke="#dce4ee" stroke-width="1"/>
+        <g transform="translate(-23,44) translate(433,321) scale(1.1) translate(-433,-321)"><g id="arrowsGroup"></g><g id="nodesGroup"></g></g>
+      </svg>
+    </div>
+  </div>
+  <!-- 中：子状态图 40% -->
+  <div class="mid-panel">
+    <div class="panel-title">子状态转移图 <span id="subTitleExtra" style="font-size:11px;font-weight:400;color:#6a8aaa;margin-left:6px">点击主状态</span></div>
+    <div class="sub-graph" id="subGraph"><div style="color:#6a8aaa;font-size:12px;text-align:center;padding:20px;">🔍 点击左侧主状态</div></div>
+  </div>
+  <!-- 右：状态调整轨迹 ~18% -->
+  <div class="right-panel">
+    <div class="panel-title" style="padding-bottom:2px">状态轨迹</div>
+    <div style="font-size:11px;font-weight:600;color:#1a3a5a;flex-shrink:0;display:flex;align-items:center;gap:4px;white-space:nowrap;padding:1px 0 2px">
+      <select id="modeSelectSvg" style="width:60px;padding:0 3px;border-radius:6px;border:1px solid #c8d4e0;font-size:10px;height:22px">
+        <option value="Gen1" selected>Gen1</option><option value="Gen2">Gen2</option><option value="Gen3">Gen3</option>
+        <option value="Gen4">Gen4</option><option value="Gen5">Gen5</option>
+      </select>
+      <select id="eqModeSelect" style="width:70px;padding:1px 3px;border-radius:6px;border:1px solid #c8d4e0;font-size:10px;height:22px">
+        <option value="full">Full</option><option value="noeq">NoEq</option><option value="bypass">Bypass</option>
+      </select>
+      <button id="playBtn" style="background:#2a5a8a;border:none;padding:1px 10px;border-radius:10px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;height:22px">▶ 播放</button>
+      <span style="flex:1"></span>
+      <button id="traceExportBtn" style="background:transparent;border:none;font-size:10px;color:#3a7aaa;cursor:pointer;font-weight:600;padding:1px 3px">复制</button>
+      <button id="traceClearBtn" style="background:transparent;border:none;font-size:10px;color:#5a7a9a;cursor:pointer;font-weight:600;padding:1px 3px">清空</button>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:#fafcfe;border-radius:6px;border:1px solid #dce4ee;margin:1px 0 2px">
+      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:0;padding:2px 0" id="playTrace"><span style="color:#8a9aaa;font-size:13px;font-weight:600;">就绪</span></div>
+    </div>
+  </div>
+</div>
+<!-- 底部：状态释义 15% -->
+<div class="bottom-desc" id="bottomDesc"><span class="dl" id="descLabel">L0</span><span id="descText">：L0 全速工作状态。数据正常传输，链路处于全活动状态。</span></div>
+</div>
+
+<script>
+// ====================================================================
+// 1. DOT数据
+// ====================================================================
+const MAIN_STATE_IDS=['detect','polling','configuration','l0','l0s','l1','l2','recovery','loopback','hotreset','disabled'];
+const SUB_STATE_MAP={
+  detect:['Detect.Quiet','Detect.Active'],
+  polling:['Polling.Active','Polling.Compliance','Polling.Configuration'],
+  configuration:['Config.Linkwidth.Start','Config.Linkwidth.Accept','Config.Lanenum.Wait','Config.Lanenum.Accept','Config.Complete','Config.Idle'],
+  l0:['L0'],l0s:['Tx_L0s.Entry','Tx_L0s.Idle','Tx_L0s.FTS','Rx_L0s.Entry','Rx_L0s.Idle','Rx_L0s.FTS'],
+  l1:['L1.Entry','L1.Idle'],l2:['L2.Idle','L2.TransmitWake'],
+  recovery:['Recovery.RcvrLock','Recovery.RcvrCfg','Recovery.Equalization','Recovery.Speed','Recovery.Idle'],
+  loopback:['Loopback.Entry','Loopback.Active','Loopback.Exit'],
+  hotreset:['Hot Reset'],disabled:['Disable']
+};
+const COLOR_MAP={detect:'#8bc34a',polling:'#ffc107',configuration:'#ce93d8',l0:'#f8bbd0',l0s:'#ff9800',l1:'#ef9a9a',l2:'#4caf50',recovery:'#d4c45a',loopback:'#f0b8b0',hotreset:'#e53935',disabled:'#9e9e9e'};
+const MAIN_LABEL_MAP={detect:'Detect',polling:'Polling',configuration:'Configuration',l0:'L0',l0s:'L0s',l1:'L1',l2:'L2',recovery:'Recovery',loopback:'Loopback',hotreset:'Hot Reset',disabled:'Disable'};
+function isLight(c){const h=c.replace('#','');return(parseInt(h.substr(0,2),16)*0.299+parseInt(h.substr(2,2),16)*0.587+parseInt(h.substr(4,2),16)*0.114)>170;}
+const DESC_MAP={detect:'链路检测状态。检测对端是否存在，并准备进行链路训练。',polling:'轮询状态。发送TS1/TS2序列，进行位锁定和符号锁定。',configuration:'链路配置状态。依次经过 Linkwidth.Start→Accept→Lanenum.Wait→Accept→Complete→Idle。',l0:'L0 全速工作状态。数据正常传输，链路处于全活动状态。',l0s:'L0s 低功耗待机状态。快速退出，延迟短。',l1:'L1 轻度睡眠状态。功耗更低，退出延迟稍长。',l2:'L2 深度睡眠状态。功耗极低，退出需通过TransmitWake重新初始化。',recovery:'恢复状态。当链路出现错误或需要重新配置时进入，进行速率变更或均衡。',loopback:'环回状态。用于测试和调试。',hotreset:'热复位状态。通过发送TS1序列复位链路。',disabled:'禁用状态。链路被禁用。'};
+// PCIe 5.0 主状态跳转条件
+const TRANS_COND={
+  'detect-polling':'[Detect] 检测到对端存在，接收 Electrical Idle 退出信号',
+  'polling-detect':'[Polling] 符号锁定失败 / TS1/TS2 训练序列超时 / 进入 Electrical Idle',
+  'polling-configuration':'[Polling] 成功完成位锁定和符号锁定，开始交换 TS1/TS2 配置序列',
+  'configuration-detect':'[Configuration] 链路宽度/通道编号协商超时或失败，回退到 Detect',
+  'configuration-l0':'[Configuration] 链路宽度和通道编号协商完成 (Linkwidth+Lanenum)，进入全速工作',
+  'configuration-loopback':'[Configuration] 收到 Loopback TS1 序列，进入环回模式',
+  'configuration-disabled':'[Configuration] 收到 Disable TS1 序列，链路被禁用',
+  'configuration-recovery':'[Configuration] 配置完成后对端进入 Recovery，跟随进入',
+  'l0-recovery':'[L0] 接收错误 (CRC/ framing error) / 电气空闲退出 / 速率变更请求 / 重训练请求',
+  'l0-l0s':'[L0] 链路空闲超时，满足 L0s 进入条件 (Tx 方向停止发送)',
+  'l0-l1':'[L0] ASPM 条件满足 / 软件控制进入 L1 (PM_Active_State_Nak 或 L1_Entry)',
+  'l0-l2':'[L0] 软件触发 L2 深度休眠 (D3hot → D3cold)',
+  'l0s-l0':'[L0s] 检测到发送请求或接收 FTS 序列完成，快速退出到 L0',
+  'l0s-recovery':'[L0s] FTS 序列接收失败 / 链路信号质量异常',
+  'l1-recovery':'[L1] 退出 L1 时检测到电气空闲错误或需要重训练',
+  'l2-detect':'[L2] 发送 TransmitWake 信标信号，退出 L2 进入 Detect',
+  'recovery-detect':'[Recovery] 恢复失败 (RcvrLock 超时 / 均衡失败) / 对端进入 Detect，跟随回退',
+  'recovery-configuration':'[Recovery] 需要重新协商链路宽度/通道编号，进入 Configuration',
+  'recovery-l0':'[Recovery] 恢复成功 (RcvrLock+RcvrCfg+Speed 完成)，回到全速工作',
+  'recovery-loopback':'[Recovery] 收到 Loopback TS1 序列，进入环回模式',
+  'recovery-disabled':'[Recovery] 收到 Disable TS1 序列，链路被禁用',
+  'recovery-hotreset':'[Recovery] 收到 Hot Reset TS1 序列，进入热复位',
+  'loopback-detect':'[Loopback] 环回测试完成 / 收到 Exit 序列，回退到 Detect',
+  'hotreset-detect':'[Hot Reset] 热复位完成 (TS1 序列发送结束)，重新 Detect',
+  'disabled-detect':'[Disable] 链路重新使能 / 物理层重新上电，进入 Detect',
+};
+// 子状态跳转条件 (PCIe 5.0)
+const SUB_TRANS_COND={
+  'Detect.Quiet-Detect.Active':'检测到 Electrical Idle 退出信号，进入 Active 检测',
+  'Detect.Active-Detect.Quiet':'检测失败 / 对端未响应，回退 Quiet',
+  'Detect.Active-Polling.Active':'成功检测到对端信号，进入 Polling',
+  'Polling.Active-Polling.Configuration':'成功完成位锁定和符号锁定，开始配置',
+  'Polling.Active-Polling.Compliance':'进入一致性测试模式',
+  'Polling.Active-Detect.Quiet':'训练超时 / 锁定失败，回退 Detect',
+  'Polling.Compliance-Polling.Active':'Compliance 测试结束，回到 Active',
+  'Polling.Compliance-Detect.Quiet':'Compliance 失败，回退 Detect',
+  'Polling.Configuration-Detect.Quiet':'配置阶段超时，回退 Detect',
+  'Polling.Configuration-Config.Linkwidth.Start':'开始链路宽度协商',
+  'Config.Linkwidth.Start-Config.Linkwidth.Accept':'链路宽度协商完成',
+  'Config.Linkwidth.Start-Detect.Quiet':'宽度协商超时，回退 Detect',
+  'Config.Linkwidth.Start-Loopback.Entry':'收到 Loopback TS1，进入环回',
+  'Config.Linkwidth.Start-Disabled':'收到 Disable TS1，进入禁用',
+  'Config.Linkwidth.Accept-Config.Lanenum.Wait':'开始通道编号分配',
+  'Config.Linkwidth.Accept-Detect.Quiet':'配置失败，回退 Detect',
+  'Config.Lanenum.Wait-Config.Lanenum.Accept':'通道编号分配完成',
+  'Config.Lanenum.Wait-Detect.Quiet':'编号分配超时，回退 Detect',
+  'Config.Lanenum.Accept-Config.Lanenum.Wait':'编号重分配，回退 Wait',
+  'Config.Lanenum.Accept-Detect.Quiet':'编号确认失败，回退 Detect',
+  'Config.Lanenum.Accept-Config.Complete':'所有通道分配完成，进入 Complete',
+  'Config.Complete-Config.Idle':'配置完全完成，进入 Idle',
+  'Config.Complete-Detect.Quiet':'配置完成阶段失败，回退 Detect',
+  'Config.Idle-Recovery.RcvrLock':'对端进入 Recovery，跟随进入',
+  'Config.Idle-Detect.Quiet':'Idle 超时 / 对端回退，跟随到 Detect',
+  'Config.Idle-L0':'协商完成，进入全速 L0',
+  'L0-Recovery.RcvrLock':'接收错误 (CRC/符号错) / 电气空闲退出 / 速率变更',
+  'L0-Tx_L0s.Entry':'Tx 方向链路空闲，进入 L0s',
+  'L0-Rx_L0s.Entry':'Rx 方向检测到电气空闲，进入 L0s',
+  'L0-L1.Entry':'ASPM 条件满足 / 软件请求进入 L1',
+  'L0-L2.Idle':'软件触发 D3cold，进入 L2',
+  'Tx_L0s.Entry-Tx_L0s.Idle':'进入 Tx L0s 空闲',
+  'Tx_L0s.Idle-Tx_L0s.FTS':'准备退出 L0s，发送 FTS',
+  'Tx_L0s.FTS-L0':'FTS 发送完成，回到 L0',
+  'Rx_L0s.Entry-Rx_L0s.Idle':'进入 Rx L0s 空闲',
+  'Rx_L0s.Idle-Rx_L0s.FTS':'收到 FTS 信号开始，准备退出',
+  'Rx_L0s.FTS-L0':'FTS 序列接收完成，回到 L0',
+  'Rx_L0s.FTS-Recovery.RcvrLock':'FTS 接收失败 / 信号异常，进入 Recovery',
+  'L1.Entry-L1.Idle':'进入 L1 空闲状态',
+  'L1.Idle-Recovery.RcvrLock':'退出 L1 时检测到错误 / 需要重训练',
+  'L2.Idle-L2.TransmitWake':'发送唤醒信标信号 (Beacon)',
+  'L2.TransmitWake-Detect.Quiet':'唤醒完成，回到 Detect',
+  'Recovery.RcvrLock-Detect.Quiet':'RcvrLock 超时 / 无法锁定，回退 Detect',
+  'Recovery.RcvrLock-Config.Linkwidth.Start':'需要重新协商链路宽度',
+  'Recovery.RcvrLock-Recovery.RcvrCfg':'接收锁定成功，进入 RcvrCfg',
+  'Recovery.RcvrLock-Recovery.Equalization':'进入均衡训练 (Gen3+)',
+  'Recovery.RcvrLock-Recovery.Speed':'进入速率变更',
+  'Recovery.Speed-Recovery.RcvrLock':'速率变更失败，回退 RcvrLock',
+  'Recovery.Speed-Detect.Quiet':'速率变更失败且无法恢复，回退 Detect',
+  'Recovery.Equalization-Recovery.RcvrLock':'均衡失败，回退 RcvrLock',
+  'Recovery.Equalization-Recovery.Speed':'均衡成功，进入速率变更',
+  'Recovery.RcvrCfg-Recovery.Speed':'接收配置完成，进入速率变更',
+  'Recovery.RcvrCfg-Recovery.Idle':'恢复配置完成，进入 Recovery Idle',
+  'Recovery.RcvrCfg-Config.Linkwidth.Start':'发现链路宽度不匹配，重新协商',
+  'Recovery.RcvrCfg-Detect.Quiet':'恢复配置失败，回退 Detect',
+  'Recovery.Idle-Loopback.Entry':'进入环回模式',
+  'Recovery.Idle-Disabled':'收到 Disable TS1',
+  'Recovery.Idle-L0':'恢复成功，回到全速 L0',
+  'Recovery.Idle-Detect.Quiet':'恢复完成但链路仍异常，回退 Detect',
+  'Recovery.Idle-Recovery.RcvrLock':'恢复后检测到问题，重新锁定',
+  'Recovery.Idle-Hot Reset':'收到 Hot Reset TS1',
+  'Recovery.Idle-Config.Linkwidth.Start':'需要重新配置链路',
+  'Loopback.Entry-Loopback.Active':'进入环回激活状态',
+  'Loopback.Entry-Loopback.Exit':'环回退出',
+  'Loopback.Active-Loopback.Exit':'环回测试完成，退出',
+  'Loopback.Exit-Detect.Quiet':'环回结束，回到 Detect',
+  'Hot Reset-Detect.Quiet':'热复位完成 (TS1 发送结束)，回到 Detect',
+  'Disable-Detect.Quiet':'禁用状态结束 / 链路重新使能，进入 Detect',
+};
+
+const SUB_DESC={'Detect.Quiet':'初始静默状态，等待检测对端是否存在。','Detect.Active':'激活检测状态，发送训练序列（TS）检测对端。','Polling.Active':'Active轮询状态，进行位锁定和符号锁定。','Polling.Compliance':'Compliance测试状态，用于一致性测试。','Polling.Configuration':'准备进入Configuration状态，协商链路参数。','Config.Linkwidth.Start':'开始链路宽度协商。','Config.Linkwidth.Accept':'链路宽度协商完成，等待对方确认。','Config.Lanenum.Wait':'等待通道编号分配。','Config.Lanenum.Accept':'通道编号分配完成。','Config.Complete':'配置完成，准备进入Idle。','Config.Idle':'配置空闲状态，等待进入L0。','L0':'全速工作状态，正常数据传输。','Tx_L0s.Entry':'进入Tx方向L0s低功耗状态。','Tx_L0s.Idle':'Tx方向L0s空闲。','Tx_L0s.FTS':'Tx方向发送FTS快速退出训练序列。','Rx_L0s.Entry':'进入Rx方向L0s低功耗状态。','Rx_L0s.Idle':'Rx方向L0s空闲。','Rx_L0s.FTS':'Rx方向接收FTS快速退出训练序列。','L1.Entry':'进入L1轻度睡眠状态。','L1.Idle':'L1轻度睡眠空闲。','L2.Idle':'L2深度睡眠空闲。','L2.TransmitWake':'发送唤醒信号，准备退出L2。','Recovery.RcvrLock':'重新锁定接收器，进行比特对齐。','Recovery.RcvrCfg':'重新配置链路参数。','Recovery.Equalization':'进行均衡训练（Gen3及以上）。','Recovery.Speed':'速率变更。','Recovery.Idle':'恢复空闲，准备返回L0或其他状态。','Loopback.Entry':'进入环回模式。','Loopback.Active':'环回测试进行中。','Loopback.Exit':'退出环回模式。','Hot Reset':'热复位，发送TS1复位序列。','Disable':'链路禁用状态。'};
+const DOT_EDGES=[
+{from:'Reset',to:'Detect.Quiet'},{from:'Detect.Quiet',to:'Detect.Active'},{from:'Detect.Active',to:'Detect.Quiet'},{from:'Detect.Active',to:'Polling.Active'},
+{from:'Polling.Active',to:'Polling.Configuration'},{from:'Polling.Active',to:'Polling.Compliance'},{from:'Polling.Active',to:'Detect.Quiet'},{from:'Polling.Compliance',to:'Polling.Active'},{from:'Polling.Compliance',to:'Detect.Quiet'},
+{from:'Polling.Configuration',to:'Detect.Quiet'},{from:'Polling.Configuration',to:'Config.Linkwidth.Start'},
+{from:'Config.Linkwidth.Start',to:'Config.Linkwidth.Start'},{from:'Config.Linkwidth.Start',to:'Loopback.Entry'},{from:'Config.Linkwidth.Start',to:'Detect.Quiet'},{from:'Config.Linkwidth.Start',to:'Disabled'},{from:'Config.Linkwidth.Start',to:'Config.Linkwidth.Accept'},
+{from:'Config.Linkwidth.Accept',to:'Config.Lanenum.Wait'},{from:'Config.Linkwidth.Accept',to:'Detect.Quiet'},
+{from:'Config.Lanenum.Wait',to:'Config.Lanenum.Accept'},{from:'Config.Lanenum.Wait',to:'Detect.Quiet'},
+{from:'Config.Lanenum.Accept',to:'Config.Lanenum.Wait'},{from:'Config.Lanenum.Accept',to:'Detect.Quiet'},{from:'Config.Lanenum.Accept',to:'Config.Complete'},
+{from:'Config.Complete',to:'Config.Idle'},{from:'Config.Complete',to:'Detect.Quiet'},
+{from:'Config.Idle',to:'Recovery.RcvrLock'},{from:'Config.Idle',to:'Detect.Quiet'},{from:'Config.Idle',to:'L0'},
+{from:'L0',to:'Recovery.RcvrLock'},{from:'L0',to:'Tx_L0s.Entry'},{from:'L0',to:'Rx_L0s.Entry'},
+{from:'Tx_L0s.Entry',to:'Tx_L0s.Idle'},{from:'Tx_L0s.Idle',to:'Tx_L0s.FTS'},{from:'Tx_L0s.FTS',to:'L0'},
+{from:'Rx_L0s.Entry',to:'Rx_L0s.Idle'},{from:'Rx_L0s.Idle',to:'Rx_L0s.FTS'},{from:'Rx_L0s.FTS',to:'L0'},{from:'Rx_L0s.FTS',to:'Recovery.RcvrLock'},
+{from:'L0',to:'L1.Entry'},{from:'L1.Entry',to:'L1.Idle'},{from:'L1.Idle',to:'Recovery.RcvrLock'},
+{from:'L0',to:'L2.Idle'},{from:'L2.Idle',to:'L2.TransmitWake'},{from:'L2.TransmitWake',to:'Detect.Quiet'},
+{from:'Recovery.RcvrLock',to:'Detect.Quiet'},{from:'Recovery.RcvrLock',to:'Config.Linkwidth.Start'},
+{from:'Recovery.RcvrLock',to:'Recovery.RcvrCfg'},{from:'Recovery.RcvrLock',to:'Recovery.Equalization'},{from:'Recovery.RcvrLock',to:'Recovery.Speed'},
+{from:'Recovery.Speed',to:'Recovery.RcvrLock'},{from:'Recovery.Speed',to:'Detect.Quiet'},
+{from:'Recovery.Equalization',to:'Recovery.RcvrLock'},{from:'Recovery.Equalization',to:'Recovery.Speed'},
+{from:'Recovery.RcvrCfg',to:'Recovery.Speed'},{from:'Recovery.RcvrCfg',to:'Recovery.Idle'},{from:'Recovery.RcvrCfg',to:'Config.Linkwidth.Start'},{from:'Recovery.RcvrCfg',to:'Detect.Quiet'},
+{from:'Recovery.Idle',to:'Loopback.Entry'},{from:'Recovery.Idle',to:'Disable'},{from:'Recovery.Idle',to:'L0'},{from:'Recovery.Idle',to:'Detect.Quiet'},{from:'Recovery.Idle',to:'Recovery.RcvrLock'},
+{from:'Recovery.Idle',to:'Hot Reset'},{from:'Recovery.Idle',to:'Config.Linkwidth.Start'},
+{from:'Loopback.Entry',to:'Loopback.Active'},{from:'Loopback.Entry',to:'Loopback.Exit'},{from:'Loopback.Active',to:'Loopback.Exit'},{from:'Loopback.Exit',to:'Detect.Quiet'},
+{from:'Hot Reset',to:'Detect.Quiet'},{from:'Disable',to:'Detect.Quiet'}
+];
+const nodeToMain={};
+for(const mid of MAIN_STATE_IDS){for(const sub of(SUB_STATE_MAP[mid]||[]))nodeToMain[sub]=mid;}
+nodeToMain['L0']='l0';nodeToMain['Hot Reset']='hotreset';nodeToMain['Disable']='disabled';nodeToMain['Disabled']='disabled';
+const mainTrans=[];const seenPairs=new Set();
+for(const e of DOT_EDGES){if(e.from==='Reset')continue;const fm=nodeToMain[e.from],tm=nodeToMain[e.to];if(!fm||!tm||fm===tm)continue;const k=fm+'->'+tm;if(!seenPairs.has(k)){seenPairs.add(k);mainTrans.push({from:fm,to:tm});}}
+const subTransMap={};
+for(const mid of MAIN_STATE_IDS){const s=new Set(SUB_STATE_MAP[mid]||[]);subTransMap[mid]=DOT_EDGES.filter(e=>s.has(e.from)&&s.has(e.to));}
+const POSITIONS={
+  detect:{x:410,y:85},
+  polling:{x:409,y:214},
+  configuration:{x:405,y:326},
+  l0:{x:410,y:441},
+  l0s:{x:408,y:557},
+  l1:{x:250,y:499},
+  l2:{x:256,y:289},
+  recovery:{x:579,y:505},
+  loopback:{x:616,y:411},
+  hotreset:{x:612,y:310},
+  disabled:{x:612,y:193},
+};
+const STATES={};
+for(const mid of MAIN_STATE_IDS){STATES[mid]={id:mid,label:MAIN_LABEL_MAP[mid],x:POSITIONS[mid].x,y:POSITIONS[mid].y,color:COLOR_MAP[mid],textColor:isLight(COLOR_MAP[mid])?'dark':'light',desc:DESC_MAP[mid]||'',subStates:(SUB_STATE_MAP[mid]||[]).map(n=>({id:n,label:n})),subTransitions:subTransMap[mid]};}
+
+// ====================================================================
+// 子状态位置（用户拖拽调整后的固定坐标）
+// ====================================================================
+const SUB_POS = {
+  detect:{'Detect.Quiet':{x:278,y:149},'Detect.Active':{x:280,y:264},polling:{x:139,y:271},l2:{x:134,y:52},loopback:{x:273,y:47},disabled:{x:140,y:149},configuration:{x:421,y:50},recovery:{x:419,y:151},hotreset:{x:419,y:270}},
+  polling:{'Polling.Active':{x:280,y:162},'Polling.Compliance':{x:491,y:151},'Polling.Configuration':{x:281,y:252},detect:{x:152,y:63},configuration:{x:281,y:332}},
+  configuration:{'Config.Linkwidth.Start':{x:283,y:100},'Config.Linkwidth.Accept':{x:288,y:177},'Config.Lanenum.Wait':{x:284,y:246},'Config.Lanenum.Accept':{x:282,y:315},'Config.Complete':{x:281,y:392},'Config.Idle':{x:283,y:471},polling:{x:167,y:38},detect:{x:103,y:207},recovery:{x:475,y:256},loopback:{x:480,y:40},disabled:{x:475,y:172},l0:{x:477,y:465}},
+  l0:{'L0':{x:280,y:230},configuration:{x:276,y:132},l0s:{x:143,y:304},l2:{x:432,y:305},recovery:{x:432,y:229},l1:{x:283,y:309}},
+  l0s:{'Tx_L0s.Entry':{x:196,y:248},'Tx_L0s.Idle':{x:320,y:249},'Tx_L0s.FTS':{x:453,y:253},'Rx_L0s.Entry':{x:194,y:60},'Rx_L0s.Idle':{x:325,y:59},'Rx_L0s.FTS':{x:469,y:59},l0:{x:270,y:153},recovery:{x:479,y:155}},
+  l1:{'L1.Entry':{x:280,y:196},'L1.Idle':{x:280,y:264},l0:{x:280,y:116},recovery:{x:282,y:344}},
+  l2:{'L2.Idle':{x:280,y:196},'L2.TransmitWake':{x:280,y:264},l0:{x:275,y:120},detect:{x:277,y:352}},
+  recovery:{'Recovery.RcvrLock':{x:280,y:94},'Recovery.RcvrCfg':{x:278,y:281},'Recovery.Equalization':{x:146,y:158},'Recovery.Speed':{x:144,y:248},'Recovery.Idle':{x:286,y:370},configuration:{x:444,y:249},l0s:{x:193,y:35},detect:{x:142,y:368},disabled:{x:279,y:455},l0:{x:448,y:99},l1:{x:391,y:24},loopback:{x:454,y:357},hotreset:{x:417,y:446}},
+  loopback:{'Loopback.Entry':{x:280,y:162},'Loopback.Active':{x:280,y:230},'Loopback.Exit':{x:280,y:298},configuration:{x:279,y:84},detect:{x:283,y:383},recovery:{x:430,y:156}},
+  hotreset:{'Hot Reset':{x:280,y:230},recovery:{x:281,y:156},detect:{x:280,y:317}},
+  disabled:{'Disable':{x:280,y:230},recovery:{x:280,y:149},detect:{x:284,y:305}}
+};
+
+// ====================================================================
+// 2. 播放序列
+// ====================================================================
+function buildSeq(rate,eqMode){
+  const base=[{main:'detect',sub:'Detect.Quiet'},{main:'detect',sub:'Detect.Active'},{main:'polling',sub:'Polling.Active'},{main:'polling',sub:'Polling.Configuration'},{main:'configuration',sub:'Config.Linkwidth.Start'},{main:'configuration',sub:'Config.Linkwidth.Accept'},{main:'configuration',sub:'Config.Lanenum.Wait'},{main:'configuration',sub:'Config.Lanenum.Accept'},{main:'configuration',sub:'Config.Complete'},{main:'configuration',sub:'Config.Idle'}];
+  const l0=function(g){return{main:'l0',sub:null,gen:g};};
+  // g2：无Equalization的恢复序列 (No Eq / Bypass 通用)
+  const g2=[{main:'recovery',sub:'Recovery.RcvrLock'},{main:'recovery',sub:'Recovery.RcvrCfg'},{main:'recovery',sub:'Recovery.Speed'},{main:'recovery',sub:'Recovery.RcvrLock'},{main:'recovery',sub:'Recovery.RcvrCfg'},{main:'recovery',sub:'Recovery.Idle'}];
+  // fullEq：含Equalization的恢复序列 (Full Eq 通用 / Gen5 Bypass)
+  const fullEq=[{main:'recovery',sub:'Recovery.RcvrLock'},{main:'recovery',sub:'Recovery.RcvrCfg'},{main:'recovery',sub:'Recovery.Speed'},{main:'recovery',sub:'Recovery.RcvrLock'},{main:'recovery',sub:'Recovery.Equalization'},{main:'recovery',sub:'Recovery.RcvrLock'},{main:'recovery',sub:'Recovery.RcvrCfg'},{main:'recovery',sub:'Recovery.Idle'}];
+  if(rate==='Gen1')return[...base,l0('Gen1')];
+  // Gen2+：Detect...→Gen1 L0→恢复序列→目标 L0（无中间代）
+  const rec=(eqMode==='full'||(eqMode==='bypass'&&rate==='Gen5'))?fullEq:g2;
+  return[...base,l0('Gen1'),...rec,l0(rate)];
+}
+const FULL_SEQ=['detect','polling','configuration','l0','l0s','l0','l1','recovery','l0','loopback','detect','l0','hotreset','detect','l0','disabled','detect'];
+
+// ====================================================================
+// 3. DOM
+// ====================================================================
+const svg=document.getElementById('mainSvg'),nodesGroup=document.getElementById('nodesGroup'),arrowsGroup=document.getElementById('arrowsGroup');
+const subGraph=document.getElementById('subGraph'),subTitleExtra=document.getElementById('subTitleExtra');
+const bottomDesc=document.getElementById('bottomDesc'),descLabel=document.getElementById('descLabel'),descText=document.getElementById('descText');
+const playTrace=document.getElementById('playTrace'),traceClearBtn=document.getElementById('traceClearBtn'),traceExportBtn=document.getElementById('traceExportBtn');
+const playBtn=document.getElementById('playBtn'),modeSelect=document.getElementById('modeSelectSvg'),eqModeSelect=document.getElementById('eqModeSelect');
+let selectedId=null,playTimer=null,playIdx=0,isPlaying=false,isPaused=false,curMode='Gen1',curSeq=[];
+let dragSub=null,dOffX=0,dOffY=0,svgW=640,dragMoved=false;
+const RX=56,RY=32;
+const STATE_RX={'configuration':84,'hotreset':62};
+function getRx(id){return STATE_RX[id]||RX;}
+
+// ====================================================================
+// 4. 主状态图
+// ====================================================================
+function getEdgePt(x1,y1,x2,y2,rx,ry){const dx=x2-x1,dy=y2-y1,d=Math.sqrt(dx*dx+dy*dy);if(d<1)return{x:x1,y:y1};const ux=dx/d,uy=dy/d,a=Math.atan2(dy,dx),ca=Math.cos(a),sa=Math.sin(a);return{x:x1+ux*Math.min((1/Math.sqrt((ca*ca)/(rx*rx)+(sa*sa)/(ry*ry)))*1.01,Math.min(rx,ry)*1.01),y:y1+uy*Math.min((1/Math.sqrt((ca*ca)/(rx*rx)+(sa*sa)/(ry*ry)))*1.01,Math.min(rx,ry)*1.01)};}
+function lineBlocks(x1,y1,x2,y2,ign){for(let i=1;i<20;i++){const t=i/20,px=x1+(x2-x1)*t,py=y1+(y2-y1)*t;for(const[id,st]of Object.entries(STATES)){if(ign.has(id))continue;const rx=getRx(id),ry=RY;const dx=px-st.x,dy=py-st.y;if((dx*dx)/(rx*rx)+(dy*dy)/(ry*ry)<1.35)return true;}}return false;}
+function buildGraph(){
+  nodesGroup.innerHTML='';arrowsGroup.innerHTML='';
+  for(const tr of mainTrans){
+    const f=STATES[tr.from],t=STATES[tr.to];if(!f||!t)continue;
+    const fRx=getRx(tr.from),tRx=getRx(tr.to);
+    const p1=getEdgePt(f.x,f.y,t.x,t.y,fRx,RY),p2=getEdgePt(t.x,t.y,f.x,f.y,tRx,RY);
+    const blocked=lineBlocks(f.x,f.y,t.x,t.y,new Set([tr.from,tr.to]));
+    const l=document.createElementNS('http://www.w3.org/2000/svg','path');
+    if(blocked){const mx=(f.x+t.x)/2,my=(f.y+t.y)/2,nx=-(t.y-f.y),ny=t.x-f.x,nd=Math.sqrt(nx*nx+ny*ny)||1;const dist=Math.sqrt((t.x-f.x)**2+(t.y-f.y)**2);const off=Math.max(45,dist*0.18);l.setAttribute('d','M '+p1.x+' '+p1.y+' Q '+(mx+nx/nd*off)+' '+(my+ny/nd*off)+' '+p2.x+' '+p2.y);}
+    else l.setAttribute('d','M '+p1.x+' '+p1.y+' L '+p2.x+' '+p2.y);
+    l.setAttribute('class','tx-arrow');l.dataset.from=tr.from;l.dataset.to=tr.to;
+    // 透明宽点击区
+    const hc=document.createElementNS('http://www.w3.org/2000/svg','path');
+    hc.setAttribute('d',l.getAttribute('d'));hc.setAttribute('stroke','transparent');hc.setAttribute('stroke-width','14');hc.setAttribute('fill','none');hc.style.cursor='pointer';
+    hc.addEventListener('click',function(e){
+      e.stopPropagation();
+      const k=this.dataset.from+'-'+this.dataset.to;
+      const cond=TRANS_COND[k];
+      if(cond){const st=STATES[this.dataset.from];descLabel.textContent=st.label+' → '+STATES[this.dataset.to].label;descText.textContent='：'+cond;}
+      arrowsGroup.querySelectorAll('.tx-arrow').forEach(a=>a.classList.remove('highlight'));
+      l.classList.add('highlight');
+      nodesGroup.querySelectorAll('.state-node').forEach(n=>n.classList.remove('active'));
+    });
+    hc.dataset.from=tr.from;hc.dataset.to=tr.to;
+    arrowsGroup.appendChild(hc);
+    arrowsGroup.appendChild(l);
+  }
+  for(const id of MAIN_STATE_IDS){
+    const st=STATES[id];const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','state-node');g.dataset.id=id;
+    const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');el.setAttribute('cx',st.x);el.setAttribute('cy',st.y);el.setAttribute('rx',getRx(id));el.setAttribute('ry',RY);
+    el.setAttribute('fill',st.color);el.setAttribute('stroke','rgba(0,0,0,.1)');el.setAttribute('stroke-width','2');el.setAttribute('filter','url(#shSub)');
+    g.appendChild(el);const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lb.setAttribute('x',st.x);lb.setAttribute('y',st.y);lb.setAttribute('class','state-label '+st.textColor);lb.textContent=st.label;
+    const mainFs={'configuration':'21px','loopback':'21px','recovery':'21px'};if(mainFs[id])lb.style.fontSize=mainFs[id];
+    g.appendChild(lb);g.addEventListener('click',()=>selectState(id,null));nodesGroup.appendChild(g);
+  }
+  selectState('detect',null);
+  // 主状态图点击空白重置高亮
+  svg.addEventListener('click',function(e){
+    if(e.target===this||e.target.tagName==='svg'||e.target.tagName==='rect'){nodesGroup.querySelectorAll('.state-node').forEach(el=>el.classList.remove('active','playing'));arrowsGroup.querySelectorAll('.tx-arrow').forEach(el=>el.classList.remove('highlight','dim'));descLabel.textContent='';descText.textContent='点击状态查看释义，点击连线查看跳转条件';}
+  });
+}
+// ====================================================================
+// 5. 选择 + 子状态图
+// ====================================================================
+function selectState(id,hs){if(!STATES[id])return;selectedId=id;updateHL(id);renderSub(id,hs);}
+function updateHL(id){
+  nodesGroup.querySelectorAll('.state-node').forEach(el=>{el.classList.remove('active','playing');if(el.dataset.id===id)el.classList.add('active');});
+  arrowsGroup.querySelectorAll('.tx-arrow').forEach(el=>{el.classList.remove('highlight','dim');const f=el.dataset.from,t=el.dataset.to;if(f===id||t===id)el.classList.add('highlight');else el.classList.add('dim');});
+  const st=STATES[id];descLabel.textContent=st.label;descText.textContent='：'+st.desc;
+}
+function renderSub(id,hs){
+  const st=STATES[id];if(!st)return;subTitleExtra.textContent=st.label+' · '+st.subStates.length+'个子状态';
+  const intIds=new Set(st.subStates.map(s=>s.id));const allEdges=DOT_EDGES.filter(e=>e.from!=='Reset'&&(intIds.has(e.from)||intIds.has(e.to)));
+  subGraph.innerHTML=buildSubSVG(st,hs);
+  const arrows=subGraph.querySelectorAll('.sub-arrow');let ai=0;
+  for(const e of allEdges){if(e.from===e.to){if(ai<arrows.length){arrows[ai].dataset.sfrom=e.from;arrows[ai].dataset.sto=e.to;ai++;}continue;}const rev=allEdges.some(oe=>oe!==e&&oe.from===e.to&&oe.to===e.from);if(rev&&e.from>e.to)continue;if(ai<arrows.length){arrows[ai].dataset.sfrom=e.from;arrows[ai].dataset.sto=e.to;ai++;}if(rev){if(ai<arrows.length){arrows[ai].dataset.sfrom=e.to;arrows[ai].dataset.sto=e.from;ai++;}}}
+  // 子状态跳转线点击显示条件
+  subGraph.querySelectorAll('.sub-arrow').forEach(el=>{
+    el.addEventListener('click',function(e){
+      e.stopPropagation();
+      const k=this.dataset.sfrom+'-'+this.dataset.sto;
+      const cond=SUB_TRANS_COND[k];
+      if(cond){const fromLabel=this.dataset.sfrom,toLabel=this.dataset.sto;descLabel.textContent=fromLabel+' → '+toLabel;descText.textContent='：'+cond;}
+      subGraph.querySelectorAll('.sub-arrow').forEach(a=>a.classList.remove('sub-arrow-hl','sub-arrow-dim'));
+      this.classList.add('sub-arrow-hl');
+      subGraph.querySelectorAll('[data-subname]').forEach(n=>n.classList.remove('sub-hl'));
+    });
+  });
+  subGraph.querySelectorAll('[data-subname]').forEach(el=>{el.addEventListener('click',function(e){if(this.dataset.mid)return;const n=this.dataset.subname;highlightSubNode(n);e.stopPropagation();});});
+  subGraph.querySelectorAll('.sub-node-external').forEach(el=>{el.addEventListener('click',function(e){const m=this.dataset.mid;if(m&&STATES[m])selectState(m,null);e.stopPropagation();});});
+  subGraph.addEventListener('click',function(e){if(e.target===this||e.target.tagName==='svg'||e.target.tagName==='rect')clearSubHL();});
+  if(!hs)clearSubHL();
+  // 子状态节点拖拽（使用全局dragSub变量）
+  const svgEl2=subGraph.querySelector('svg');
+  if(svgEl2)svgW=parseInt(svgEl2.getAttribute('viewBox').split(' ')[2])||640;
+  subGraph.querySelectorAll('[data-subname]').forEach(el=>{
+    el.addEventListener('mousedown',function(ev){
+      const nm=this.dataset.subname;const p=SUB_POS[id];
+      if(!p||!p[nm])return;
+      dragSub={pos:p[nm],mid:id,nm:nm,gEl:this};
+      dragMoved=false;
+      const r=subGraph.getBoundingClientRect();
+      dOffX=(ev.clientX-r.left)*svgW/r.width-p[nm].x;
+      dOffY=(ev.clientY-r.top)*svgW/r.width-p[nm].y;
+      ev.preventDefault();
+    });
+  });
+  if(!window._subDrag){
+    window._subDrag=true;
+    document.addEventListener('mousemove',function(ev){
+      if(!dragSub||!dragSub.gEl)return;
+      dragMoved=true;
+      const r=subGraph.getBoundingClientRect();if(!r.width)return;
+      const sc=svgW/r.width;
+      dragSub.pos.x=Math.max(10,Math.min(630,(ev.clientX-r.left)*sc-dOffX));
+      dragSub.pos.y=Math.max(10,Math.min(510,(ev.clientY-r.top)*sc-dOffY));
+      const g=dragSub.gEl;
+      g.querySelectorAll('ellipse').forEach(el=>{el.setAttribute('cx',dragSub.pos.x);el.setAttribute('cy',dragSub.pos.y);});
+      g.querySelectorAll('text').forEach(t=>{t.setAttribute('x',dragSub.pos.x);t.setAttribute('y',dragSub.pos.y);});
+    });
+    document.addEventListener('mouseup',function(){
+      if(!dragSub)return;
+      if(dragMoved){const st=STATES[dragSub.mid];if(st&&dragSub.mid){subGraph.innerHTML=buildSubSVG(st,null);renderSub(dragSub.mid,null);}}
+      dragSub=null;
+    });
+  }
+}
+function clearSubHL(){subGraph.querySelectorAll('[data-subname]').forEach(el=>el.classList.remove('sub-hl','playing'));subGraph.querySelectorAll('.sub-arrow-hl').forEach(el=>el.classList.remove('sub-arrow-hl'));subGraph.querySelectorAll('.sub-arrow-dim').forEach(el=>el.classList.remove('sub-arrow-dim'));}
+function highlightSubNode(name){subGraph.querySelectorAll('[data-subname]').forEach(el=>el.classList.remove('sub-hl'));subGraph.querySelectorAll('.sub-arrow-hl').forEach(el=>el.classList.remove('sub-arrow-hl'));subGraph.querySelectorAll('.sub-arrow-dim').forEach(el=>el.classList.remove('sub-arrow-dim'));subGraph.querySelectorAll('[data-subname="'+name+'"]').forEach(el=>el.classList.add('sub-hl'));const arrows=subGraph.querySelectorAll('.sub-arrow');arrows.forEach(el=>{if(el.dataset.sfrom===name)el.classList.add('sub-arrow-hl');else el.classList.add('sub-arrow-dim');});const desc=SUB_DESC[name]||'暂无释义';descLabel.textContent=name;descText.textContent='：'+desc;}
+
+// ====================================================================
+// 6. 子状态图SVG生成
+// ====================================================================
+function buildSubSVG(st,hs){
+  const mid=st.id;
+  const intIds=new Set(st.subStates.map(s=>s.id));const allEdges=DOT_EDGES.filter(e=>e.from!=='Reset'&&(intIds.has(e.from)||intIds.has(e.to)));
+  const extN=new Map();
+  for(const e of allEdges){if(e.from!=='Reset'&&!intIds.has(e.from)){const m=nodeToMain[e.from];if(m&&!extN.has(m))extN.set(m,{name:m,mainId:m,color:'#c0c0c0',origColor:COLOR_MAP[m],label:MAIN_LABEL_MAP[m]});}if(!intIds.has(e.to)){const m=nodeToMain[e.to];if(m&&!extN.has(m))extN.set(m,{name:m,mainId:m,color:'#c0c0c0',origColor:COLOR_MAP[m],label:MAIN_LABEL_MAP[m]});}}
+  const extA=[...extN.values()];const intCnt=st.subStates.length;
+  const totalH=520,w=640;
+  // 使用预定义坐标或自动布局
+  const pre=SUB_POS[mid]||{};
+  const posMap={};
+  // 内部节点
+  if(Object.keys(pre).length){
+    for(const[nm,p]of Object.entries(pre)){
+      if(intIds.has(nm))posMap[nm]={x:p.x,y:p.y,type:'int',color:st.color};
+      else posMap[nm]={x:p.x,y:p.y,type:'ext',color:'#c0c0c0',mid:nm,label:MAIN_LABEL_MAP[nm]||nm};
+    }
+  }else{
+    // 自动布局（fallback）
+    const gap=68,topM=36,botM=40;
+    const intYs=[];const sY=(totalH-(intCnt-1)*gap)/2;for(let i=0;i<intCnt;i++)intYs.push(sY+i*gap);
+    const cx=280,lx=65,rx=495;const extL=[],extR=[];
+    for(let i=0;i<extA.length;i++){if(i%2===0)extL.push(extA[i]);else extR.push(extA[i]);}
+    const extTop=topM+20,extBot=totalH-botM-20;
+    function distNodes(arr,t,b){if(!arr.length)return[];if(arr.length===1)return[{node:arr[0],y:(t+b)/2}];const stp=(b-t)/(arr.length-1);return arr.map((n,i)=>({node:n,y:t+i*stp}));}
+    const lp=distNodes(extL,extTop,extBot),rp=distNodes(extR,extTop,extBot);
+    for(let i=0;i<intCnt;i++)posMap[st.subStates[i].id]={x:cx,y:intYs[i],type:'int',color:st.color};
+    for(const p of lp)posMap[p.node.name]={x:lx,y:p.y,type:'ext',color:p.node.color,mid:p.node.mainId,label:p.node.label};
+    for(const p of rp)posMap[p.node.name]={x:rx,y:p.y,type:'ext',color:p.node.color,mid:p.node.mainId,label:p.node.label};
+  }
+  // 为每个节点计算实际椭圆尺寸（Configuration/Recovery 内部节点加宽1.5倍）
+  const wideStates=['configuration','recovery'];
+  const baseRx=Math.min(54,54),baseRy=Math.min(26,26);
+  for(const[nm,pos]of Object.entries(posMap)){
+    const isInt=pos.type==='int';
+    const wide=isInt&&wideStates.includes(mid);
+    pos.rx2=isInt?(wide?Math.round(baseRx*1.5):baseRx):Math.round(baseRx*0.85);
+    pos.ry2=isInt?baseRy:Math.round(baseRy*0.85);
+  }
+  // 子状态图内容居中
+  let mnX=Infinity,mxX=-Infinity,mnY=Infinity,mxY=-Infinity;
+  for(const[nm,pos]of Object.entries(posMap)){
+    mnX=Math.min(mnX,pos.x-pos.rx2);mxX=Math.max(mxX,pos.x+pos.rx2);
+    mnY=Math.min(mnY,pos.y-pos.ry2);mxY=Math.max(mxY,pos.y+pos.ry2);
+  }
+  const ctrX=(mnX+mxX)/2,ctrY=(mnY+mxY)/2;
+  const vcX=w/2,vcY=(totalH+8)/2;
+  const subDx=Math.round(vcX-ctrX),subDy=Math.round(vcY-ctrY);
+  let svgC='<svg viewBox="0 0 '+w+' '+(totalH+8)+'" style="width:100%;height:auto;overflow:visible;">';
+  svgC+='<rect x="0" y="0" width="'+w+'" height="'+(totalH+8)+'" fill="#fafcfe" stroke="#dce4ee" stroke-width="1" rx="4"/>';
+  svgC+='<defs><marker id="sA" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L3,3.5 Z" fill="#4a7aaa"/></marker><marker id="sAC" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L3,3.5 Z" fill="#4a7aaa"/></marker><marker id="sAS" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L3,3.5 Z" fill="#4a7aaa"/></marker></defs>';
+  svgC+='<g transform="translate('+subDx+','+subDy+')">';
+  const eset=new Set();for(const e of allEdges)eset.add(e.from+'→'+e.to);const mutual=new Set();
+  for(const e of allEdges){if(e.from===e.to)continue;if(eset.has(e.to+'→'+e.from)){const k=e.from<e.to?e.from+'|'+e.to:e.to+'|'+e.from;mutual.add(k);}}
+  function ePt(x,y,tx,ty,rx,ry){const dx=tx-x,dy=ty-y,d=Math.sqrt(dx*dx+dy*dy);if(d<1)return{x,y};const ux=dx/d,uy=dy/d,a=Math.atan2(dy,dx),ca=Math.cos(a),sa=Math.sin(a);return{x:x+ux*Math.min((1/Math.sqrt((ca*ca)/(rx*rx)+(sa*sa)/(ry*ry)))*1.01,Math.min(rx,ry)*1.01),y:y+uy*Math.min((1/Math.sqrt((ca*ca)/(rx*rx)+(sa*sa)/(ry*ry)))*1.01,Math.min(rx,ry)*1.01)};}
+  for(const e of allEdges){
+    const fp=posMap[e.from]||posMap[nodeToMain[e.from]],tp=posMap[e.to]||posMap[nodeToMain[e.to]];if(!fp||!tp)continue;
+    const isSelf=(e.from===e.to),mk=mutual.has((e.from<e.to?e.from+'|'+e.to:e.to+'|'+e.from)),isMut=mk&&!isSelf;
+    if(isMut&&e.from>e.to)continue;const sc='#4a7aaa';
+    if(isSelf){const lr=14;svgC+='<path d="M '+fp.x+' '+(fp.y-fp.ry2-1)+' C '+(fp.x-lr*2)+' '+(fp.y-fp.ry2-lr-4)+', '+(fp.x+lr)+' '+(fp.y-fp.ry2-lr-4)+', '+(fp.x+fp.rx2*0.4)+' '+(fp.y-fp.ry2-1)+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAS)" fill="none"/>';}
+    else if(isMut){
+      const vert=Math.abs(fp.x-tp.x)<30,hor=Math.abs(fp.y-tp.y)<30,dF=e.from,dT=e.to;
+      if(vert){const off=32,my=(fp.y+tp.y)/2;const p1=ePt(fp.x,fp.y,fp.x+off*2,my,fp.rx2,fp.ry2),p2=ePt(tp.x,tp.y,tp.x+off*2,my,tp.rx2,tp.ry2);svgC+='<path d="M '+p1.x+' '+p1.y+' Q '+((fp.x+tp.x)/2+off)+' '+my+' '+p2.x+' '+p2.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';const p3=ePt(tp.x,tp.y,tp.x-off*2,my,tp.rx2,tp.ry2),p4=ePt(fp.x,fp.y,fp.x-off*2,my,fp.rx2,fp.ry2);svgC+='<path d="M '+p3.x+' '+p3.y+' Q '+((fp.x+tp.x)/2-off)+' '+my+' '+p4.x+' '+p4.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';}
+      else if(hor){const off=28,mx=(fp.x+tp.x)/2;const p1=ePt(fp.x,fp.y,mx,fp.y-off*2,fp.rx2,fp.ry2),p2=ePt(tp.x,tp.y,mx,tp.y-off*2,tp.rx2,tp.ry2);svgC+='<path d="M '+p1.x+' '+p1.y+' Q '+mx+' '+((fp.y+tp.y)/2-off)+' '+p2.x+' '+p2.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';const p3=ePt(tp.x,tp.y,mx,tp.y+off*2,tp.rx2,tp.ry2),p4=ePt(fp.x,fp.y,mx,fp.y+off*2,fp.rx2,fp.ry2);svgC+='<path d="M '+p3.x+' '+p3.y+' Q '+mx+' '+((fp.y+tp.y)/2+off)+' '+p4.x+' '+p4.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';}
+      else{const mx=(fp.x+tp.x)/2,my=(fp.y+tp.y)/2,off=22;const p1=ePt(fp.x,fp.y,mx-off,my-off,fp.rx2,fp.ry2),p2=ePt(tp.x,tp.y,mx-off,my-off,tp.rx2,tp.ry2);svgC+='<path d="M '+p1.x+' '+p1.y+' Q '+(mx-off)+' '+(my-off)+' '+p2.x+' '+p2.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';const p3=ePt(tp.x,tp.y,mx+off,my+off,tp.rx2,tp.ry2),p4=ePt(fp.x,fp.y,mx+off,my+off,fp.rx2,fp.ry2);svgC+='<path d="M '+p3.x+' '+p3.y+' Q '+(mx+off)+' '+(my+off)+' '+p4.x+' '+p4.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';}
+    }else{
+      const p1=ePt(fp.x,fp.y,tp.x,tp.y,fp.rx2,fp.ry2),p2=ePt(tp.x,tp.y,fp.x,fp.y,tp.rx2,tp.ry2);const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;let blocked=false;
+      for(const[n,pos]of Object.entries(posMap)){if(n===e.from||n===e.to)continue;const d=Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);if(d<Math.max(pos.rx2,30)+8){blocked=true;break;}}
+      if(blocked){const cx2=(fp.x+tp.x)/2,cy2=(fp.y+tp.y)/2-22;svgC+='<path d="M '+p1.x+' '+p1.y+' Q '+cx2+' '+cy2+' '+p2.x+' '+p2.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sAC)" fill="none"/>';}
+      else svgC+='<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+p2.x+'" y2="'+p2.y+'" class="sub-arrow" stroke="'+sc+'" marker-end="url(#sA)"/>';
+    }
+  }
+  for(const[nm,pos]of Object.entries(posMap)){
+    const isHL=(hs===nm),isInt=(pos.type==='int');const rx2=pos.rx2,ry2=pos.ry2;
+    const cls=isInt?'sub-node-internal':'sub-node-external';const ext=isInt?'':'data-mid="'+pos.mid+'"';
+    const sc2=isHL?'#1a5a8a':'rgba(0,0,0,.08)';const sw=isHL?'2.5':'1.2';
+    svgC+='<g class="'+cls+'" data-subname="'+nm+'" '+ext+'>';
+    svgC+='<ellipse cx="'+pos.x+'" cy="'+pos.y+'" rx="'+rx2+'" ry="'+ry2+'" fill="'+pos.color+'" stroke="'+sc2+'" stroke-width="'+sw+'" filter="url(#shSub)"/>';
+    const tc2=isInt?(isLight(pos.color)?'#1a2332':'#fff'):'#1a2332';const parts=nm.split('.');const mp=parts[0],sp=parts.slice(1).join('.');
+    const mpGray=isInt?(isLight(pos.color)?'rgba(26,35,50,0.4)':'rgba(255,255,255,0.5)'):'rgba(26,35,50,0.4)';
+    const subFs=(mid==='configuration'||mid==='loopback'||mid==='recovery')?13:15;
+    const extFs=(mid==='configuration'||mid==='loopback'||mid==='recovery')?12:14;
+    if(isInt){
+      // 内部节点：主.子 同一行居中
+      if(sp)svgC+='<text x="'+pos.x+'" y="'+pos.y+'" font-size="'+subFs+'" font-weight="700" fill="'+tc2+'" text-anchor="middle" dominant-baseline="central" class="sub-label">'+nm+'</text>';
+      else svgC+='<text x="'+pos.x+'" y="'+pos.y+'" font-size="'+subFs+'" font-weight="700" fill="'+tc2+'" text-anchor="middle" dominant-baseline="central">'+mp+'</text>';
+    }else{
+      // 外部节点
+      svgC+='<text x="'+pos.x+'" y="'+pos.y+'" font-size="'+extFs+'" font-weight="700" fill="#1a2332" text-anchor="middle" dominant-baseline="central">'+pos.label+'</text>';
+    }
+    svgC+='</g>';
+  }svgC+='</g></svg>';return svgC;
+}
+
+// ====================================================================
+// 7. 播放控制 + 轨迹
+// ====================================================================
+function getSeq(){return buildSeq(curMode,eqModeSelect.value);}
+function startPlay(){
+  if(isPlaying&&!isPaused){isPaused=true;if(playTimer){clearTimeout(playTimer);playTimer=null;}playBtn.textContent='⟳ 重置';return;}
+  if(isPaused){stopPlay();playIdx=0;playTrace.innerHTML='<span style="color:#8a9aaa;font-size:13px;font-weight:600;">就绪</span>';playBtn.textContent='▶ 播放';return;}
+  playIdx=0;curSeq=getSeq();if(!curSeq.length)return;
+  isPlaying=true;isPaused=false;playBtn.textContent='⏸ 暂停';playTrace.innerHTML='';clearHLs();doStep();
+}
+function doStep(){if(!isPlaying||isPaused)return;if(playIdx>=curSeq.length){stopPlay();return;}const st2=curSeq[playIdx],mid=st2.main,sid=st2.sub||null;if(STATES[mid]){selectState(mid,sid);highlightNode(mid);highlightSubPlaying(mid,sid);}updateTrace();playIdx++;playTimer=setTimeout(doStep,700);}
+function updateTrace(){
+  let html='';const total=curSeq.length;let cnt=0;
+  for(let i=0;i<total;i++){const s=curSeq[i],mid=s.main,st=STATES[mid];if(!st)continue;let label=st.label;if(s.sub)label+='.'+s.sub.split('.').slice(1).join('.');const gen=s.gen||'';const gc={'Gen1':'#8bc34a','Gen2':'#ffc107','Gen3':'#ce93d8','Gen4':'#f8bbd0','Gen5':'#4caf50'}[gen]||'';const genTag=gen?'<span class="pt-gen" style="background:'+gc+'">'+gen+'</span>':'';if(i<playIdx){html+='<span class="pt-item done" style="border-left:3px solid '+st.color+'">'+label+genTag+'</span>';cnt++;}else if(i===playIdx){html+='<span class="pt-item current" id="ptCurr" style="border-left:3px solid '+st.color+'">'+label+genTag+'</span>';cnt++;break;}else break;}
+  if(!cnt)html='<span style="color:#8a9aaa;font-size:13px;font-weight:600;">就绪</span>';
+  playTrace.innerHTML=html;
+  // 溢出时上滚
+  const curr=document.getElementById('ptCurr');
+  if(curr){const ct=curr.offsetTop,ch=curr.offsetHeight,contH=playTrace.clientHeight;if(ct+ch>contH-2||ct<playTrace.scrollTop)playTrace.scrollTop=Math.max(0,ct-contH*0.3);}
+}
+function highlightNode(id){nodesGroup.querySelectorAll('.state-node').forEach(el=>el.classList.remove('playing'));const el=nodesGroup.querySelector('.state-node[data-id="'+id+'"]');if(el)el.classList.add('playing');}
+function highlightSubPlaying(mid,sid){
+  subGraph.querySelectorAll('.sub-node-internal').forEach(el=>el.classList.remove('playing'));
+  if(!sid)return;
+  const el=subGraph.querySelector('[data-subname="'+sid+'"]');
+  if(el)el.classList.add('playing');
+}
+function clearHLs(){nodesGroup.querySelectorAll('.state-node').forEach(el=>el.classList.remove('playing'));subGraph.querySelectorAll('.sub-node-internal').forEach(el=>el.classList.remove('playing'));}
+function stopPlay(){isPlaying=false;isPaused=false;if(playTimer){clearTimeout(playTimer);playTimer=null;}playBtn.textContent='▶ 播放';clearHLs();selectState(selectedId||'detect',null);}
+function clearTrace(){playTrace.innerHTML='<span style="color:#8a9aaa;font-size:13px;font-weight:600;">就绪</span>';stopPlay();}
+function exportTrace(){
+  let seq='';
+  const items=playTrace.querySelectorAll('.pt-item');
+  if(!items.length){seq='（空）';}else{
+    items.forEach(el=>{
+      const label=el.childNodes[0]?.textContent?.trim()||el.textContent.trim().replace(/Gen[1-5]/g,'').trim();
+      const genSpan=el.querySelector('.pt-gen');
+      const gen=genSpan?genSpan.textContent.trim():'';
+      const s=gen?label+' ('+gen+')':label;
+      if(seq)seq+=' -> '+s;else seq=s;
+    });
+  }
+  const mode=document.getElementById('modeSelectSvg').value;
+  const eq=document.getElementById('eqModeSelect').value;
+  const now=new Date();
+  const text='LTSSM Trace ['+mode+' '+eq+'] '+now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+' '+now.getHours()+':'+now.getMinutes()+'\n'+seq;
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=traceExportBtn.textContent;traceExportBtn.textContent='✅ 已复制';
+    setTimeout(()=>{traceExportBtn.textContent=orig;},1500);
+  }).catch(()=>{alert('复制失败，请手动复制');});
+}
+
+// ====================================================================
+// 8. 事件绑定
+// ====================================================================
+playBtn.addEventListener('click',startPlay);
+traceClearBtn.addEventListener('click',clearTrace);
+traceExportBtn.addEventListener('click',exportTrace);
+modeSelect.addEventListener('change',function(){curMode=this.value;if(!isPlaying)selectState(selectedId||'l0',null);});
+eqModeSelect.addEventListener('change',function(){if(!isPlaying)selectState(selectedId||'l0',null);});
+buildGraph();curMode='Gen1';
+</script>
+</body>
+</html>
