@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML 编辑器 · 预览/编辑/保存</title>
+
+    <style>
+        /* ===== 全局重置，彻底消除间隙 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f6f8fa;
+            color: #1a2332;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 16px 6px 16px;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 6px 16px 4px 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ===== 头部（极小边距） ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 0 2px 0;
+            border-bottom: 2px solid #f0f2f5;
+            flex-shrink: 0;
+            margin-bottom: 0;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a2332;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header h1 span {
+            font-size: 28px;
+        }
+
+        .header .mode-indicator {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a56db;
+            background: #e8eefb;
+            padding: 2px 14px;
+            border-radius: 16px;
+            margin-left: 6px;
+        }
+
+        .file-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== 按钮 ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+            background: #f6f8fa;
+            color: #24292f;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #eaeef2;
+            border-color: #b0b8c4;
+        }
+
+        .btn-primary {
+            background: #1a56db;
+            border-color: #1a56db;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1545b8;
+        }
+
+        .btn-success {
+            background: #2e7d32;
+            border-color: #2e7d32;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #1b5e20;
+        }
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: #d0d7de;
+        }
+        .btn-outline:hover {
+            background: #f0f2f5;
+        }
+
+        .btn-edit {
+            background: #f0f5ff;
+            border-color: #1a56db;
+            color: #1a56db;
+        }
+        .btn-edit:hover {
+            background: #dbeafe;
+        }
+        .btn-edit.active {
+            background: #1a56db;
+            color: #fff;
+            border-color: #1a56db;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+
+        /* ===== 文件状态 ===== */
+        .file-status {
+            font-size: 13px;
+            color: #57606a;
+            background: #f6f8fa;
+            padding: 4px 16px;
+            border-radius: 20px;
+            border: 1px solid #e1e4e8;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .file-status .highlight {
+            color: #1a56db;
+            font-weight: 600;
+        }
+
+        /* ===== 历史下拉 ===== */
+        .history-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .history-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            background: #fff;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 380px;
+            max-width: 480px;
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 200;
+            padding: 6px 0;
+        }
+
+        .history-dropdown.show {
+            display: block;
+        }
+
+        .history-dropdown .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+            transition: background 0.1s;
+            font-size: 13px;
+        }
+
+        .history-dropdown .history-item:hover {
+            background: #f0f5ff;
+        }
+
+        .history-dropdown .history-item .info {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-dropdown .history-item .info .name {
+            font-weight: 600;
+            color: #1a2332;
+        }
+        .history-dropdown .history-item .info .time {
+            font-size: 11px;
+            color: #8899b4;
+            margin-left: 10px;
+        }
+        .history-dropdown .history-item .info .path {
+            font-size: 11px;
+            color: #6b7c93;
+            margin-left: 8px;
+        }
+        .history-dropdown .history-item .info .status-icon {
+            margin-left: 6px;
+            font-size: 13px;
+        }
+
+        .history-dropdown .history-item .del-btn {
+            background: transparent;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+
+        .history-dropdown .history-item .del-btn:hover {
+            background: #fee2e2;
+        }
+
+        .history-dropdown .history-footer {
+            padding: 8px 14px;
+            border-top: 1px solid #f0f2f5;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .history-dropdown .history-footer .left-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .history-dropdown .empty-history {
+            padding: 20px;
+            text-align: center;
+            color: #8899b4;
+            font-size: 13px;
+        }
+
+        /* ===== 隐藏的文件输入 ===== */
+        #fileInput {
+            display: none;
+        }
+
+        /* ===== 加载动画 ===== */
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 4px;
+            color: #6b7c93;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .loading.show {
+            display: flex;
+        }
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e1e4e8;
+            border-top-color: #1a56db;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== 错误信息 ===== */
+        .error-msg {
+            display: none;
+            padding: 6px 14px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            color: #b91c1c;
+            font-size: 13px;
+            flex-shrink: 0;
+            margin: 0;
+        }
+        .error-msg.show {
+            display: block;
+        }
+
+        /* ===== 主体区域 ===== */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        /* ===== 单栏预览 ===== */
+        .preview-single {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .preview-single.hidden {
+            display: none !important;
+        }
+
+        /* ===== 空状态（紧凑） ===== */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 20px;
+            color: #8899b4;
+            text-align: center;
+            gap: 8px;
+            border-radius: 8px;
+            background: #fafbfc;
+            border: 2px dashed #e1e4e8;
+        }
+        .empty-state .icon {
+            font-size: 32px;
+        }
+        .empty-state .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .empty-state .desc {
+            font-size: 13px;
+            max-width: 400px;
+        }
+        .empty-state .hint {
+            font-size: 11px;
+            color: #b0b8c8;
+            background: #f0f2f5;
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+
+        .html-preview {
+            flex: 1;
+            display: none;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            background: #fff;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .html-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* ===== 左右分栏 ===== */
+        .split-container {
+            display: none;
+            flex: 1;
+            gap: 10px;
+            min-height: 0;
+        }
+        .split-container.show {
+            display: flex;
+        }
+
+        .split-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .split-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 12px;
+            background: #f6f8fa;
+            border-bottom: 1px solid #d0d7de;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            flex-shrink: 0;
+        }
+        .split-panel .panel-header .actions {
+            display: flex;
+            gap: 4px;
+        }
+        .split-panel .panel-header .actions .btn-sm {
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 4px;
+        }
+
+        .split-panel .preview-scroll {
+            flex: 1;
+            overflow: auto;
+            background: #fff;
+            padding: 0;
+            min-height: 0;
+        }
+        .split-panel .preview-scroll iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .split-panel .editor-scroll {
+            flex: 1;
+            overflow: auto;
+            min-height: 0;
+            padding: 0;
+        }
+        #splitEditor {
+            width: 100%;
+            height: 100%;
+            padding: 10px 14px;
+            font-family: 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: none;
+            outline: none;
+            resize: none;
+            background: #ffffff;
+            color: #1a2332;
+            tab-size: 4;
+        }
+        #splitEditor:focus {
+            box-shadow: inset 0 0 0 2px #1a56db;
+        }
+
+        /* ===== 底部统计 ===== */
+        .footer {
+            margin-top: 2px;
+            padding-top: 2px;
+            border-top: 1px solid #f0f2f5;
+            font-size: 12px;
+            color: #8899b4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .footer .stats {
+            display: flex;
+            gap: 12px;
+        }
+        .footer .stats span {
+            background: #f6f8fa;
+            padding: 0 10px;
+            border-radius: 12px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 700px) {
+            body {
+                padding: 4px 6px;
+            }
+            .container {
+                padding: 4px 8px 2px 8px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .file-actions {
+                flex-wrap: wrap;
+            }
+            .file-actions .btn {
+                flex: 1;
+                justify-content: center;
+                min-width: 50px;
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .file-status {
+                max-width: 100%;
+                font-size: 12px;
+            }
+            .split-container {
+                flex-direction: column;
+                gap: 6px;
+            }
+            .split-panel {
+                min-height: 0;
+            }
+            #splitEditor {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+            .history-dropdown {
+                right: 0;
+                left: auto;
+                min-width: 240px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+            .header h1 {
+                font-size: 16px;
+            }
+            .file-status {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+            .history-dropdown {
+                min-width: 180px;
+                max-width: 90vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== 头部 ===== -->
+    <div class="header">
+        <h1>
+            <span>🌐</span> HTML 编辑器
+            <span class="mode-indicator" id="modeIndicator">预览</span>
+        </h1>
+        <div class="file-actions">
+            <span class="file-status" id="fileStatus">📂 未选择文件</span>
+            <div class="history-wrapper">
+                <button class="btn btn-outline" id="historyToggleBtn">📜 历史</button>
+                <div class="history-dropdown" id="historyDropdown">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <button class="btn btn-edit" id="editToggleBtn">✏️ 编辑</button>
+            <button class="btn btn-primary" id="loadBtn">📂 选择文件</button>
+            <button class="btn btn-outline" id="clearBtn" disabled>🗑 清空</button>
+        </div>
+    </div>
+
+    <!-- ===== 隐藏的文件输入 ===== -->
+    <input type="file" id="fileInput" accept=".html,.htm" />
+
+    <!-- ===== 错误提示 ===== -->
+    <div class="error-msg" id="errorMsg">
+        ⚠️ <span id="errorText">操作失败，请重试。</span>
+    </div>
+
+    <!-- ===== 加载提示 ===== -->
+    <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <span>正在加载文件…</span>
+    </div>
+
+    <!-- ===== 主体区域 ===== -->
+    <div class="main-area">
+
+        <!-- 单栏预览 -->
+        <div id="singlePreview" class="preview-single">
+            <div class="empty-state" id="emptyState">
+                <div class="icon">📂</div>
+                <div class="title">还没有加载 HTML 文件</div>
+                <div class="desc">点击「选择文件」按钮，从本地选取一个 <code>.html</code> 文件。</div>
+                <div class="hint">💡 支持 .html .htm 格式</div>
+            </div>
+            <div class="html-preview" id="singlePreviewContainer" style="display: none;">
+                <iframe id="singlePreviewIframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+            </div>
+        </div>
+
+        <!-- 左右分栏 -->
+        <div class="split-container" id="splitContainer">
+            <!-- 左侧预览 -->
+            <div class="split-panel">
+                <div class="panel-header">
+                    <span>📖 预览</span>
+                </div>
+                <div class="preview-scroll" id="splitPreviewScroll">
+                    <iframe id="splitPreviewIframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                </div>
+            </div>
+            <!-- 右侧编辑器 -->
+            <div class="split-panel">
+                <div class="panel-header">
+                    <span>✏️ 源码编辑</span>
+                    <div class="actions">
+                        <button class="btn btn-success btn-sm" id="saveBtn">💾 保存</button>
+                        <button class="btn btn-outline btn-sm" id="cancelEditBtn">✖ 取消</button>
+                    </div>
+                </div>
+                <div class="editor-scroll">
+                    <textarea id="splitEditor" spellcheck="false"></textarea>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== 底部统计 ===== -->
+    <div class="footer">
+        <span>🔗 沙箱预览</span>
+        <div class="stats" id="stats">
+            <span id="statChars">字符: 0</span>
+            <span id="statLines">行数: 0</span>
+            <span id="statSize">大小: 0 B</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ===== DOM 引用 =====
+        const fileInput = document.getElementById('fileInput');
+        const loadBtn = document.getElementById('loadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const editToggleBtn = document.getElementById('editToggleBtn');
+        const singlePreview = document.getElementById('singlePreview');
+        const singlePreviewContainer = document.getElementById('singlePreviewContainer');
+        const singlePreviewIframe = document.getElementById('singlePreviewIframe');
+        const splitContainer = document.getElementById('splitContainer');
+        const splitPreviewIframe = document.getElementById('splitPreviewIframe');
+        const splitEditor = document.getElementById('splitEditor');
+        const emptyState = document.getElementById('emptyState');
+        const fileStatus = document.getElementById('fileStatus');
+        const errorMsg = document.getElementById('errorMsg');
+        const errorText = document.getElementById('errorText');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const statChars = document.getElementById('statChars');
+        const statLines = document.getElementById('statLines');
+        const statSize = document.getElementById('statSize');
+        const modeIndicator = document.getElementById('modeIndicator');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const historyToggleBtn = document.getElementById('historyToggleBtn');
+        const historyDropdown = document.getElementById('historyDropdown');
+
+        // ===== 状态 =====
+        let currentFileName = '';
+        let currentContent = '';
+        let isEditing = false;
+        let fileHandle = null;
+        let history = [];
+        let db = null;
+
+        // ===== IndexedDB 初始化 =====
+        const DB_NAME = 'HTML_Editor_Handles';
+        const STORE_NAME = 'handles';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                request.onerror = (e) => {
+                    reject(e.target.error);
+                };
+            });
+        }
+
+        function storeHandle(id, handle) {
+            if (!db) return Promise.reject('DB not open');
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.put({ id, handle });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getHandle(id) {
+            if (!db) return Promise.reject('DB not open');
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.get(id);
+                request.onsuccess = () => {
+                    if (request.result) resolve(request.result.handle);
+                    else resolve(null);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function deleteHandle(id) {
+            if (!db) return Promise.reject('DB not open');
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ===== 历史记录管理 =====
+        const HISTORY_KEY = 'html_editor_history';
+
+        function loadHistory() {
+            try {
+                const data = localStorage.getItem(HISTORY_KEY);
+                if (data) history = JSON.parse(data) || [];
+                if (!Array.isArray(history)) history = [];
+            } catch (e) { history = []; }
+            renderHistory();
+        }
+
+        function saveHistoryLocal() {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            } catch (e) { /* ignore */ }
+            renderHistory();
+        }
+
+        async function getDirectoryName(handle) {
+            try {
+                if (handle && handle.parent) {
+                    const parent = await handle.parent;
+                    if (parent && parent.name) return parent.name;
+                }
+            } catch (e) { /* ignore */ }
+            return null;
+        }
+
+        async function addHistory(name, handle) {
+            if (!name) return;
+            let existingIndex = history.findIndex(item => item.name === name);
+            let handleId = null;
+            let directoryName = null;
+
+            if (handle) {
+                handleId = 'handle_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                try {
+                    await storeHandle(handleId, handle);
+                    directoryName = await getDirectoryName(handle);
+                } catch (e) {
+                    console.warn('存储句柄失败:', e);
+                    handleId = null;
+                }
+            } else {
+                if (existingIndex !== -1 && history[existingIndex].handleId) {
+                    handleId = history[existingIndex].handleId;
+                    directoryName = history[existingIndex].directoryName || null;
+                }
+            }
+
+            const newItem = {
+                name: name,
+                timestamp: Date.now(),
+                handleId: handleId || null,
+                directoryName: directoryName || null
+            };
+
+            if (existingIndex !== -1) {
+                history[existingIndex] = newItem;
+            } else {
+                history.unshift(newItem);
+                if (history.length > 50) history.length = 50;
+            }
+            saveHistoryLocal();
+        }
+
+        function deleteHistoryItem(index) {
+            const item = history[index];
+            if (item && item.handleId) {
+                deleteHandle(item.handleId).catch(() => {});
+            }
+            history.splice(index, 1);
+            saveHistoryLocal();
+        }
+
+        function clearAllHistory() {
+            if (history.length === 0) return;
+            if (!confirm('确定清除所有历史记录吗？')) return;
+            history.forEach(item => {
+                if (item.handleId) deleteHandle(item.handleId).catch(() => {});
+            });
+            history = [];
+            saveHistoryLocal();
+        }
+
+        function exportHistory() {
+            if (history.length === 0) {
+                showError('没有历史记录可导出。');
+                return;
+            }
+            const exportData = history.map(({ name, timestamp, directoryName }) => ({
+                name,
+                timestamp,
+                directoryName: directoryName || null
+            }));
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `history_${new Date().toISOString().slice(0,10)}.log`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importHistory() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.log,.json';
+            input.onchange = function(e) {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async function(ev) {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (!Array.isArray(data)) throw new Error('格式无效');
+                        let added = 0;
+                        for (const item of data) {
+                            if (item.name && typeof item.name === 'string') {
+                                const existing = history.find(h => h.name === item.name);
+                                if (!existing) {
+                                    history.push({
+                                        name: item.name,
+                                        timestamp: item.timestamp || Date.now(),
+                                        handleId: null,
+                                        directoryName: item.directoryName || null
+                                    });
+                                    added++;
+                                }
+                            }
+                        }
+                        history.sort((a, b) => b.timestamp - a.timestamp);
+                        if (history.length > 50) history.length = 50;
+                        saveHistoryLocal();
+                        showSuccess('✅ 历史导入成功！');
+                    } catch (err) {
+                        showError('导入失败：' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                this.value = '';
+            };
+            input.click();
+        }
+
+        function showSuccess(msg) {
+            errorText.style.color = '#2e7d32';
+            errorText.textContent = msg;
+            errorMsg.style.borderColor = '#a5d6a7';
+            errorMsg.style.background = '#e8f5e9';
+            errorMsg.classList.add('show');
+            setTimeout(() => {
+                errorMsg.classList.remove('show');
+                errorText.style.color = '';
+                errorMsg.style.borderColor = '';
+                errorMsg.style.background = '';
+            }, 3000);
+        }
+
+        // ===== 渲染历史下拉 =====
+        function renderHistory() {
+            const container = historyDropdown;
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-history">暂无历史记录</div>
+                    <div class="history-footer">
+                        <div class="left-actions">
+                            <button class="btn btn-outline btn-sm" id="importHistBtn">📥 导入</button>
+                        </div>
+                    </div>
+                `;
+                const importBtn = container.querySelector('#importHistBtn');
+                if (importBtn) importBtn.addEventListener('click', importHistory);
+                return;
+            }
+            let html = '';
+            history.forEach((item, index) => {
+                const time = new Date(item.timestamp).toLocaleString();
+                const hasHandle = !!item.handleId;
+                const statusIcon = hasHandle ? '💾' : '📂';
+                const pathDisplay = item.directoryName ? `📁 ${item.directoryName}` : '';
+                html += `
+                    <div class="history-item" data-index="${index}">
+                        <div class="info">
+                            <span class="name">${escapeHtml(item.name)}</span>
+                            <span class="time">${time}</span>
+                            ${pathDisplay ? `<span class="path">${escapeHtml(pathDisplay)}</span>` : ''}
+                            <span class="status-icon">${statusIcon}</span>
+                        </div>
+                        <button class="del-btn" data-index="${index}" title="删除">✕</button>
+                    </div>
+                `;
+            });
+            html += `
+                <div class="history-footer">
+                    <div class="left-actions">
+                        <button class="btn btn-outline btn-sm" id="exportHistBtn">📤 导出</button>
+                        <button class="btn btn-outline btn-sm" id="importHistBtn">📥 导入</button>
+                    </div>
+                    <button class="btn btn-danger btn-sm" id="clearAllHistBtn">🗑 清除全部</button>
+                </div>
+            `;
+            container.innerHTML = html;
+
+            container.querySelectorAll('.history-item').forEach(el => {
+                const idx = parseInt(el.dataset.index);
+                el.addEventListener('click', function(e) {
+                    if (e.target.closest('.del-btn')) return;
+                    const item = history[idx];
+                    if (item) {
+                        openHistoryItem(item);
+                        historyDropdown.classList.remove('show');
+                    }
+                });
+                const delBtn = el.querySelector('.del-btn');
+                if (delBtn) {
+                    delBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const idx2 = parseInt(this.dataset.index);
+                        deleteHistoryItem(idx2);
+                    });
+                }
+            });
+            const exportBtn = container.querySelector('#exportHistBtn');
+            if (exportBtn) exportBtn.addEventListener('click', exportHistory);
+            const importBtn = container.querySelector('#importHistBtn');
+            if (importBtn) importBtn.addEventListener('click', importHistory);
+            const clearBtn = container.querySelector('#clearAllHistBtn');
+            if (clearBtn) clearBtn.addEventListener('click', clearAllHistory);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== 打开历史记录项 =====
+        async function openHistoryItem(item) {
+            if (!item || !item.name) {
+                showError('历史记录无效。');
+                return;
+            }
+
+            if (item.handleId) {
+                try {
+                    const handle = await getHandle(item.handleId);
+                    if (handle) {
+                        let permission = await handle.requestPermission({ mode: 'read' });
+                        if (permission === 'granted') {
+                            const file = await handle.getFile();
+                            const content = await file.text();
+                            loadContent(content, file.name, handle);
+                            return;
+                        } else {
+                            await deleteHandle(item.handleId);
+                            item.handleId = null;
+                            saveHistoryLocal();
+                        }
+                    } else {
+                        item.handleId = null;
+                        saveHistoryLocal();
+                    }
+                } catch (e) {
+                    console.warn('恢复句柄失败:', e);
+                    item.handleId = null;
+                    saveHistoryLocal();
+                }
+            }
+
+            const userConfirmed = confirm(`要打开 "${item.name}"，请从本地选择同名文件。\n点击"确定"继续，或"取消"放弃。`);
+            if (!userConfirmed) return;
+
+            // 降级：使用 file input
+            fileInput.click();
+            window._pendingHistoryName = item.name;
+        }
+
+        // ===== 工具函数 =====
+        function showError(msg) {
+            errorText.textContent = msg || '操作失败，请重试。';
+            errorMsg.classList.add('show');
+            clearTimeout(window._errorTimer);
+            window._errorTimer = setTimeout(() => errorMsg.classList.remove('show'), 5000);
+        }
+
+        function hideError() {
+            errorMsg.classList.remove('show');
+            clearTimeout(window._errorTimer);
+        }
+
+        function showLoading(show) {
+            loadingIndicator.classList.toggle('show', show);
+        }
+
+        function updateStats(content) {
+            const chars = content.length;
+            const lines = content ? content.split('\n').length : 0;
+            const size = content ? new Blob([content]).size : 0;
+            statChars.textContent = `字符: ${chars}`;
+            statLines.textContent = `行数: ${lines}`;
+            statSize.textContent = `大小: ${size < 1024 ? size + ' B' : (size / 1024).toFixed(1) + ' KB'}`;
+        }
+
+        function renderHTML(iframe, html) {
+            try {
+                if (iframe.srcdoc !== undefined) {
+                    iframe.srcdoc = html;
+                } else {
+                    if (iframe._blobURL) URL.revokeObjectURL(iframe._blobURL);
+                    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    iframe.src = url;
+                    iframe._blobURL = url;
+                }
+            } catch (e) {
+                console.warn('渲染 HTML 失败:', e);
+            }
+        }
+
+        function updateAllPreviews(content) {
+            renderHTML(singlePreviewIframe, content);
+            renderHTML(splitPreviewIframe, content);
+            updateStats(content);
+        }
+
+        // ===== 加载内容 =====
+        function loadContent(content, fileName, handle) {
+            hideError();
+            showLoading(true);
+
+            setTimeout(() => {
+                try {
+                    currentContent = content;
+                    currentFileName = fileName || '未命名';
+                    fileHandle = handle || null;
+
+                    emptyState.style.display = 'none';
+                    singlePreviewContainer.style.display = 'block';
+                    renderHTML(singlePreviewIframe, content);
+                    renderHTML(splitPreviewIframe, content);
+
+                    if (isEditing) {
+                        splitEditor.value = content;
+                        splitEditor.selectionStart = 0;
+                        splitEditor.selectionEnd = 0;
+                        splitEditor.scrollTop = 0;
+                        splitEditor.style.height = 'auto';
+                        splitEditor.style.height = splitEditor.scrollHeight + 'px';
+                    }
+
+                    let writableText = '';
+                    if (fileHandle) {
+                        writableText = ' ✅ 可保存';
+                    }
+                    fileStatus.innerHTML =
+                        `📄 <span class="highlight">${currentFileName}</span> (${content.length.toLocaleString()} 字符)${writableText}`;
+                    clearBtn.disabled = false;
+                    updateStats(content);
+
+                    if (isEditing) {
+                        setTimeout(() => {
+                            splitEditor.focus();
+                            splitEditor.selectionStart = 0;
+                            splitEditor.selectionEnd = 0;
+                            splitEditor.scrollTop = 0;
+                        }, 50);
+                    }
+
+                    if (fileName) {
+                        addHistory(fileName, handle);
+                    }
+                } catch (err) {
+                    console.error('加载失败:', err);
+                    showError('加载失败：' + err.message);
+                    if (!currentContent) {
+                        emptyState.style.display = 'flex';
+                        singlePreviewContainer.style.display = 'none';
+                    }
+                } finally {
+                    showLoading(false);
+                }
+            }, 60);
+        }
+
+        // ===== 打开文件（支持跨域降级） =====
+        async function openFileWithPicker() {
+            try {
+                if (!window.showOpenFilePicker) {
+                    fileInput.click();
+                    return;
+                }
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'HTML 文件',
+                        accept: { 'text/html': ['.html', '.htm'] }
+                    }],
+                    multiple: false,
+                });
+                const file = await handle.getFile();
+                const content = await file.text();
+                loadContent(content, file.name, handle);
+            } catch (err) {
+                // 跨域错误降级到 file input
+                if (err.message && err.message.includes('Cross origin')) {
+                    console.warn('跨域限制，降级使用 file input');
+                    fileInput.click();
+                } else if (err.name !== 'AbortError') {
+                    showError('打开文件失败：' + err.message);
+                }
+            }
+        }
+
+        function loadFileFromInput(file) {
+            if (!file) {
+                showError('没有选择任何文件。');
+                return;
+            }
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['html', 'htm'].includes(ext)) {
+                showError(`文件 "${file.name}" 不是 HTML 文件。`);
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showError(`文件过大 (${(file.size / 1024 / 1024).toFixed(1)} MB)，请选择小于 5MB 的文件。`);
+                return;
+            }
+            hideError();
+            showLoading(true);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    if (typeof content !== 'string') throw new Error('内容不是文本');
+                    if (window._pendingHistoryName) {
+                        const expectedName = window._pendingHistoryName;
+                        if (file.name === expectedName) {
+                            loadContent(content, file.name, null);
+                            const idx = history.findIndex(h => h.name === expectedName);
+                            if (idx !== -1) {
+                                history[idx].handleId = null;
+                                saveHistoryLocal();
+                            }
+                            window._pendingHistoryName = null;
+                            return;
+                        }
+                    }
+                    loadContent(content, file.name, null);
+                } catch (err) {
+                    showError('读取文件失败：' + err.message);
+                    showLoading(false);
+                }
+            };
+            reader.onerror = function() {
+                showError('读取文件时发生错误。');
+                showLoading(false);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // ===== 保存文件（支持跨域降级） =====
+        async function saveToFile() {
+            if (!fileHandle) {
+                await saveAsNewFile();
+                return;
+            }
+            try {
+                const writable = await fileHandle.createWritable({ keepExistingData: false });
+                await writable.write(currentContent);
+                await writable.close();
+
+                fileStatus.innerHTML =
+                    `📄 <span class="highlight">${currentFileName}</span> (${currentContent.length.toLocaleString()} 字符) ✅ 已保存`;
+                exitEditMode(false);
+                showSuccess('✅ 文件已保存成功！');
+            } catch (err) {
+                if (err.message && err.message.includes('Cross origin')) {
+                    console.warn('跨域限制，降级为下载');
+                    downloadFile(currentContent, currentFileName || 'index.html');
+                    exitEditMode(false);
+                    showError('文件已下载（跨域无法直接保存）。');
+                } else if (err.name === 'AbortError' || err.name === 'NotAllowedError') {
+                    if (confirm('无法直接写入原文件，是否另存为新文件？')) {
+                        await saveAsNewFile();
+                    }
+                } else {
+                    showError('保存失败：' + err.message);
+                }
+            }
+        }
+
+        async function saveAsNewFile() {
+            try {
+                if (window.showSaveFilePicker) {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: currentFileName || 'index.html',
+                        types: [{
+                            description: 'HTML 文件',
+                            accept: { 'text/html': ['.html'] }
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(currentContent);
+                    await writable.close();
+                    fileHandle = handle;
+                    currentFileName = handle.name;
+                    fileStatus.innerHTML =
+                        `📄 <span class="highlight">${currentFileName}</span> (${currentContent.length.toLocaleString()} 字符) ✅ 已保存`;
+                    exitEditMode(false);
+                    showSuccess('✅ 文件已保存成功！');
+                    await addHistory(currentFileName, handle);
+                } else {
+                    downloadFile(currentContent, currentFileName || 'index.html');
+                    exitEditMode(false);
+                    showError('文件已下载（浏览器不支持直接保存）。');
+                }
+            } catch (err) {
+                if (err.message && err.message.includes('Cross origin')) {
+                    console.warn('跨域限制，降级为下载');
+                    downloadFile(currentContent, currentFileName || 'index.html');
+                    exitEditMode(false);
+                    showError('文件已下载（跨域无法直接保存）。');
+                } else if (err.name !== 'AbortError') {
+                    showError('另存为失败：' + err.message);
+                }
+            }
+        }
+
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== 编辑模式切换 =====
+        function enterEditMode() {
+            if (!currentContent) {
+                showError('请先加载一个 HTML 文件。');
+                return;
+            }
+            if (isEditing) return;
+            isEditing = true;
+
+            singlePreview.classList.add('hidden');
+            splitContainer.classList.add('show');
+
+            splitEditor.value = currentContent;
+            splitEditor.selectionStart = 0;
+            splitEditor.selectionEnd = 0;
+            splitEditor.scrollTop = 0;
+            splitEditor.style.height = 'auto';
+            splitEditor.style.height = splitEditor.scrollHeight + 'px';
+            renderHTML(splitPreviewIframe, currentContent);
+
+            editToggleBtn.textContent = '📖 预览';
+            editToggleBtn.classList.add('active');
+            modeIndicator.textContent = '编辑';
+
+            setTimeout(() => {
+                splitEditor.focus();
+                splitEditor.selectionStart = 0;
+                splitEditor.selectionEnd = 0;
+                splitEditor.scrollTop = 0;
+            }, 30);
+        }
+
+        function exitEditMode(saveChanges) {
+            if (!isEditing) return;
+            isEditing = false;
+
+            splitContainer.classList.remove('show');
+            singlePreview.classList.remove('hidden');
+
+            editToggleBtn.textContent = '✏️ 编辑';
+            editToggleBtn.classList.remove('active');
+            modeIndicator.textContent = '预览';
+
+            renderHTML(singlePreviewIframe, currentContent);
+        }
+
+        // ===== 编辑器实时同步 =====
+        splitEditor.addEventListener('input', function() {
+            const content = this.value;
+            if (content !== currentContent) {
+                currentContent = content;
+                renderHTML(splitPreviewIframe, content);
+                updateStats(content);
+                fileStatus.innerHTML =
+                    `📄 <span class="highlight">${currentFileName}</span> ✏️ (已编辑) (${content.length.toLocaleString()} 字符)`;
+                clearBtn.disabled = false;
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            }
+        });
+
+        // ===== 事件绑定 =====
+        loadBtn.addEventListener('click', function() {
+            if (window.showOpenFilePicker) {
+                openFileWithPicker();
+            } else {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files && this.files[0];
+            if (file) {
+                loadFileFromInput(file);
+            } else {
+                showError('未选择任何文件。');
+            }
+            this.value = '';
+        });
+
+        clearBtn.addEventListener('click', function() {
+            if (!currentContent && !singlePreviewContainer.style.display) return;
+            if (isEditing) exitEditMode(false);
+            currentContent = '';
+            currentFileName = '';
+            fileHandle = null;
+            singlePreviewContainer.style.display = 'none';
+            splitPreviewIframe.srcdoc = '';
+            singlePreviewIframe.srcdoc = '';
+            emptyState.style.display = 'flex';
+            fileStatus.innerHTML = '📂 未选择文件';
+            clearBtn.disabled = true;
+            updateStats('');
+            fileInput.value = '';
+            hideError();
+            showLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        editToggleBtn.addEventListener('click', function() {
+            if (isEditing) {
+                exitEditMode(false);
+            } else {
+                enterEditMode();
+            }
+        });
+
+        saveBtn.addEventListener('click', async function() {
+            await saveToFile();
+        });
+
+        cancelEditBtn.addEventListener('click', function() {
+            if (isEditing) {
+                if (currentContent !== splitEditor.value) {
+                    if (!confirm('有未保存的修改，确定放弃吗？')) return;
+                }
+                exitEditMode(false);
+            }
+        });
+
+        // 快捷键
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+                e.preventDefault();
+                if (window.showOpenFilePicker) {
+                    openFileWithPicker();
+                } else {
+                    fileInput.click();
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                editToggleBtn.click();
+            }
+            if (e.key === 'Escape') {
+                if (errorMsg.classList.contains('show')) hideError();
+                if (isEditing) {
+                    if (currentContent !== splitEditor.value) {
+                        if (!confirm('有未保存的修改，确定放弃并退出编辑？')) return;
+                    }
+                    exitEditMode(false);
+                }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                if (isEditing) {
+                    e.preventDefault();
+                    saveBtn.click();
+                }
+            }
+        });
+
+        // 拖拽
+        const container = document.querySelector('.container');
+        let dragCounter = 0;
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.boxShadow = '0 0 0 2px #1a56db, 0 8px 30px rgba(0,0,0,0.08)';
+        });
+        container.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragCounter--;
+            if (dragCounter <= 0) {
+                dragCounter = 0;
+                this.style.boxShadow = 'none';
+            }
+        });
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.boxShadow = 'none';
+            dragCounter = 0;
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['html', 'htm'].includes(ext) || file.type.includes('html')) {
+                    loadFileFromInput(file);
+                } else {
+                    showError(`拖拽的文件 "${file.name}" 不是 HTML 格式。`);
+                }
+            }
+        });
+
+        // 历史下拉切换
+        historyToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            historyDropdown.classList.toggle('show');
+            renderHistory();
+        });
+        document.addEventListener('click', function() {
+            historyDropdown.classList.remove('show');
+        });
+
+        // ===== 初始化 =====
+        async function init() {
+            try {
+                await openDB();
+                console.log('IndexedDB 已就绪');
+            } catch (e) {
+                console.warn('IndexedDB 初始化失败，句柄持久化功能不可用:', e);
+            }
+            loadHistory();
+            console.log('🌐 HTML 编辑器已启动 (布局置顶 + 历史记录 + 跨域降级)');
+            console.log('💡 快捷键: Ctrl+O 打开 | Ctrl+E 切换编辑 | Ctrl+S 保存 | ESC 取消');
+        }
+        init();
+
+        window.__debug = {
+            history,
+            db,
+            addHistory,
+            loadHistory
+        };
+    })();
+</script>
+
+</body>
+</html>

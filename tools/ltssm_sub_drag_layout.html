@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LTSSM 子状态图布局拖拽工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;padding:10px;display:flex;flex-direction:column;align-items:center}
+h2{font-size:16px;color:#1a2a40;margin-bottom:4px}
+.toolbar{display:flex;gap:8px;margin-bottom:6px;align-items:center;flex-wrap:wrap}
+.toolbar button{padding:5px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer}
+.btn-export{background:#2a5a8a;color:#fff}
+.btn-export:hover{background:#1a4a7a}
+.btn-reset{background:#e8edf4;color:#2a4a6a}
+.btn-reset:hover{background:#dce4ee}
+.toolbar select{padding:3px 8px;border-radius:6px;border:1px solid #c8d4e0;font-size:12px;height:28px}
+#output{width:100%;max-width:960px;background:#fff;border:1px solid #dce4ee;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;white-space:pre;margin-top:4px;min-height:30px;color:#1a2332;overflow:auto}
+.canvas-wrap{background:#fff;border:2px solid #dce4ee;border-radius:8px;overflow:hidden;position:relative}
+svg{display:block;background:#fafcfe}
+.state-group{cursor:move}
+.state-group:hover .state-bg{filter:brightness(1.08)}
+.state-bg{transition:filter .2s}
+.state-label{font-size:13px;font-weight:700;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
+.ext-label{font-size:10px;font-weight:500;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none;fill:#4a6a8a}
+.arrow{stroke:#4a7aaa;stroke-width:1.6;fill:none;marker-end:url(#am)}
+.drag-hint{position:absolute;bottom:6px;right:10px;font-size:10px;color:#8a9aaa;pointer-events:none}
+.no-sub{color:#6a8aaa;font-size:14px;padding:40px;text-align:center}
+</style>
+</head>
+<body>
+<h2>🖱️ LTSSM 子状态图布局拖拽工具</h2>
+<div class="toolbar">
+  <select id="stateSelect"></select>
+  <button class="btn-export" onclick="exportCoords()">📋 导出坐标</button>
+  <button class="btn-reset" onclick="resetPos()">⟳ 重置</button>
+  <span style="font-size:11px;color:#5a7a9a;">拖拽节点调整 → 导出坐标</span>
+</div>
+<div class="canvas-wrap">
+  <svg id="canvas" viewBox="0 0 640 530" width="640" height="530">
+    <defs>
+      <marker id="am" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 L2.5,3 Z" fill="#4a7aaa"/></marker>
+    </defs>
+    <g id="arrows"></g>
+    <g id="states"></g>
+  </svg>
+  <div class="drag-hint">🖱 拖拽调整位置</div>
+</div>
+<div id="output">选择主状态 → 拖拽调整 → 导出</div>
+
+<script>
+// ========== 数据 ==========
+const SUB_STATE_MAP={
+  detect:['Detect.Quiet','Detect.Active'],
+  polling:['Polling.Active','Polling.Compliance','Polling.Configuration'],
+  configuration:['Config.Linkwidth.Start','Config.Linkwidth.Accept','Config.Lanenum.Wait','Config.Lanenum.Accept','Config.Complete','Config.Idle'],
+  l0:['L0'],l0s:['Tx_L0s.Entry','Tx_L0s.Idle','Tx_L0s.FTS','Rx_L0s.Entry','Rx_L0s.Idle','Rx_L0s.FTS'],
+  l1:['L1.Entry','L1.Idle'],l2:['L2.Idle','L2.TransmitWake'],
+  recovery:['Recovery.RcvrLock','Recovery.RcvrCfg','Recovery.Equalization','Recovery.Speed','Recovery.Idle'],
+  loopback:['Loopback.Entry','Loopback.Active','Loopback.Exit'],
+  hotreset:['Hot Reset'],disabled:['Disable']
+};
+const MAIN_LABEL_MAP={detect:'Detect',polling:'Polling',configuration:'Configuration',l0:'L0',l0s:'L0s',l1:'L1',l2:'L2',recovery:'Recovery',loopback:'Loopback',hotreset:'Hot Reset',disabled:'Disable'};
+const COLOR_MAP={detect:'#8bc34a',polling:'#ffc107',configuration:'#ce93d8',l0:'#f8bbd0',l0s:'#ff9800',l1:'#ef9a9a',l2:'#4caf50',recovery:'#d4c45a',loopback:'#f0b8b0',hotreset:'#e53935',disabled:'#9e9e9e'};
+const nodeToMain={};
+for(const[mid,subs]of Object.entries(SUB_STATE_MAP)){for(const s of subs)nodeToMain[s]=mid;}
+nodeToMain['L0']='l0';nodeToMain['Hot Reset']='hotreset';nodeToMain['Disable']='disabled';nodeToMain['Disabled']='disabled';
+
+const DOT_EDGES=[
+{from:'Reset',to:'Detect.Quiet'},{from:'Detect.Quiet',to:'Detect.Active'},{from:'Detect.Active',to:'Detect.Quiet'},{from:'Detect.Active',to:'Polling.Active'},
+{from:'Polling.Active',to:'Polling.Configuration'},{from:'Polling.Active',to:'Polling.Compliance'},{from:'Polling.Active',to:'Detect.Quiet'},{from:'Polling.Compliance',to:'Polling.Active'},{from:'Polling.Compliance',to:'Detect.Quiet'},
+{from:'Polling.Configuration',to:'Detect.Quiet'},{from:'Polling.Configuration',to:'Config.Linkwidth.Start'},
+{from:'Config.Linkwidth.Start',to:'Config.Linkwidth.Start'},{from:'Config.Linkwidth.Start',to:'Loopback.Entry'},{from:'Config.Linkwidth.Start',to:'Detect.Quiet'},{from:'Config.Linkwidth.Start',to:'Disabled'},{from:'Config.Linkwidth.Start',to:'Config.Linkwidth.Accept'},
+{from:'Config.Linkwidth.Accept',to:'Config.Lanenum.Wait'},{from:'Config.Linkwidth.Accept',to:'Detect.Quiet'},
+{from:'Config.Lanenum.Wait',to:'Config.Lanenum.Accept'},{from:'Config.Lanenum.Wait',to:'Detect.Quiet'},
+{from:'Config.Lanenum.Accept',to:'Config.Lanenum.Wait'},{from:'Config.Lanenum.Accept',to:'Detect.Quiet'},{from:'Config.Lanenum.Accept',to:'Config.Complete'},
+{from:'Config.Complete',to:'Config.Idle'},{from:'Config.Complete',to:'Detect.Quiet'},
+{from:'Config.Idle',to:'Recovery.RcvrLock'},{from:'Config.Idle',to:'Detect.Quiet'},{from:'Config.Idle',to:'L0'},
+{from:'L0',to:'Recovery.RcvrLock'},{from:'L0',to:'Tx_L0s.Entry'},{from:'L0',to:'Rx_L0s.Entry'},
+{from:'Tx_L0s.Entry',to:'Tx_L0s.Idle'},{from:'Tx_L0s.Idle',to:'Tx_L0s.FTS'},{from:'Tx_L0s.FTS',to:'L0'},
+{from:'Rx_L0s.Entry',to:'Rx_L0s.Idle'},{from:'Rx_L0s.Idle',to:'Rx_L0s.FTS'},{from:'Rx_L0s.FTS',to:'L0'},{from:'Rx_L0s.FTS',to:'Recovery.RcvrLock'},
+{from:'L0',to:'L1.Entry'},{from:'L1.Entry',to:'L1.Idle'},{from:'L1.Idle',to:'Recovery.RcvrLock'},
+{from:'L0',to:'L2.Idle'},{from:'L2.Idle',to:'L2.TransmitWake'},{from:'L2.TransmitWake',to:'Detect.Quiet'},
+{from:'Recovery.RcvrLock',to:'Detect.Quiet'},{from:'Recovery.RcvrLock',to:'Config.Linkwidth.Start'},
+{from:'Recovery.RcvrLock',to:'Recovery.RcvrCfg'},{from:'Recovery.RcvrLock',to:'Recovery.Equalization'},{from:'Recovery.RcvrLock',to:'Recovery.Speed'},
+{from:'Recovery.Speed',to:'Recovery.RcvrLock'},{from:'Recovery.Speed',to:'Detect.Quiet'},
+{from:'Recovery.Equalization',to:'Recovery.RcvrLock'},{from:'Recovery.Equalization',to:'Recovery.Speed'},
+{from:'Recovery.RcvrCfg',to:'Recovery.Speed'},{from:'Recovery.RcvrCfg',to:'Recovery.Idle'},{from:'Recovery.RcvrCfg',to:'Config.Linkwidth.Start'},{from:'Recovery.RcvrCfg',to:'Detect.Quiet'},
+{from:'Recovery.Idle',to:'Loopback.Entry'},{from:'Recovery.Idle',to:'Disable'},{from:'Recovery.Idle',to:'L0'},{from:'Recovery.Idle',to:'Detect.Quiet'},{from:'Recovery.Idle',to:'Recovery.RcvrLock'},
+{from:'Recovery.Idle',to:'Hot Reset'},{from:'Recovery.Idle',to:'Config.Linkwidth.Start'},
+{from:'Loopback.Entry',to:'Loopback.Active'},{from:'Loopback.Entry',to:'Loopback.Exit'},{from:'Loopback.Active',to:'Loopback.Exit'},{from:'Loopback.Exit',to:'Detect.Quiet'},
+{from:'Hot Reset',to:'Detect.Quiet'},{from:'Disable',to:'Detect.Quiet'}
+];
+
+function isLight(c){const h=c.replace('#','');return(parseInt(h.substr(0,2),16)*0.299+parseInt(h.substr(2,2),16)*0.587+parseInt(h.substr(4,2),16)*0.114)>170;}
+
+// ========== 布局状态 ==========
+// 每个主状态的子状态节点布局（可拖拽）
+let nodePositions={}; // {mainId: {nodeName:{x,y}, ...}}
+
+function initPositions(mid){
+  if(nodePositions[mid])return;
+  const subs=SUB_STATE_MAP[mid]||[];
+  if(!subs.length){nodePositions[mid]={};return;}
+  const intIds=new Set(subs);
+  const allEdges=DOT_EDGES.filter(e=>e.from!=='Reset'&&(intIds.has(e.from)||intIds.has(e.to)));
+  const extN=new Map();
+  for(const e of allEdges){
+    if(e.from!=='Reset'&&!intIds.has(e.from)){const m=nodeToMain[e.from];if(m&&!extN.has(m))extN.set(m,{name:m,mainId:m,label:MAIN_LABEL_MAP[m]});}
+    if(!intIds.has(e.to)){const m=nodeToMain[e.to];if(m&&!extN.has(m))extN.set(m,{name:m,mainId:m,label:MAIN_LABEL_MAP[m]});}
+  }
+  const extA=[...extN.values()];
+  const gap=68;const totalH=460;const startY=(totalH-(subs.length-1)*gap)/2;
+  const pos={};
+  for(let i=0;i<subs.length;i++)pos[subs[i]]={x:280,y:startY+i*gap,type:'int'};
+  const extTop=40,extBot=420;
+  const extL=[];const extR=[];
+  for(let i=0;i<extA.length;i++){if(i%2===0)extL.push(extA[i]);else extR.push(extA[i]);}
+  function dist(ns,t,b){if(!ns.length)return[];if(ns.length===1)return[{node:ns[0],y:(t+b)/2}];const s=(b-t)/(ns.length-1);return ns.map((n,i)=>({node:n,y:t+i*s}));}
+  const lp=dist(extL,extTop,extBot),rp=dist(extR,extTop,extBot);
+  for(const p of lp)pos[p.node.name]={x:80,y:p.y,type:'ext',label:p.node.label};
+  for(const p of rp)pos[p.node.name]={x:480,y:p.y,type:'ext',label:p.node.label};
+  nodePositions[mid]=pos;
+}
+
+// ========== 渲染 ==========
+const svg=document.getElementById('canvas'),arrowsG=document.getElementById('arrows'),statesG=document.getElementById('states');
+let dragNode=null,dragOffX=0,dragOffY=0,curMid=null;
+
+function draw(mid){
+  curMid=mid;arrowsG.innerHTML='';statesG.innerHTML='';
+  initPositions(mid);
+  const pos=nodePositions[mid]||{};
+  if(!Object.keys(pos).length){statesG.innerHTML='<text x="320" y="230" text-anchor="middle" fill="#6a8aaa" font-size="14">该状态无子状态</text>';return;}
+  const subs=SUB_STATE_MAP[mid]||[];
+  const intIds=new Set(subs);
+  const allEdges=DOT_EDGES.filter(e=>e.from!=='Reset'&&(intIds.has(e.from)||intIds.has(e.to)));
+
+  // 箭头
+  const eset=new Set();for(const e of allEdges)eset.add(e.from+'→'+e.to);
+  const mutual=new Set();
+  for(const e of allEdges){if(e.from===e.to)continue;if(eset.has(e.to+'→'+e.from)){const k=e.from<e.to?e.from+'|'+e.to:e.to+'|'+e.from;mutual.add(k);}}
+  const sr=52,sk=25;
+  function ep(x,y,tx,ty){const dx=tx-x,dy=ty-y,d=Math.sqrt(dx*dx+dy*dy);if(d<1)return{x,y};const ux=dx/d,uy=dy/d,a=Math.atan2(dy,dx),ca=Math.cos(a),sa=Math.sin(a);const rd=1/Math.sqrt((ca*ca)/(sr*sr)+(sa*sa)/(sk*sk));return{x:x+ux*Math.min(rd*0.9,sr*0.85),y:y+uy*Math.min(rd*0.9,sk*0.85)};}
+  for(const e of allEdges){
+    const fp=pos[e.from]||pos[nodeToMain[e.from]],tp=pos[e.to]||pos[nodeToMain[e.to]];if(!fp||!tp)continue;
+    const isSelf=(e.from===e.to),mk=mutual.has((e.from<e.to?e.from+'|'+e.to:e.to+'|'+e.from)),isMut=mk&&!isSelf;
+    if(isMut&&e.from>e.to)continue;
+    if(isSelf){
+      const lr=12;const l=document.createElementNS('http://www.w3.org/2000/svg','path');
+      l.setAttribute('d','M '+fp.x+' '+(fp.y-sk-1)+' C '+(fp.x-lr*2)+' '+(fp.y-sk-lr-3)+', '+(fp.x+lr)+' '+(fp.y-sk-lr-3)+', '+(fp.x+sr*0.35)+' '+(fp.y-sk-1));
+      l.setAttribute('class','arrow');arrowsG.appendChild(l);
+    }else if(isMut){
+      const vert=Math.abs(fp.x-tp.x)<20;
+      if(vert){const off=28,my=(fp.y+tp.y)/2;const p1=ep(fp.x,fp.y,fp.x+off*2,my),p2=ep(tp.x,tp.y,tp.x+off*2,my);const l1=document.createElementNS('http://www.w3.org/2000/svg','path');l1.setAttribute('d','M '+p1.x+' '+p1.y+' Q '+((fp.x+tp.x)/2+off)+' '+my+' '+p2.x+' '+p2.y);l1.setAttribute('class','arrow');arrowsG.appendChild(l1);const p3=ep(tp.x,tp.y,tp.x-off*2,my),p4=ep(fp.x,fp.y,fp.x-off*2,my);const l2=document.createElementNS('http://www.w3.org/2000/svg','path');l2.setAttribute('d','M '+p3.x+' '+p3.y+' Q '+((fp.x+tp.x)/2-off)+' '+my+' '+p4.x+' '+p4.y);l2.setAttribute('class','arrow');arrowsG.appendChild(l2);}
+      else{const off=22,mx=(fp.x+tp.x)/2,my=(fp.y+tp.y)/2;const p1=ep(fp.x,fp.y,mx-off,my-off),p2=ep(tp.x,tp.y,mx-off,my-off);const l1=document.createElementNS('http://www.w3.org/2000/svg','path');l1.setAttribute('d','M '+p1.x+' '+p1.y+' Q '+(mx-off)+' '+(my-off)+' '+p2.x+' '+p2.y);l1.setAttribute('class','arrow');arrowsG.appendChild(l1);const p3=ep(tp.x,tp.y,mx+off,my+off),p4=ep(fp.x,fp.y,mx+off,my+off);const l2=document.createElementNS('http://www.w3.org/2000/svg','path');l2.setAttribute('d','M '+p3.x+' '+p3.y+' Q '+(mx+off)+' '+(my+off)+' '+p4.x+' '+p4.y);l2.setAttribute('class','arrow');arrowsG.appendChild(l2);}
+    }else{
+      const p1=ep(fp.x,fp.y,tp.x,tp.y),p2=ep(tp.x,tp.y,fp.x,fp.y);
+      const l=document.createElementNS('http://www.w3.org/2000/svg','path');
+      l.setAttribute('d','M '+p1.x+' '+p1.y+' L '+p2.x+' '+p2.y);
+      l.setAttribute('class','arrow');arrowsG.appendChild(l);
+    }
+  }
+  // 节点
+  for(const[nm,p]of Object.entries(pos)){
+    const isInt=(p.type==='int');const clr=isInt?COLOR_MAP[mid]:'#c0c0c0';
+    const tc=isInt?(isLight(clr)?'#1a2332':'#fff'):'#1a2332';
+    const rx=isInt?sr:sr*0.85,ry=isInt?sk:sk*0.85;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','state-group');
+    const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    el.setAttribute('cx',p.x);el.setAttribute('cy',p.y);el.setAttribute('rx',rx);el.setAttribute('ry',ry);
+    el.setAttribute('fill',clr);el.setAttribute('stroke','rgba(0,0,0,.08)');el.setAttribute('stroke-width','1.2');el.setAttribute('class','state-bg');
+    g.appendChild(el);
+    if(isInt){
+      const parts=nm.split('.');const mp=parts[0],sp=parts.slice(1).join('.');
+      if(sp){
+        const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+        lb.setAttribute('x',p.x);lb.setAttribute('y',p.y);lb.setAttribute('fill',tc);lb.setAttribute('class','state-label');
+        lb.textContent=nm;g.appendChild(lb);
+      }else{
+        const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+        lb.setAttribute('x',p.x);lb.setAttribute('y',p.y);lb.setAttribute('fill',tc);lb.setAttribute('class','state-label');
+        lb.textContent=mp;g.appendChild(lb);
+      }
+    }else{
+      const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+      lb.setAttribute('x',p.x);lb.setAttribute('y',p.y);lb.setAttribute('fill','#1a2332');lb.setAttribute('class','state-label');
+      lb.textContent=p.label;g.appendChild(lb);
+    }
+    // 拖拽
+    g.addEventListener('mousedown',function(e){dragNode={pos:p,nodeName:nm};dragOffX=e.clientX-p.x;dragOffY=e.clientY-p.y;e.preventDefault();});
+    statesG.appendChild(g);
+  }
+}
+
+document.addEventListener('mousemove',function(e){
+  if(!dragNode)return;
+  dragNode.pos.x=Math.max(20,Math.min(620,e.clientX-dragOffX));
+  dragNode.pos.y=Math.max(20,Math.min(510,e.clientY-dragOffY));
+  draw(curMid);
+});
+document.addEventListener('mouseup',function(){dragNode=null;});
+
+// ========== 控制器 ==========
+const sel=document.getElementById('stateSelect');
+for(const[mid,label]of Object.entries(MAIN_LABEL_MAP)){
+  const o=document.createElement('option');o.value=mid;o.textContent=label;
+  sel.appendChild(o);
+}
+sel.addEventListener('change',function(){draw(this.value);});
+
+function exportCoords(){
+  const mid=sel.value;const pos=nodePositions[mid]||{};
+  let out='// '+MAIN_LABEL_MAP[mid]+' 子状态位置\nconst POS = {\n';
+  for(const[name,p]of Object.entries(pos)){
+    out+='  '+name+':{x:'+Math.round(p.x)+',y:'+Math.round(p.y)+',type:"'+p.type+'"},\n';
+  }
+  out+='};';
+  document.getElementById('output').textContent=out;
+  navigator.clipboard.writeText(out).catch(()=>{});
+}
+
+function resetPos(){delete nodePositions[sel.value];draw(sel.value);}
+
+draw(sel.value);
+</script>
+</body>
+</html>

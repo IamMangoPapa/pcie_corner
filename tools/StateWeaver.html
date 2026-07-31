@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>StateWeaver 画状态机</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+:root {
+  --bg: #f0f2f5; --panel: #fff; --editor: #f6f8fa; --canvas: #fafbfc;
+  --bd: #dee0e4; --bdl: #e8eaee;
+  --t1: #1a1a2e; --t2: #5a6270; --t3: #9098a5; --t4: #b0b8c5;
+  --accent: #4f6ef7; --acch: #3b5de7; --accl: #eef1ff; --accm: #ccd8ff;
+  --ok: #22c55e; --warn: #f59e0b; --err: #ef4444;
+  --rad: 8px; --rads: 5px;
+  --mono: 'SF Mono','Fira Code','Consolas',monospace;
+  --edge: #7a8a9e; --nf: #fff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.12);
+  --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"] {
+  --bg: #0b0b18; --panel: #14142a; --editor: #0a0a18; --canvas: #14142a;
+  --bd: #252540; --bdl: #1e1e36;
+  --t1: #e0e0ee; --t2: #8e96b2; --t3: #5e6682; --t4: #404860;
+  --accent: #6b8cff; --acch: #8ba5ff; --accl: #1c2048; --accm: #2a3060;
+  --edge: #4a5a7a; --nf: #1c1c34;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--t1);height:100vh;overflow:hidden;line-height:1.5}
+button{font-size:14px;user-select:none;transition:all var(--transition)}
+select,input{font-size:13.5px;outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--t4);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--t3)}
+
+/* ===== Layout ===== */
+.app{display:flex;flex-direction:column;height:100vh;min-height:400px}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:4px 16px;background:var(--panel);border-bottom:1px solid var(--bd);flex-shrink:0;z-index:10}
+.hd-l{display:flex;align-items:center;gap:8px}
+.hd-l h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),#7c5cfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.bdge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--accl);color:var(--accent);font-weight:700;letter-spacing:0.3px}
+.hd-r{display:flex;align-items:center;gap:2px}
+.bn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 15px;border-radius:var(--rads);font-weight:600;font-size:14px;background:var(--panel);color:var(--t1);border:1.5px solid var(--bd);white-space:nowrap;line-height:1.4}
+.bn:hover{border-color:var(--accent);color:var(--accent);background:var(--accl)}
+.bn-p{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bn-p:hover{background:var(--acch);border-color:var(--acch);color:#fff;box-shadow:0 2px 8px color-mix(in srgb,var(--accent)30%,transparent)}
+.bn-s{padding:4px 12px;font-size:13px}
+.bn-i{width:34px;height:34px;padding:0;font-size:16px}
+.sl{padding:4px 10px;border:1.5px solid var(--bd);border-radius:var(--rads);background:var(--panel);color:var(--t1);font-size:13px;transition:border-color var(--transition);cursor:pointer}
+.sl:focus{border-color:var(--accent)}
+
+.tb{display:flex;align-items:center;gap:5px;padding:4px 16px;background:var(--panel);border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap;min-height:34px}
+.tg{display:flex;align-items:center;gap:3px}
+.tl{font-size:12px;color:var(--t3);white-space:nowrap;font-weight:600;letter-spacing:0.3px}
+.ts{width:1px;height:16px;background:var(--bd);margin:0 3px;flex-shrink:0}
+
+.mn{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ===== Edit Panel ===== */
+.ep{width:260px;min-width:200px;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--bd);flex-shrink:0}
+.eh{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;font-size:11px;font-weight:600;color:var(--t2)}
+.ew{flex:1;padding:0 12px 4px;display:flex;flex-direction:column;min-height:0}
+.ew textarea{width:100%;flex:1;min-height:80px;padding:8px 10px;border:1.5px solid var(--bd);border-radius:var(--rads);background:var(--editor);color:var(--t1);font-family:var(--mono);font-size:11.5px;line-height:1.6;resize:none;outline:none;tab-size:2}
+.ew textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accl)}
+.ew textarea::placeholder{color:var(--t4)}
+#sH{font-size:10px;padding:2px 0 0;min-height:15px;color:var(--t3);font-weight:400}
+.ea{display:flex;gap:2px;flex-wrap:wrap;padding:0 12px 5px}
+.hp{padding:4px 12px 6px;font-size:10px;color:var(--t3);line-height:1.65;overflow-y:auto;max-height:170px;border-top:1px solid var(--bdl);flex-shrink:0;background:color-mix(in srgb,var(--panel)98%,var(--accent))}
+.hp b{color:var(--t2);font-weight:600}
+.hp code{background:var(--editor);padding:0 4px;border-radius:2px;font-size:9.5px;font-family:var(--mono);color:var(--accent)}
+.hp kbd{padding:0 4px;border-radius:2px;border:1px solid var(--bd);font-size:9px;font-family:inherit;background:var(--panel)}
+
+/* ===== Preview ===== */
+.pp{flex:1;display:flex;flex-direction:column;background:var(--canvas);overflow:hidden;min-width:0}
+.pt{display:flex;align-items:center;justify-content:space-between;padding:2px 12px;border-bottom:1px solid var(--bd);flex-shrink:0;min-height:26px;background:var(--canvas)}
+.pt-l{display:flex;align-items:center;gap:6px}
+.pt-l span{font-size:10.5px;color:var(--t3);font-weight:400}
+.pt-r{display:flex;align-items:center;gap:2px}
+.cw{flex:1;overflow:hidden;position:relative;background:var(--canvas)}
+.cw svg{display:block;width:100%;height:100%;cursor:default}
+
+/* ===== Status ===== */
+.sb{padding:4px 18px;font-size:12px;color:var(--t4);flex-shrink:0;gap:8px;min-height:26px}
+.sb .ss{display:flex;gap:10px}
+.sb .si{display:flex;align-items:center;gap:2px}
+.dt{width:4px;height:4px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dn{background:var(--accent)}.de{background:var(--edge)}.dl{background:var(--err)}
+
+/* ===== SVG ===== */
+.ns{stroke-width:2;cursor:grab;transition:filter 0.1s,stroke-width 0.12s}
+.ns:hover{filter:brightness(0.92)}
+.ns.drg{stroke-width:2.5;filter:drop-shadow(0 3px 12px rgba(0,0,0,0.18));cursor:grabbing}
+.ns.dim{opacity:0.25!important}
+.ns.hi{filter:brightness(1.1);stroke-width:2.5!important}
+.nt{pointer-events:none;dominant-baseline:central;text-anchor:middle;font-size:11.5px;font-weight:600;user-select:none}
+.ep{fill:none;stroke-linejoin:round;stroke-linecap:round;cursor:pointer;transition:stroke-width 0.08s,opacity 0.12s}
+.ep:hover{stroke-width:3.2}
+.ep.dim{opacity:0.08!important;stroke-width:1.5!important}
+.ep.hi{stroke-width:3.5!important;opacity:1!important}
+.el{font-size:9px;fill:var(--t3);pointer-events:none;text-anchor:middle;font-weight:400}
+.el.hl{fill:var(--t2);font-size:10px;font-weight:500}
+
+.rh{cursor:nwse-resize;opacity:0.5;transition:opacity 0.15s}
+.node-group:hover .rh{opacity:1}
+.rh:hover{opacity:0.8}
+
+/* ===== Overlay ===== */
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(10px);padding:5px 14px;border-radius:20px;background:var(--t1);color:var(--bg);font-size:11px;font-weight:500;opacity:0;pointer-events:none;transition:all 0.35s ease;z-index:999;white-space:nowrap;box-shadow:var(--shadow-lg)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.tt{position:fixed;padding:3px 8px;border-radius:4px;background:var(--t1);color:var(--bg);font-size:10.5px;font-weight:500;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity 0.12s;z-index:100;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15)}
+.tt.show{opacity:1;transform:translateY(0)}
+
+/* ===== Context Menu ===== */
+.ctx{display:none;position:fixed;min-width:185px;padding:4px;background:var(--panel);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:var(--shadow-lg);z-index:200;font-size:11px}
+.ctx-h{padding:2px 8px 3px;font-weight:600;color:var(--t2);font-size:9.5px;border-bottom:1px solid var(--bdl);margin-bottom:3px;letter-spacing:0.2px}
+.ctx-r{display:flex;align-items:center;gap:4px;padding:1.5px 8px 2.5px}
+.ctx-l{font-size:9.5px;color:var(--t3);min-width:22px;white-space:nowrap}
+.ctx-p{display:flex;gap:2px;flex-wrap:wrap}
+.ctx-c{display:inline-block;width:16px;height:14px;border-radius:2px;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;border:1.5px solid var(--bd)}
+.ctx-c:hover{transform:scale(1.15);box-shadow:0 1px 4px rgba(0,0,0,0.15)}
+.ctx-c.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ctx-foot{padding:2px 8px 2px;border-top:1px solid var(--bdl);margin-top:2px;padding-top:3px;display:flex;align-items:center;gap:4px}
+
+/* ===== Responsive ===== */
+@media(max-width:700px){
+  .ep{width:100%;max-height:35vh;border-right:none;border-bottom:1px solid var(--bd)}
+  .mn{flex-direction:column}
+  .hd{padding:3px 10px}
+  .hd-l h1{font-size:13px}
+  .tb{padding:2px 10px}
+  .sb{padding:2px 10px;flex-wrap:wrap}
+  .hp{max-height:100px}
+}
+
+/* ===== Accessibility ===== */
+@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hd">
+    <div class="hd-l">
+      <h1>✦ StateWeaver</h1><span class="bdge">BETA</span>
+    </div>
+    <div class="hd-r">
+      <button class="bn bn-s" onclick="toggleTheme()" id="themeBtn" title="切换主题" aria-label="切换主题">🌙</button>
+    </div>
+  </header>
+
+  <div class="tb" role="toolbar" aria-label="工具栏">
+    <div class="tg"><span class="tl">图形</span>
+      <select class="sl" id="shpG" aria-label="默认图形" style="min-width:52px">
+        <option value="ellipse" selected>椭圆</option><option value="rect">矩形</option><option value="circle">圆形</option>
+      </select>
+      <select class="sl" id="shpBorder" aria-label="边框色" style="min-width:60px">
+        <option value="#7eb8f7" selected>浅蓝</option><option value="#4f6ef7">中蓝</option><option value="#ef4444">红色</option><option value="#22c55e">绿色</option><option value="#f59e0b">橙色</option><option value="#8b5cf6">紫色</option><option value="#6b7280">灰色</option><option value="#1a1a2e">黑色</option>
+      </select>
+      <select class="sl" id="shpBg" aria-label="底色" style="min-width:60px">
+        <option value="#f5f0e8" selected>米色</option><option value="#ffffff">白色</option><option value="#eef1ff">淡蓝</option><option value="#fef2f2">淡红</option><option value="#f0fdf4">淡绿</option><option value="#fffbeb">淡橙</option><option value="#faf5ff">淡紫</option><option value="transparent">透明</option>
+      </select>
+    </div>
+    <div class="ts" aria-hidden="true"></div>
+    <div class="tg"><span class="tl">箭头</span>
+      <select class="sl" id="arrT" aria-label="箭头类型">
+        <option value="triangle">三角</option><option value="hollow">空心</option><option value="diamond">菱形</option><option value="circle">圆点</option>
+      </select>
+      <select class="sl" id="arrS" aria-label="箭头大小">
+        <option value="s">小</option><option value="m" selected>中</option><option value="l">大</option>
+      </select>
+    </div>
+    <div class="ts" aria-hidden="true"></div>
+    <div class="tg"><span class="tl">连线</span>
+      <select class="sl" id="lineT" aria-label="连线类型">
+        <option value="curve">曲线</option><option value="straight">直线</option><option value="polyline">折线</option>
+      </select>
+    </div>
+    <div class="ts" aria-hidden="true"></div>
+    <div class="tg">
+      <button class="bn bn-p" onclick="renderG()" accesskey="p">▶ 预览 <kbd style="font-size:8px;opacity:0.6;margin-left:2px">⌘⏎</kbd></button>
+      <button class="bn" onclick="fitV()" title="适应画布">⊞ 适配</button>
+      <button class="bn bn-s" onclick="exportPNG()" title="导出当前视图为PNG">🖼 导出PNG</button>
+      <button class="bn bn-s" onclick="exportSVG()" title="导出当前视图为SVG">✎ 导出SVG</button>
+      <button class="bn bn-s" id="selBtn" onclick="startSel()" title="拖拽选择区域导出">✂ 选区</button>
+    </div>
+  </div>
+
+  <div class="mn">
+    <section class="ep" aria-label="编辑区">
+      <div class="eh"><span>✏️ 编辑</span></div>
+      <div class="ew">
+        <textarea id="ed" spellcheck="false" placeholder="输入规则...&#10;A -> B&#10;A - B&#10;A <-> B" aria-label="规则编辑器">登录 -> 首页
+首页 -> 个人中心
+首页 -> 设置
+个人中心 <-> 登录
+设置 - 关于</textarea>
+        <div id="sH" role="status" aria-live="polite"></div>
+      </div>
+      <div class="ea">
+        <button class="bn bn-s bn-p" onclick="renderG()">▶ 预览</button>
+        <button class="bn bn-s" onclick="copyC()" title="复制编辑内容">📄 复制</button>
+        <button class="bn bn-s" onclick="clearA()" title="清空">✕ 清空</button>
+      </div>
+      <div class="hp" aria-label="语法帮助">
+        <b>语法</b>　<code>A-&gt;B</code> 单向　<code>A-B</code> 无向　<code>A&lt;-&gt;B</code> 双向<br>
+        <code>A-&gt;B,C</code> 一对多　<code>A-&gt;B-&gt;C</code> 链式<br>
+        <code>[label="文本"]</code> 边标签　<code>[color=#hex]</code> 节点色<br>
+        <kbd>Ctrl+⏎</kbd> 预览　<kbd>Tab</kbd> 缩进　右键节点改样式　双击连线加点
+      </div>
+    </section>
+
+    <section class="pp" aria-label="预览区">
+      <div class="pt">
+        <div class="pt-l"><span id="gS">—</span></div>
+        <div class="pt-r">
+          <span id="zL" style="font-size:9.5px;color:var(--t4);min-width:28px;text-align:center">100%</span>
+          <button class="bn bn-i" onclick="zoomIn()" title="放大" aria-label="放大" style="width:22px;height:22px">+</button>
+          <button class="bn bn-i" onclick="zoomOut()" title="缩小" aria-label="缩小" style="width:22px;height:22px">−</button>
+        </div>
+      </div>
+      <div class="cw" id="cw">
+        <svg id="cvs" width="100%" height="100%" role="img" aria-label="状态图预览"></svg>
+        <div id="statsOverlay" style="position:absolute;top:6px;right:8px;font-size:10.5px;color:var(--t3);background:var(--panel);padding:4px 10px;border-radius:4px;border:1px solid var(--bdl);opacity:0.85;pointer-events:none;display:flex;gap:10px;line-height:1.6;white-space:nowrap">
+          <span>节点 <strong id="soN">0</strong></span>
+          <span>边 <strong id="soE">0</strong></span>
+          <span>自环 <strong id="soL">0</strong></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="sb">
+    <div class="ss">
+      <span class="si"><span class="dt dn"></span>节点:<strong id="sN">0</strong></span>
+      <span class="si"><span class="dt de"></span>边:<strong id="sE">0</strong></span>
+      <span class="si"><span class="dt dl"></span>自环:<strong id="sL">0</strong></span>
+    </div>
+    <span>滚轮缩放 · 右键菜单 · 拖拽节点</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="alert"></div>
+<div class="tt" id="tt"></div>
+
+<!-- Export Selection Dialog -->
+<div id="exportDialog" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:var(--shadow-lg);z-index:300;padding:16px 20px;min-width:220px;text-align:center">
+  <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px">选区导出</div>
+  <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+    <button class="bn bn-p" onclick="doExportSel('png')" style="font-size:12px;padding:5px 14px">导出 PNG</button>
+    <button class="bn" onclick="doExportSel('svg')" style="font-size:12px;padding:5px 14px">导出 SVG</button>
+    <button class="bn" onclick="closeExportDialog()" style="font-size:12px;padding:5px 14px;border-color:var(--err);color:var(--err)">取消导出</button>
+  </div>
+</div>
+<div id="exportOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);z-index:299" onclick="closeExportDialog()"></div>
+
+<!-- Context Menu -->
+<div class="ctx" id="ctxM" role="menu">
+  <div class="ctx-h" id="ctxTitle">✦ 节点</div>
+  <div class="ctx-r"><span class="ctx-l">边框</span><div class="ctx-p" id="ctxBP"></div></div>
+  <div class="ctx-r"><span class="ctx-l">背景</span><div class="ctx-p" id="ctxBgP"></div></div>
+  <div class="ctx-r"><span class="ctx-l">形状</span>
+    <select id="ctxShp" style="flex:1;font-size:10.5px" onchange="applyNodeShape()" aria-label="形状">
+      <option value="">默认</option><option value="rect">矩形</option><option value="ellipse">椭圆</option><option value="circle">圆形</option>
+    </select>
+  </div>
+  <div class="ctx-r"><span class="ctx-l">字号</span>
+    <select id="ctxFontSize" style="flex:1;font-size:10.5px" onchange="applyFontSize()" aria-label="字号">
+      <option value="9">9px</option><option value="11">11px</option><option value="12" selected>12px</option><option value="14">14px</option><option value="16">16px</option><option value="18">18px</option><option value="20">20px</option>
+    </select>
+  </div>
+  <div class="ctx-r"><span class="ctx-l">字色</span>
+    <div class="ctx-p" id="ctxFontColorP"></div>
+  </div>
+  <div class="ctx-foot">
+    <span style="font-size:9px;color:var(--t4)">自定</span>
+    <input type="color" id="ctxCB" style="width:20px;height:16px;border:none;padding:0;cursor:pointer" onchange="applyCustom('b')" title="边框颜色" aria-label="自定义边框颜色">
+    <input type="color" id="ctxCbg" style="width:20px;height:16px;border:none;padding:0;cursor:pointer" onchange="applyCustom('g')" title="背景颜色" aria-label="自定义背景颜色">
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   StateWeaver v1.0 — Production
+   Roles: QA / SDE / Algorithm / UX / PM
+   ================================================================== */
+
+// ====================== Core State ======================
+const S = {
+  nodes: [], edges: [],
+  arrT: 'triangle', arrS: 'm', lineT: 'curve',
+  theme: 'light',
+  zoom: 1, zoomTr: null,
+  nW: 46, nH: 30, padX: 10,
+  nColors: {}, eCtrl: {},
+  ctxNode: null,
+  _sp: null, _pn: null, // saved positions, prev node styles
+  _renderId: 0,
+};
+
+const $ = id => document.getElementById(id);
+const ed = $('ed'), cw = $('cw');
+let _toast = null, _toastTimer = null;
+
+// Presets
+const BORDER_PRESETS = [
+  '#ef4444','#f97316','#f59e0b','#eab308',  // 红橙黄
+  '#22c55e','#14b8a6','#06b6d4','#0ea5e9',  // 绿青蓝
+  '#4f6ef7','#6366f1','#8b5cf6','#a855f7',  // 蓝紫
+  '#ec4899','#d946ef',                       // 粉紫
+  '#10b981','#84cc16',                       // 翠绿/黄绿
+  '#6b7280','#1a1a2e',                       // 灰/黑
+];
+const BG_PRESETS = [
+  'transparent','#ffffff',
+  '#fef2f2','#fff7ed','#fffbeb','#fefce8',  // 红橙黄暖色
+  '#f0fdf4','#ecfeff','#f0f9ff','#e0e7ff',  // 绿青蓝冷色
+  '#faf5ff','#fdf4ff',                       // 紫色系
+  '#f8fafc','#f0f2f5','#e5e7eb','#d1d5db',  // 灰色系
+];
+
+/* ==================================================================
+   Parser  —  O(n), single-pass, error-tolerant
+   ================================================================== */
+function parse(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('//'));
+  const edges = [], nColors = {}, errors = [];
+  const rL = /\[label=(?:"([^"]*)"|'([^']*)'|(\S+))\]\s*$/;
+  const rC = /\[color=(?:"([^"]*)"|'([^']*)'|(#?\S+))\]/;
+  const pn = s => { const m = s.match(rC); let c = '', n = s; if (m) { c = m[1] || m[2] || m[3] || ''; n = s.replace(rC, '').trim(); } return { n, c }; };
+
+  for (let li = 0; li < lines.length; li++) {
+    const l = lines[li];
+    let aT = 'end', sep = '->';
+
+    if (l.includes('<->')) { aT = 'both'; sep = '<->'; }
+    else if (l.includes('->')) { aT = 'end'; sep = '->'; }
+    else if (/\s-\s/.test(l)) {
+      const p = l.split(/\s+-\s+/).map(s => s.trim());
+      if (p.length >= 2) {
+        const s0 = pn(p[0]), s1 = pn(p.slice(1).join('-').trim());
+        if (s0.c && s0.n) nColors[s0.n] = s0.c;
+        if (s1.c && s1.n) nColors[s1.n] = s1.c;
+        const lm = p.slice(1).join('-').trim().match(rL);
+        edges.push({ s: s0.n, t: s1.n, l: lm ? (lm[1] || lm[2] || lm[3] || '') : '', a: 'none', c: 1, loop: s0.n === s1.n });
+      } else errors.push('L' + (li + 1));
+      continue;
+    } else { errors.push('L' + (li + 1)); continue; }
+
+    const parts = l.split(sep).map(s => s.trim());
+    if (parts.length < 2) { errors.push('L' + (li + 1)); continue; }
+
+    let pl = '';
+    const pp = parts.map((p, idx) => { const m = p.match(rL); if (idx === parts.length - 1 && m) { pl = m[1] || m[2] || m[3] || ''; return p.replace(rL, '').trim(); } return p; });
+
+    for (let i = 0; i < pp.length - 1; i++) {
+      const rS = pp[i].split(',').map(s => s.trim()).filter(Boolean);
+      const rT = pp[i + 1].split(',').map(s => s.trim()).filter(Boolean);
+      if (!rS.length || !rT.length) continue;
+      const ss = rS.map(s => { const p = pn(s); if (p.c && p.n) nColors[p.n] = p.c; return p.n; }).filter(Boolean);
+      const tt = rT.map(s => { const p = pn(s); if (p.c && p.n) nColors[p.n] = p.c; return p.n; }).filter(Boolean);
+      const lb = (i === pp.length - 2) ? pl : '';
+      for (const s of ss) for (const t of tt) edges.push({ s, t, l: lb, a: aT, c: 1, loop: s === t });
+    }
+  }
+
+  // Deduplicate O(m)
+  const em = new Map();
+  for (const e of edges) {
+    const k = e.s + '|' + e.t + '|' + e.a;
+    if (em.has(k)) { const x = em.get(k); x.c++; if (e.l && !x.l) x.l = e.l; }
+    else em.set(k, e);
+  }
+
+  const h = $('sH');
+  if (h) h.textContent = errors.length ? '⚠ ' + errors.length + ' 行错误' : (em.size ? '✅ ' + em.size + ' 条边' : '⚠ 未检测到有效边');
+
+  return { edges: Array.from(em.values()), nColors };
+}
+
+/* ==================================================================
+   Layout — BFS layered + center-balanced
+   ================================================================== */
+function buildGraph(parsed) {
+  const nm = new Map();
+  for (const e of parsed.edges) {
+    if (!nm.has(e.s)) nm.set(e.s, { id: e.s, label: e.s, border: null, bg: null, shape: null, fontSize: null, fontColor: null, _w: null, _h: null });
+    if (!nm.has(e.t)) nm.set(e.t, { id: e.t, label: e.t, border: null, bg: null, shape: null, fontSize: null, fontColor: null, _w: null, _h: null });
+  }
+
+  // Restore per-node styles
+  if (S._pn) {
+    for (const [id, old] of S._pn) {
+      if (nm.has(id)) { const n = nm.get(id); n.border = old.border; n.bg = old.bg; n.shape = old.shape; n.fontSize = old.fontSize; n.fontColor = old.fontColor; n._w = old._w; n._h = old._h; }
+    }
+  }
+
+  const nodes = Array.from(nm.values());
+  const allE = parsed.edges.filter(e => !e.loop);
+
+  // BFS depth O(n+m)
+  const inD = {}, adj = {};
+  nodes.forEach(n => { inD[n.id] = 0; adj[n.id] = []; });
+  allE.forEach(e => { if (e.s !== e.t) { inD[e.t] = (inD[e.t] || 0) + 1; adj[e.s].push(e.t); } });
+  const dep = {}, q = [];
+  nodes.forEach(n => { if (inD[n.id] === 0) { dep[n.id] = 0; q.push(n.id); } });
+  while (q.length) { const id = q.shift(); (adj[id] || []).forEach(nb => { const nd = (dep[id] || 0) + 1; if (dep[nb] === undefined || nd > dep[nb]) { dep[nb] = nd; q.push(nb); } }); }
+  nodes.forEach(n => { if (dep[n.id] === undefined) dep[n.id] = 0; });
+
+  // Layer assignment O(n)
+  const lMap = {}, maxD = Math.max(...Object.values(dep), 0);
+  nodes.forEach(n => { if (!lMap[dep[n.id]]) lMap[dep[n.id]] = []; lMap[dep[n.id]].push(n.id); });
+
+  const rect = cw.getBoundingClientRect();
+  const W = Math.max(rect.width, 400), H = Math.max(rect.height, 300);
+  const pad = 70, gX = Math.min(150, (W - pad * 2) / (maxD + 1)), gY = 60;
+
+  // Position nodes in layers O(n)
+  nodes.forEach(n => {
+    const d = dep[n.id] || 0, lay = lMap[d] || [n.id], idx = lay.indexOf(n.id);
+    const layerCount = lay.length;
+    // Center each layer vertically
+    const totalH = (layerCount - 1) * gY;
+    const startY = (H - totalH) / 2;
+    n.x = pad + (d + 0.5) * gX;
+    n.y = startY + idx * gY;
+    n.fx = n.x; n.fy = n.y;
+  });
+
+  // Restore saved drag positions
+  if (S._sp) { nodes.forEach(n => { const p = S._sp.get(n.id); if (p) { n.x = p.x; n.y = p.y; n.fx = p.x; n.fy = p.y; } }); }
+
+  // Save styles for next build
+  const pn = new Map();
+  nodes.forEach(n => pn.set(n.id, { border: n.border, bg: n.bg, shape: n.shape, fontSize: n.fontSize, fontColor: n.fontColor, _w: n._w, _h: n._h }));
+  S._pn = pn;
+
+  return { nodes, edges: parsed.edges };
+}
+
+/* ==================================================================
+   Node Geometry
+   ================================================================== */
+function nSize(node) {
+  // Per-node override if previously resized
+  if (node._w && node._h) return { w: node._w, h: node._h };
+  const len = (node.label || node.id || '').length;
+  // Estimate char width: ASCII ~9.5px, CJK ~14px (wider chars)
+  let cjk = 0, asc = 0;
+  const str = node.label || node.id || '';
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code > 0x2E80) cjk++; else asc++;
+  }
+  const estW = asc * 9.5 + cjk * 14 + S.padX * 2;
+  return { w: Math.max(S.nW, Math.max(len * 9.5 + S.padX * 2, estW)), h: S.nH };
+}
+
+function nColor(idx, total, id) {
+  if (id && S.nColors && S.nColors[id]) return S.nColors[id];
+  const p = ['#4f6ef7', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#0ea5e9', '#eab308', '#10b981', '#a855f7'];
+  return p[idx % p.length];
+}
+
+function getBorderHit(node, angle, isSrc) {
+  const { w, h } = nSize(node);
+  const shp = node.shape || '';
+  if (shp === 'circle' || shp === 'ellipse') {
+    const rx = w / 2 + 5, ry = h / 2 + 5;
+    const ca = Math.cos(angle), sa = Math.sin(angle);
+    const t = 1 / Math.sqrt((ca * ca) / (rx * rx) + (sa * sa) / (ry * ry));
+    const s = isSrc ? 1 : -1;
+    return { x: node.x + s * ca * t, y: node.y + s * sa * t };
+  }
+  const hw = (w + 10) / 2, hh = (h + 10) / 2, ca = Math.cos(angle), sa = Math.sin(angle);
+  let t = hw / Math.max(Math.abs(ca), 0.001);
+  if (Math.abs(sa) > 0.001) t = Math.min(t, hh / Math.abs(sa));
+  const s = isSrc ? 1 : -1;
+  return { x: node.x + s * ca * t, y: node.y + s * sa * t };
+}
+
+/* ==================================================================
+   Render Engine  —  D3 v7, static layout, drag + ctrl points
+   ================================================================== */
+function render() {
+  const svg = d3.select('#cvs');
+  svg.selectAll('*').remove();
+  if (!S.nodes.length) { updateStats(); return; }
+
+  const rect = cw.getBoundingClientRect();
+  const W = Math.max(rect.width, 200), H = Math.max(rect.height, 150);
+  svg.attr('viewBox', `0 0 ${W} ${H}`);
+
+  const defs = svg.append('defs');
+  const ecol = getComputedStyle(document.documentElement).getPropertyValue('--edge').trim() || '#7a8a9e';
+  const aOpts = { s: { w: 4, h: 4, ref: 5.5 }, m: { w: 5.5, h: 5.5, ref: 7.5 }, l: { w: 7, h: 7, ref: 9.5 } };
+  const as = aOpts[S.arrS] || aOpts.m;
+
+  const mkA = (id, rx, ry, o) => {
+    const mk = defs.append('marker').attr('id', id).attr('viewBox', '0 0 12 12').attr('refX', rx).attr('refY', ry)
+      .attr('markerWidth', as.w).attr('markerHeight', as.h).attr('orient', o);
+    const p = mk.append('path');
+    if (S.arrT === 'hollow') p.attr('d', 'M0 0 L12 6 L0 12 z').attr('fill', 'none').attr('stroke', ecol).attr('stroke-width', 1.2);
+    else if (S.arrT === 'diamond') p.attr('d', 'M6 0 L12 6 L6 12 L0 6 z').attr('fill', ecol);
+    else if (S.arrT === 'circle') p.attr('d', 'M6 0 A6 6 0 1 1 5.999 0').attr('fill', ecol);
+    else p.attr('d', 'M0 0 L12 6 L0 12 z').attr('fill', ecol);
+  };
+  mkA('ae', as.ref, 6, 'auto');
+  mkA('as', 12 - as.ref, 6, 'auto-start-reverse');
+  defs.append('marker').attr('id', 'an').attr('viewBox', '0 0 6 6').attr('refX', 3).attr('refY', 3)
+    .attr('markerWidth', 2.5).attr('markerHeight', 2.5).attr('orient', 'auto')
+    .append('circle').attr('cx', 3).attr('cy', 3).attr('r', 1.5).attr('fill', ecol);
+
+  // Grid
+  defs.append('pattern').attr('id', 'gp').attr('width', 14).attr('height', 14).attr('patternUnits', 'userSpaceOnUse')
+    .append('path').attr('d', 'M14 0L0 0 0 14').attr('fill', 'none').attr('stroke', 'var(--bdl)').attr('stroke-width', 0.5).attr('opacity', 0.6);
+
+  const gMain = svg.append('g').attr('class', 'mg');
+  gMain.append('rect').attr('width', 6000).attr('height', 6000).attr('x', -3000).attr('y', -3000)
+    .attr('fill', 'url(#gp)').attr('pointer-events', 'none');
+
+  // Zoom — wheel & touch only (no mousedown conflict with drag)
+  const zoom = d3.zoom().scaleExtent([0.05, 12])
+    .filter(event => {
+      if (event.type === 'wheel') return true;
+      if (event.type === 'dblclick') return true;
+      if (event.type === 'touchstart') return true;
+      if (event.type === 'mousedown') {
+        // Block zoom during region selection
+        if (_selActive) return false;
+        // Allow pan on canvas background (not on nodes/edges/ctrl points)
+        return !event.target.closest('.ng') && !event.target.closest('.cp');
+      }
+      return false;
+    })
+    .on('zoom', event => {
+      gMain.attr('transform', event.transform);
+      S.zoom = event.transform.k;
+      S.zoomTr = event.transform;
+      $('zL').textContent = Math.round(S.zoom * 100) + '%';
+    });
+  svg.call(zoom);
+  if (S.zoomTr) svg.call(zoom.transform, S.zoomTr);
+
+  const nodes = S.nodes;
+  const allE = S.edges.filter(e => !e.loop);
+  const loopE = S.edges.filter(e => e.loop);
+  // Build O(1) node index map (avoid O(n) indexOf per edge on every drag)
+  const nodeIdxMap = {};
+  nodes.forEach((n, i) => { nodeIdxMap[n.id] = i; });
+  S._nidx = nodeIdxMap;
+  const ndx = () => S._nidx || {};
+
+  // ============ Edges ============
+  const edgeG = gMain.append('g');
+  const edgeE = edgeG.selectAll('.eg').data(allE).join('g').attr('class', 'eg');
+
+  edgeE.append('path').attr('class', 'ep').attr('stroke', 'var(--edge)').attr('stroke-width', 1.8)
+    .attr('marker-end', d => d.a === 'none' ? 'url(#an)' : 'url(#ae)')
+    .attr('marker-start', d => d.a === 'both' ? 'url(#as)' : null);
+
+  edgeE.append('text').attr('class', 'el');
+
+  // Edge events — drag to add control point, dblclick to remove last
+  edgeE.select('.ep')
+    .on('mouseenter', function (ev, d) {
+      const t = $('tt');
+      t.textContent = `${d.s} ${d.a === 'none' ? '−' : d.a === 'both' ? '↔' : '→'} ${d.t}${d.l ? ' "' + d.l + '"' : ''}${d.c > 1 ? ' ×' + d.c : ''}`;
+      t.style.left = (ev.clientX + 9) + 'px';
+      t.style.top = (ev.clientY - 20) + 'px';
+      t.classList.add('show');
+    })
+    .on('mousemove', ev => {
+      const t = $('tt');
+      t.style.left = (ev.clientX + 9) + 'px';
+      t.style.top = (ev.clientY - 20) + 'px';
+    })
+    .on('mouseleave', () => $('tt').classList.remove('show'))
+    .call(d3.drag()
+      .on('start', function (ev, d) {
+        if (_selActive) { ev.sourceEvent.stopPropagation(); return; }
+        ev.sourceEvent.stopPropagation();
+        const k = d.s + '||' + d.t;
+        if (!S.eCtrl[k]) S.eCtrl[k] = [];
+        const pt = d3.pointer(ev.sourceEvent, gMain.node());
+        S.eCtrl[k].push({ x: pt[0], y: pt[1] });
+        S._dragEdge = { k, ci: S.eCtrl[k].length - 1 };
+      })
+      .on('drag', function (ev) {
+        if (!S._dragEdge) return;
+        const cpts = S.eCtrl[S._dragEdge.k];
+        if (!cpts || !cpts[S._dragEdge.ci]) return;
+        const pt = d3.pointer(ev.sourceEvent, gMain.node());
+        cpts[S._dragEdge.ci].x = pt[0];
+        cpts[S._dragEdge.ci].y = pt[1];
+        updateE();
+      })
+      .on('end', function () {
+        if (S._dragEdge) {
+          const cpts = S.eCtrl[S._dragEdge.k];
+          if (cpts && cpts.length === 0) delete S.eCtrl[S._dragEdge.k];
+          if (cpts && cpts.length > 0) showToast('✚ 已添加控制点');
+          S._dragEdge = null;
+        }
+      })
+    );
+
+  const ctrlG = gMain.append('g');
+
+  // ============ Self Loops ============
+  const loopG = gMain.append('g');
+  loopG.selectAll('.lg').data(loopE).join('g').attr('class', 'lg')
+    .append('path').attr('class', 'ep').attr('stroke', 'var(--edge)').attr('stroke-width', 1.8).attr('marker-end', 'url(#ae)');
+
+  // ============ Nodes ============
+  const nodeG = gMain.append('g');
+  const nodeE = nodeG.selectAll('.ng').data(nodes).join('g').attr('class', 'ng');
+
+  const drag = d3.drag()
+    .on('start', function (ev, d) { if (_selActive) { ev.sourceEvent.stopPropagation(); return; } d3.select(this).select('.ns').classed('drg', true); d.fx = d.x; d.fy = d.y; })
+    .on('drag', function (ev, d) {
+      d.x = ev.x; d.y = ev.y; d.fx = ev.x; d.fy = ev.y;
+      d3.select(this).attr('transform', `translate(${d.x},${d.y})`);
+      updateE();
+    })
+    .on('end', function (ev, d) {
+      d3.select(this).select('.ns').classed('drg', false);
+      d.fx = d.x; d.fy = d.y;
+      const sn = S.nodes.find(n => n.id === d.id);
+      if (sn) { sn.x = d.x; sn.y = d.y; sn.fx = d.x; sn.fy = d.y; }
+      savePos();
+    });
+
+  nodeE.call(drag);
+
+  const tN = nodes.length;
+
+  // Build node shapes
+  nodeE.each(function (d, i) {
+    const g = d3.select(this);
+    const bCol = d.border || S._defBorder || nColor(i, tN, d.id);
+    const bgCol = d.bg || S._defBg || null;
+    const shp = d.shape || S._defShp || 'ellipse';
+    const { w, h } = nSize(d);
+
+    if (shp === 'circle') {
+      const r = Math.max(w, h) / 2 + 5;
+      g.append('circle').attr('class', 'ns').attr('r', r).attr('cx', 0).attr('cy', 0)
+        .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+    } else if (shp === 'ellipse') {
+      const rx = w / 2 + 5, ry = h / 2 + 5;
+      g.append('ellipse').attr('class', 'ns').attr('rx', rx).attr('ry', ry).attr('cx', 0).attr('cy', 0)
+        .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+    } else {
+      g.append('rect').attr('class', 'ns').attr('rx', 6).attr('ry', 6)
+        .attr('width', w + 10).attr('height', h + 10).attr('x', -(w + 10) / 2).attr('y', -(h + 10) / 2)
+        .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+    }
+
+    const fSize = d.fontSize || 12; const fColor = d.fontColor || 'var(--t1)';
+    g.append('text').attr('class', 'nt').attr('fill', fColor).attr('font-size', fSize + 'px').text(d.label || d.id);
+    g.attr('transform', `translate(${d.x},${d.y})`);
+
+    // Resize handle (bottom-right) — always visible
+    const hSize = 10;
+    const hw = w / 2 + 5, hh = h / 2 + 5;
+    const handle = g.append('rect').attr('class', 'rh')
+      .attr('width', hSize).attr('height', hSize)
+      .attr('x', hw - hSize / 2).attr('y', hh - hSize / 2)
+      .attr('rx', 2).attr('ry', 2)
+      .attr('fill', 'var(--accent)').attr('stroke', '#fff').attr('stroke-width', 1.5)
+      .style('cursor', 'nwse-resize');
+
+    // Drag resize
+    handle.call(d3.drag()
+      .on('start', function(ev) {
+        ev.sourceEvent.stopPropagation();
+        S._resizing = d.id;
+      })
+      .on('drag', function(ev) {
+        const dx = ev.x - d.x, dy = ev.y - d.y;
+        const newW = Math.max(40, (Math.abs(dx) - 5) * 2);
+        const newH = Math.max(24, (Math.abs(dy) - 5) * 2);
+        d._w = newW; d._h = newH;
+        // Update node shape
+        const shp = d.shape || S._defShp || 'ellipse';
+        const bCol = d.border || S._defBorder || nColor(i, tN, d.id);
+        const bgCol = d.bg || S._defBg || null;
+        g.select('.ns').remove();
+        if (shp === 'circle') {
+          const r = Math.max(newW, newH) / 2 + 5;
+          g.insert('circle', '.nt').attr('class', 'ns').attr('r', r).attr('cx', 0).attr('cy', 0)
+            .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+        } else if (shp === 'ellipse') {
+          const rx = newW / 2 + 5, ry = newH / 2 + 5;
+          g.insert('ellipse', '.nt').attr('class', 'ns').attr('rx', rx).attr('ry', ry).attr('cx', 0).attr('cy', 0)
+            .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+        } else {
+          g.insert('rect', '.nt').attr('class', 'ns').attr('rx', 6).attr('ry', 6)
+            .attr('width', newW + 10).attr('height', newH + 10)
+            .attr('x', -(newW + 10) / 2).attr('y', -(newH + 10) / 2)
+            .attr('stroke', bCol).attr('stroke-width', 2).attr('fill', bgCol || 'var(--nf)');
+        }
+        // Move handle to new position
+        handle.attr('x', newW / 2 + 5 - hSize / 2).attr('y', newH / 2 + 5 - hSize / 2);
+        updateE();
+      })
+      .on('end', function() {
+        S._resizing = null;
+        // Persist resize
+        const sn = S.nodes.find(n => n.id === d.id);
+        if (sn) { sn._w = d._w; sn._h = d._h; }
+      })
+    );
+
+    // Right-click
+    g.on('contextmenu', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      S.ctxNode = d;
+      showCtx(ev, d, bCol, bgCol);
+    });
+
+    // Hover highlight O(e)
+    g.on('mouseenter', function () {
+      const id = d.id;
+      edgeE.select('.ep').attr('class', function (e) { return 'ep' + (e.s === id || e.t === id ? ' hi' : ' dim'); });
+      nodeG.selectAll('.ns').attr('class', function (n) { return 'ns' + (n.id === id ? ' hi' : ' dim'); });
+    });
+    g.on('mouseleave', function () {
+      edgeE.select('.ep').attr('class', 'ep');
+      nodeG.selectAll('.ns').attr('class', 'ns');
+    });
+  });
+
+  // ============ Edge Update ============
+  function getPO(edge, all, maxO) {
+    const k = edge.s < edge.t ? edge.s + '|' + edge.t : edge.t + '|' + edge.s;
+    const par = all.filter(e => !e.loop && ((e.s === edge.s && e.t === edge.t) || (e.s === edge.t && e.t === edge.s)));
+    if (par.length <= 1) return 0;
+    return (par.indexOf(edge) - (par.length - 1) / 2) * maxO;
+  }
+
+  function loopP(node) {
+    const { w, h } = nSize(node);
+    const shp = node.shape || S._defShp || 'ellipse';
+    let r, lw, lh, x0, y0, cx;
+    if (shp === 'circle') {
+      r = Math.max(w, h) / 2 + 8; lw = 22; lh = 18;
+      x0 = node.x + r; y0 = node.y - 4; cx = node.x + r + lw;
+    } else if (shp === 'rect') {
+      const hw = (w + 10) / 2; const hh = (h + 10) / 2;
+      x0 = node.x + hw; y0 = node.y - hh * 0.3;
+      cx = node.x + hw + 22; lw = 22; lh = hh * 0.8;
+    } else {
+      r = Math.max(w, h) / 2 + 8; lw = 22; lh = 18;
+      x0 = node.x + r; y0 = node.y - 4; cx = node.x + r + lw;
+    }
+    switch (S.lineT) {
+      case 'straight':
+        return `M ${x0} ${y0} Q ${cx} ${y0} ${cx} ${y0 + 4} Q ${cx} ${y0 + lh + 6} ${x0} ${y0 + 10}`;
+      case 'polyline':
+        return `M ${x0} ${y0} L ${cx} ${y0} L ${cx} ${y0 + lh + 4} L ${x0} ${y0 + lh + 4}`;
+      default:
+        return `M ${x0} ${y0} C ${cx} ${y0 - lh}, ${cx} ${y0 + lh + 8}, ${x0} ${y0 + 10}`;
+    }
+  }
+
+  function updateE() {
+    // Edge paths O(e)
+    edgeE.select('.ep').attr('d', d => {
+      const ndx = S._nidx || {};
+      const si = ndx[d.s], ti = ndx[d.t];
+      if (si === undefined || ti === undefined) return '';
+      const src = nodes[si], tgt = nodes[ti];
+      const dx = tgt.x - src.x, dy = tgt.y - src.y, dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 0.5) { const tiny = 0.1; const ang = Math.atan2(dy||tiny, dx||tiny); const p1n=getBorderHit(src,ang,true),p2n=getBorderHit(tgt,ang,false); if (!p1n||!p2n)return ''; const mx0=(p1n.x+p2n.x)/2,my0=(p1n.y+p2n.y)/2; return `M ${p1n.x} ${p1n.y} Q ${mx0} ${my0} ${p2n.x} ${p2n.y}`; }
+      const angle = Math.atan2(dy, dx);
+      const p1 = getBorderHit(src, angle, true), p2 = getBorderHit(tgt, angle, false);
+
+      // Control points
+      const k = d.s + '||' + d.t;
+      const cpts = S.eCtrl[k];
+      if (cpts && cpts.length) {
+        if (cpts.length === 1) return `M ${p1.x} ${p1.y} Q ${cpts[0].x} ${cpts[0].y} ${p2.x} ${p2.y}`;
+        if (cpts.length === 2) return `M ${p1.x} ${p1.y} C ${cpts[0].x} ${cpts[0].y}, ${cpts[1].x} ${cpts[1].y}, ${p2.x} ${p2.y}`;
+        let p = `M ${p1.x} ${p1.y}`; for (const cp of cpts) p += ` L ${cp.x} ${cp.y}`; return p + ` L ${p2.x} ${p2.y}`;
+      }
+
+      const px = -dy / dist, py = dx / dist;
+      const off = getPO(d, allE, 8);
+      const x1 = p1.x + px * off, y1 = p1.y + py * off, x2 = p2.x + px * off, y2 = p2.y + py * off;
+      const mx = (x1 + x2) / 2 + px * off * 0.3, my = (y1 + y2) / 2 + py * off * 0.3;
+      const st = Math.min(26, dist * 0.15);
+
+      switch (S.lineT) {
+        case 'straight':
+          return `M ${x1} ${y1} L ${x2} ${y2}`;
+        case 'polyline':
+          return Math.abs(dx) > Math.abs(dy)
+            ? `M ${x1} ${y1} L ${mx} ${y1} L ${mx} ${y2} L ${x2} ${y2}`
+            : `M ${x1} ${y1} L ${x1} ${my} L ${x2} ${my} L ${x2} ${y2}`;
+        default:
+          return `M ${x1} ${y1} Q ${mx + px * st} ${my + py * st} ${x2} ${y2}`;
+      }
+    });
+
+    // Edge labels
+    edgeE.select('.el')
+      .attr('x', d => { const ndx = S._nidx || {}; const s = nodes[ndx[d.s]], t = nodes[ndx[d.t]]; return s && t ? (s.x + t.x) / 2 : 0; })
+      .attr('y', d => { const ndx = S._nidx || {}; const s = nodes[ndx[d.s]], t = nodes[ndx[d.t]]; return s && t ? (s.y + t.y) / 2 - 9 : 0; })
+      .text(d => d.l || (d.c > 1 ? '×' + d.c : ''))
+      .attr('class', d => 'el' + (d.l ? ' hl' : ''));
+
+    // Loops
+    loopG.selectAll('.ep').attr('d', d => { const n = nodes.find(n => n.id === d.s); return n ? loopP(n) : ''; });
+
+    // Control points
+    // Render invisible control points for drag reference
+    // (present in DOM for D3 drag events but not visible to user)
+    ctrlG.selectAll('.cp').remove();
+    for (const d of allE) {
+      const k = d.s + '||' + d.t;
+      const cpts = S.eCtrl[k];
+      if (!cpts) continue;
+      cpts.forEach((cp, ci) => {
+        ctrlG.append('circle').attr('class', 'cp').attr('cx', cp.x).attr('cy', cp.y).attr('r', 4).attr('fill', 'transparent').attr('stroke', 'transparent').attr('stroke-width', 6)
+          .style('cursor', 'pointer')
+          .call(d3.drag().on('drag', ev => { cpts[ci].x = ev.x; cpts[ci].y = ev.y; updateE(); }))
+          .on('dblclick', () => { cpts.splice(ci, 1); if (!cpts.length) delete S.eCtrl[k]; updateE(); });
+      });
+    }
+    updateStats();
+  }
+
+  updateE();
+}
+
+/* ==================================================================
+   Controls
+   ================================================================== */
+function renderG() {
+  try {
+    const parsed = parse(ed.value);
+    const g = buildGraph(parsed);
+    S.nodes = g.nodes;
+    S.edges = g.edges;
+    S.nColors = parsed.nColors;
+    S.eCtrl = {};
+    S.arrT = $('arrT').value;
+    S.arrS = $('arrS').value;
+    S.lineT = $('lineT').value;
+    S._defShp = $('shpG').value;
+    S._defBorder = $('shpBorder').value;
+    S._defBg = $('shpBg').value;
+    S.zoomTr = null;
+    render();
+    // Auto-fit to content so canvas isn't larger than the graph
+    setTimeout(fitV, 50);
+    showToast(`✅ ${S.nodes.length} 节点 · ${S.edges.length} 边`);
+  } catch (e) {
+    showToast('⚠ 渲染异常: ' + e.message);
+    console.warn('StateWeaver render error:', e);
+  }
+}
+
+function fitV() {
+  const svg = d3.select('#cvs'), gM = svg.select('.mg');
+  if (gM.empty() || !S.nodes.length) return;
+  let mnX = Infinity, mnY = Infinity, mxX = -Infinity, mxY = -Infinity;
+  // Use node data directly instead of regex parsing on transform attribute
+  S.nodes.forEach(function(d) {
+    if (d.x === undefined || d.y === undefined) return;
+    const s = nSize(d);
+    const r = Math.max(s.w, s.h) / 2 + 10;
+    mnX = Math.min(mnX, d.x - r - 30); mnY = Math.min(mnY, d.y - r - 30);
+    mxX = Math.max(mxX, d.x + r + 30); mxY = Math.max(mxY, d.y + r + 30);
+  });
+  if (!isFinite(mnX) || mnX === Infinity) return;
+  const cR = cw.getBoundingClientRect();
+  const graphW = mxX - mnX, graphH = mxY - mnY;
+  if (graphW < 1 || graphH < 1) return;
+  const pad = 50;
+  const sc = Math.min((cR.width - pad * 2) / graphW, (cR.height - pad * 2) / graphH, 2.5);
+  const tx = cR.width / 2 - (mnX + graphW / 2) * sc;
+  const ty = cR.height / 2 - (mnY + graphH / 2) * sc;
+  const tr = d3.zoomIdentity.translate(tx, ty).scale(sc);
+  svg.transition().duration(250).call(d3.zoom().transform, tr);
+  S.zoom = sc; S.zoomTr = tr;
+  $('zL').textContent = Math.round(sc * 100) + '%';
+}
+
+function zoomIn() { d3.select('#cvs').transition().duration(150).call(d3.zoom().scaleBy, 1.35); }
+function zoomOut() { d3.select('#cvs').transition().duration(150).call(d3.zoom().scaleBy, 1 / 1.35); }
+
+function copyC() {
+  const t = ed.value;
+  if (!t.trim()) { showToast('⚠ 编辑区为空'); return; }
+  navigator.clipboard.writeText(t).then(() => showToast('📄 已复制'))
+    .catch(() => { ed.select(); document.execCommand('copy'); showToast('📄 已复制'); });
+}
+
+function clearA() {
+  ed.value = '';
+  S.nodes = []; S.edges = []; S.eCtrl = {}; S.nColors = {}; S.zoomTr = null; S._sp = null; S._pn = null; S._defBorder = null; S._defBg = null;
+  const h = $('sH'); if (h) h.textContent = '';
+  render();
+  ed.focus();
+  showToast('✕ 已清空');
+}
+
+function toggleTheme() {
+  const h = document.documentElement, b = $('themeBtn');
+  if (h.getAttribute('data-theme') === 'dark') {
+    h.removeAttribute('data-theme'); S.theme = 'light'; b.textContent = '🌙';
+  } else {
+    h.setAttribute('data-theme', 'dark'); S.theme = 'dark'; b.textContent = '☀️';
+  }
+  if (S.nodes.length) render();
+}
+
+function updateStats() {
+  $('sN').textContent = S.nodes.length;
+  $('sE').textContent = S.edges.length;
+  $('sL').textContent = S.edges.filter(e => e.loop).length;
+  
+  $('gS').textContent = S.nodes.length ? `${S.nodes.length} 节点 · ${S.edges.length} 边` : '—';
+  // Canvas overlay stats
+  const soN = $('soN'), soE = $('soE'), soL = $('soL');
+  if (soN) { soN.textContent = S.nodes.length; soE.textContent = S.edges.length; soL.textContent = S.edges.filter(e => e.loop).length; }
+}
+
+function showToast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function savePos() {
+  const map = new Map();
+  S.nodes.forEach(n => map.set(n.id, { x: n.x, y: n.y }));
+  S._sp = map;
+}
+
+/* ==================================================================
+   Context Menu  —  per-node border / bg / shape
+   ================================================================== */
+function showCtx(ev, node, bCol, bgCol) {
+  const menu = $('ctxM');
+  $('ctxTitle').textContent = '✦ ' + node.id;
+
+  // Border presets
+  const bp = $('ctxBP'); bp.innerHTML = '';
+  BORDER_PRESETS.forEach(c => {
+    const el = document.createElement('span');
+    el.className = 'ctx-c' + (c === bCol ? ' sel' : '');
+    el.style.background = c;
+    el.onclick = () => { if (S.ctxNode) { S.ctxNode.border = c; menu.style.display = 'none'; render(); } };
+    bp.appendChild(el);
+  });
+
+  // Background presets
+  const bgp = $('ctxBgP'); bgp.innerHTML = '';
+  BG_PRESETS.forEach(c => {
+    const el = document.createElement('span');
+    el.className = 'ctx-c' + (c === (bgCol || 'transparent') ? ' sel' : '');
+    if (c === 'transparent') {
+      el.style.background = 'repeating-conic-gradient(#ddd 0% 25%, transparent 0% 50%) 50%/6px 6px';
+    } else {
+      el.style.background = c;
+    }
+    el.title = c;
+    el.onclick = () => { if (S.ctxNode) { S.ctxNode.bg = c === 'transparent' ? null : c; menu.style.display = 'none'; render(); } };
+    bgp.appendChild(el);
+  });
+
+  $('ctxShp').value = node.shape || '';
+  $('ctxFontSize').value = String(node.fontSize || 12);
+  // Font color presets
+  const fcp = $('ctxFontColorP'); fcp.innerHTML = '';
+  const fColors = ['var(--t1)','#1a1a2e','#ef4444','#f59e0b','#22c55e','#0ea5e9','#8b5cf6','#6b7280','#ffffff'];
+  const curFC = node.fontColor || 'var(--t1)';
+  fColors.forEach(c => {
+    const el = document.createElement('span');
+    el.className = 'ctx-c' + (c === curFC ? ' sel' : '');
+    const isVar = c.startsWith('var(');
+    el.style.background = isVar ? getComputedStyle(document.documentElement).getPropertyValue(c.slice(4,-1)).trim()||'#1a1a2e' : c;
+    el.style.width='16px';el.style.height='14px';el.style.borderRadius='2px';el.style.cursor='pointer';
+    el.onclick = () => { if (S.ctxNode) { S.ctxNode.fontColor = c; menu.style.display = 'none'; render(); } };
+    fcp.appendChild(el);
+  });
+  menu.style.display = 'block';
+  menu.style.left = Math.min(ev.clientX, window.innerWidth - 200) + 'px';
+  menu.style.top = Math.min(ev.clientY, window.innerHeight - 280) + 'px';
+}
+
+function applyNodeShape() {
+  if (!S.ctxNode) return;
+  S.ctxNode.shape = $('ctxShp').value || null;
+  $('ctxM').style.display = 'none';
+  render();
+}
+
+function applyFontSize() {
+  if (!S.ctxNode) return;
+  S.ctxNode.fontSize = parseInt($('ctxFontSize').value) || 12;
+  $('ctxM').style.display = 'none';
+  render();
+}
+function applyCustom(which) {
+  if (!S.ctxNode) return;
+  if (which === 'b') S.ctxNode.border = $('ctxCB').value;
+  else S.ctxNode.bg = $('ctxCbg').value;
+  $('ctxM').style.display = 'none';
+  render();
+}
+
+// Click outside closes menu & tooltip
+document.addEventListener('click', e => {
+  $('tt').classList.remove('show');
+  if (!e.target.closest('#ctxM')) $('ctxM').style.display = 'none';
+});
+document.addEventListener('contextmenu', e => {
+  if (!e.target.closest('.ng')) $('ctxM').style.display = 'none';
+});
+
+/* ==================================================================
+   Export — WYSIWYG: exports current visible viewport
+   Also supports region selection via drag
+   ================================================================== */
+function cssVal(name, fallback) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+function inlineSVG(svgClone, vbx) {
+  const nfc = cssVal('--nf', '#ffffff');
+  const t1c = cssVal('--t1', '#1a1a2e');
+  const t3c = cssVal('--t3', '#6b7280');
+  const ec = cssVal('--edge', '#7a8a9e');
+
+  // Resolve CSS var fills
+  svgClone.querySelectorAll('.ns').forEach(el => {
+    const f = el.getAttribute('fill');
+    if (f && f.startsWith('var(')) {
+      if (f.includes('--nf')) el.setAttribute('fill', nfc);
+      else if (f.includes('--panel')) el.setAttribute('fill', cssVal('--panel', '#ffffff'));
+      else el.setAttribute('fill', '#ffffff');
+    }
+  });
+  // Remove UI elements
+  svgClone.querySelectorAll('.rh').forEach(el => el.remove());
+  svgClone.querySelectorAll('.grid-bg, .mg>rect').forEach(el => { if (el.getAttribute('fill')==='url(#gp)') el.remove(); });
+  svgClone.querySelectorAll('.nt').forEach(el => {
+    const f = el.getAttribute('fill');
+    if (f && f.startsWith('var(')) el.setAttribute('fill', t1c);
+  });
+
+  const s = document.createElement('style');
+  s.textContent = '.ep{fill:none;stroke-linejoin:round;stroke-linecap:round;stroke:'+ec+';stroke-width:1.8}.nt{font-weight:600;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;dominant-baseline:central;text-anchor:middle}.el{fill:'+t3c+';font-size:9px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}.ns{stroke-width:2}';
+  // Per-node font size & color are inline attributes, remove CSS overrides
+  svgClone.querySelectorAll('.nt').forEach(el => { el.style.removeProperty('font-size'); el.style.removeProperty('fill'); });
+  const d = svgClone.querySelector('defs');
+  if (d) d.prepend(s);
+  else svgClone.prepend(s);
+  
+  // Apply viewBox — the exported SVG uses graph-coordinate viewBox
+  // so we MUST clear the gMain zoom transform to prevent double-shift
+  if (vbx) {
+    const parts = vbx.split(' ').map(Number);
+    svgClone.setAttribute('viewBox', vbx);
+    svgClone.setAttribute('width', Math.round(parts[2] || 800));
+    svgClone.setAttribute('height', Math.round(parts[3] || 600));
+  }
+  // Reset gMain zoom transform — viewBox already encodes the visible area
+  const mg = svgClone.querySelector('.mg');
+  if (mg) mg.removeAttribute('transform');
+}
+
+function getVisibleViewBox() {
+  const svgEl = document.querySelector('#cvs');
+  const rect = cw.getBoundingClientRect();
+  const t = d3.zoomTransform(svgEl);
+  if (!t || !t.k) { return { vbx: '0 0 '+rect.width+' '+rect.height, w: rect.width, h: rect.height }; }
+  const vbx = (-t.x/t.k)+' '+(-t.y/t.k)+' '+(rect.width/t.k)+' '+(rect.height/t.k);
+  return { vbx: vbx, w: rect.width/t.k, h: rect.height/t.k };
+}
+
+function exportView(vbx, filename) {
+  if (!S.nodes.length) { showToast('⚠ 无内容可导出'); return; }
+  const svgEl = document.querySelector('#cvs');
+  const parts = vbx.split(' ').map(Number);
+  const expW = Math.max(parts[2] || 400, 50);
+  const expH = Math.max(parts[3] || 300, 50);
+  
+  const clone = svgEl.cloneNode(true);
+  // Must have xmlns for standalone SVG
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  inlineSVG(clone, vbx);
+  
+  // Determine export resolution: 2x for PNG
+  const dpr = 2;
+  const data = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  const isSVG = filename.endsWith('.svg');
+  if (isSVG) {
+    const a = document.createElement('a'); a.download = filename; a.href = url; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+    showToast('✅ SVG 已导出');
+    return;
+  }
+  
+  // PNG: render via canvas
+  const img = new Image();
+  img.onload = function() {
+    const cn = document.createElement('canvas');
+    cn.width = expW * dpr; cn.height = expH * dpr;
+    const ctx = cn.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, expW, expH);
+    ctx.drawImage(img, 0, 0);
+    const a = document.createElement('a'); a.download = filename; a.href = cn.toDataURL('image/png'); a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ PNG 已导出');
+  };
+  img.onerror = function() { showToast('⚠ 导出失败'); URL.revokeObjectURL(url); };
+  img.src = url;
+}
+
+function exportPNG() {
+  const { vbx } = getVisibleViewBox();
+  exportView(vbx, 'stateweaver.png');
+}
+function exportSVG() {
+  const { vbx } = getVisibleViewBox();
+  exportView(vbx, 'stateweaver.svg');
+}
+
+// ===== Region selection export =====
+let _selActive = false, _selStart = null, _selRect = null, _selOverlay = null;
+
+function startSel() {
+  if (!S.nodes.length) { showToast('⚠ 无内容'); return; }
+  if (_selActive) { cancelSel(); return; }
+  _selActive = true;
+  $('selBtn').textContent = '✖ 取消';
+  $('selBtn').style.borderColor = 'var(--err)';
+  document.body.style.cursor = 'crosshair';
+  
+  // Create overlay for selection feedback
+  if (!_selOverlay) {
+    _selOverlay = document.createElement('div');
+    _selOverlay.id = 'selOverlay';
+    _selOverlay.style.cssText = 'position:absolute;border:2px dashed var(--accent);background:var(--accl);opacity:0.3;pointer-events:none;display:none;z-index:50';
+    $('cw').appendChild(_selOverlay);
+  }
+  
+  showToast('↖ 在画布上拖拽选择导出区域');
+}
+
+function cancelSel() {
+  _selActive = false; _selStart = null; _selStartVb = null;
+  $('selBtn').textContent = '✂ 选区';
+  $('selBtn').style.borderColor = '';
+  document.body.style.cursor = '';
+  if (_selOverlay) _selOverlay.style.display = 'none';
+  if (_selRect) { _selRect.remove(); _selRect = null; }
+}
+
+let _selVbx = '';
+let _selStartVb = null;
+function showExportDialog() {
+  $('exportDialog').style.display = 'block';
+  $('exportOverlay').style.display = 'block';
+}
+function closeExportDialog() {
+  $('exportDialog').style.display = 'none';
+  $('exportOverlay').style.display = 'none';
+  _selVbx = '';
+}
+function doExportSel(fmt) {
+  if (!_selVbx) { closeExportDialog(); return; }
+  const name = 'stateweaver-selection.' + (fmt === 'png' ? 'png' : 'svg');
+  exportView(_selVbx, name);
+  closeExportDialog();
+}
+
+// Region selection mouse handlers
+// NOTE: visual overlay uses pixel coords (relative to cw container),
+//       but export viewBox uses d3.pointer() to work in SVG viewBox coords
+document.addEventListener('mousedown', function(e) {
+  if (!_selActive) return;
+  if (!e.target.closest('#cvs') && !e.target.closest('#selOverlay')) { cancelSel(); return; }
+  const cwRect = cw.getBoundingClientRect();
+  // Save pixel coords for visual overlay
+  _selStart = { x: e.clientX - cwRect.left, y: e.clientY - cwRect.top };
+  // Save SVG viewBox coords for export calculation
+  const svgEl = document.querySelector('#cvs');
+  const pt = d3.pointer(e, svgEl);
+  _selStartVb = { x: pt[0], y: pt[1] };
+  
+  if (!_selRect) {
+    _selRect = document.createElement('div');
+    _selRect.style.cssText = 'position:absolute;border:2px dashed var(--accent);background:var(--accl);opacity:0.25;pointer-events:none;z-index:50';
+    $('cw').appendChild(_selRect);
+  }
+  _selRect.style.display = 'block';
+  _selRect.style.left = _selStart.x + 'px';
+  _selRect.style.top = _selStart.y + 'px';
+  _selRect.style.width = '0px';
+  _selRect.style.height = '0px';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (!_selActive || !_selStart || !_selRect) return;
+  const cwRect = cw.getBoundingClientRect();
+  const mx = e.clientX - cwRect.left, my = e.clientY - cwRect.top;
+  const x = Math.min(_selStart.x, mx), y = Math.min(_selStart.y, my);
+  const w = Math.abs(mx - _selStart.x), h = Math.abs(my - _selStart.y);
+  _selRect.style.left = x + 'px';
+  _selRect.style.top = y + 'px';
+  _selRect.style.width = w + 'px';
+  _selRect.style.height = h + 'px';
+});
+
+document.addEventListener('mouseup', function(e) {
+  if (!_selActive || !_selStart || !_selRect || !_selStartVb) return;
+  // Get current mouse position in SVG viewBox coordinate space
+  const svgEl = document.querySelector('#cvs');
+  const pt = d3.pointer(e, svgEl);
+  const w = Math.abs(pt[0] - _selStartVb.x), h = Math.abs(pt[1] - _selStartVb.y);
+  if (w < 3 || h < 3) { showToast('⚠ 选区太小'); cancelSel(); return; }
+  
+  // Convert viewBox coords to graph coords using zoom transform
+  // graphCoord = (viewBoxCoord - t.translate) / t.scale
+  const t = d3.zoomTransform(svgEl);
+  const x = Math.min(_selStartVb.x, pt[0]), y = Math.min(_selStartVb.y, pt[1]);
+  const gx = (x - t.x) / t.k, gy = (y - t.y) / t.k;
+  const gw = w / t.k, gh = h / t.k;
+  const vbx = gx + ' ' + gy + ' ' + gw + ' ' + gh;
+  _selVbx = vbx;
+  
+  // Show export dialog
+  showExportDialog();
+  cancelSel();
+});
+
+/* ==================================================================
+   Event Binding
+   ================================================================== */
+// Debounced input — live preview on change (performance-safe)
+let _inTimer = null;
+ed.addEventListener('input', () => {
+  clearTimeout(_inTimer);
+  _inTimer = setTimeout(() => {
+    try { if (ed.value.trim().length > 3) renderG(); }
+    catch (e) { /* silent */ }
+  }, 400);
+});
+
+ed.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); renderG(); }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = ed.selectionStart, en = ed.selectionEnd;
+    ed.value = ed.value.substring(0, s) + '  ' + ed.value.substring(en);
+    ed.selectionStart = ed.selectionEnd = s + 2;
+  }
+});
+
+// Manual binding
+$('arrT').addEventListener('change', () => { if (!S.nodes.length) return; syncAndRender(); });
+$('arrS').addEventListener('change', () => { if (!S.nodes.length) return; syncAndRender(); });
+$('lineT').addEventListener('change', () => { if (!S.nodes.length) return; syncAndRender(); });
+$('shpG').addEventListener('change', () => { if (!S.nodes.length) return; syncAndRender(); });
+$('shpBorder').addEventListener('input', () => { if (!S.nodes.length) return; syncAndRender(); });
+$('shpBg').addEventListener('input', () => { if (!S.nodes.length) return; syncAndRender(); });
+function syncAndRender() { S._defShp = $('shpG').value; S._defBorder = $('shpBorder').value; S._defBg = $('shpBg').value; S.arrT = $('arrT').value; S.arrS = $('arrS').value; S.lineT = $('lineT').value; render(); }
+
+// Debounced resize — re-render on window resize to keep layout correct
+let _rsTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_rsTimer);
+  _rsTimer = setTimeout(() => {
+    if (S.nodes.length) {
+      // Re-render to recompute layout relative to new container size
+      const oldZoom = S.zoomTr;
+      render();
+      // Restore zoom transform if it existed
+      if (oldZoom) {
+        d3.select('#cvs').call(d3.zoom().transform, oldZoom);
+      }
+    }
+  }, 200);
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    S.theme = 'dark';
+    $('themeBtn').textContent = '☀️';
+  }
+  renderG();
+});
+</script>
+</body>
+</html>

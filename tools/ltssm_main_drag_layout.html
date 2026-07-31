@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LTSSM 主状态图布局拖拽工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;padding:10px;display:flex;flex-direction:column;align-items:center}
+h2{font-size:18px;color:#1a2a40;margin-bottom:6px}
+.toolbar{display:flex;gap:10px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
+.toolbar button{padding:6px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.btn-export{background:#2a5a8a;color:#fff}
+.btn-export:hover{background:#1a4a7a}
+.btn-reset{background:#e8edf4;color:#2a4a6a}
+.btn-reset:hover{background:#dce4ee}
+#output{width:100%;max-width:960px;background:#fff;border:1px solid #dce4ee;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;white-space:pre;margin-top:6px;min-height:40px;color:#1a2332;overflow:auto}
+.canvas-wrap{background:#fff;border:2px solid #dce4ee;border-radius:10px;overflow:hidden;position:relative}
+svg{display:block;background:#fafcfe;cursor:grab}
+svg:active{cursor:grabbing}
+.state-group{cursor:move}
+.state-group:hover .state-bg{filter:brightness(1.1)}
+.state-bg{transition:filter .2s}
+.state-label{font-size:15px;font-weight:800;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
+.arrow-line{stroke:#4a6a8a;stroke-width:2;fill:none;marker-end:url(#ahd)}
+.arrow-label{font-size:8px;fill:#4a6a8a;text-anchor:middle;font-weight:500;pointer-events:none}
+.drag-hint{position:absolute;bottom:8px;right:12px;font-size:11px;color:#8a9aaa;pointer-events:none}
+</style>
+</head>
+<body>
+<h2>🖱️ LTSSM 主状态图布局拖拽工具</h2>
+<div class="toolbar">
+  <button class="btn-export" onclick="exportCoords()">📋 导出坐标</button>
+  <button class="btn-reset" onclick="resetPos()">⟳ 重置</button>
+  <span style="font-size:12px;color:#5a7a9a;">拖拽椭圆调整位置 → 点击「导出坐标」复制结果</span>
+</div>
+<div class="canvas-wrap">
+  <svg id="canvas" viewBox="0 0 820 730" width="820" height="730">
+    <defs>
+      <marker id="ahd" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L3,3.5 Z" fill="#4a6a8a"/></marker>
+    </defs>
+    <g id="arrows"></g>
+    <g id="states"></g>
+  </svg>
+  <div class="drag-hint">🖱 拖拽椭圆调整位置</div>
+</div>
+
+<div id="output">点击「导出坐标」生成结果...</div>
+
+<script>
+// ========== 状态定义 ==========
+const STATES = [
+  {id:'detect',label:'Detect',color:'#8bc34a',x:410,y:85},
+  {id:'polling',label:'Polling',color:'#ffc107',x:410,y:195},
+  {id:'configuration',label:'Configuration',color:'#ce93d8',x:410,y:315},
+  {id:'l0',label:'L0',color:'#f8bbd0',x:340,y:455},
+  {id:'l0s',label:'L0s',color:'#ff9800',x:170,y:450},
+  {id:'l1',label:'L1',color:'#ef9a9a',x:170,y:560},
+  {id:'l2',label:'L2',color:'#4caf50',x:170,y:670},
+  {id:'recovery',label:'Recovery',color:'#d4c45a',x:600,y:510},
+  {id:'loopback',label:'Loopback',color:'#f0b8b0',x:600,y:630},
+  {id:'hotreset',label:'Hot Reset',color:'#e53935',x:600,y:340},
+  {id:'disabled',label:'Disable',color:'#9e9e9e',x:600,y:455}
+];
+
+// 过渡关系
+const TRANS = [
+  ['detect','polling'],['polling','configuration'],['polling','detect'],
+  ['configuration','l0'],['configuration','hotreset'],['configuration','disabled'],
+  ['configuration','loopback'],['configuration','detect'],['configuration','recovery'],
+  ['l0','l0s'],['l0','l1'],['l0','l2'],['l0','recovery'],
+  ['l0s','l0'],['l0s','recovery'],
+  ['l1','recovery'],
+  ['l2','detect'],
+  ['recovery','l0'],['recovery','configuration'],['recovery','detect'],
+  ['recovery','disabled'],['recovery','hotreset'],['recovery','loopback'],
+  ['loopback','detect'],
+  ['hotreset','detect'],
+  ['disabled','detect']
+];
+
+const RX=58,RY=34;
+const svg=document.getElementById('canvas');
+const arrowsG=document.getElementById('arrows');
+const statesG=document.getElementById('states');
+let dragState=null, dragOffX=0, dragOffY=0;
+
+function isLight(c){const h=c.replace('#','');return(parseInt(h.substr(0,2),16)*0.299+parseInt(h.substr(2,2),16)*0.587+parseInt(h.substr(4,2),16)*0.114)>170;}
+function textColor(c){return isLight(c)?'dark':'light';}
+
+function getEdgePt(x1,y1,x2,y2){
+  const dx=x2-x1,dy=y2-y1,d=Math.sqrt(dx*dx+dy*dy);if(d<1)return{x:x1,y:y1};
+  const ux=dx/d,uy=dy/d,a=Math.atan2(dy,dx),ca=Math.cos(a),sa=Math.sin(a);
+  const rd=1/Math.sqrt((ca*ca)/(RX*RX)+(sa*sa)/(RY*RY));
+  return{x:x1+ux*Math.min(rd*0.98,RX*0.95),y:y1+uy*Math.min(rd*0.98,RY*0.95)};
+}
+
+function draw(){
+  arrowsG.innerHTML='';statesG.innerHTML='';
+  // 箭头
+  for(const[fid,tid] of TRANS){
+    const f=STATES.find(s=>s.id===fid),t=STATES.find(s=>s.id===tid);
+    if(!f||!t)continue;
+    const p1=getEdgePt(f.x,f.y,t.x,t.y),p2=getEdgePt(t.x,t.y,f.x,f.y);
+    // 检查是否穿过其他状态
+    const mx=(f.x+t.x)/2,my=(f.y+t.y)/2;
+    let blocked=false;
+    for(const s of STATES){
+      if(s.id===fid||s.id===tid)continue;
+      const dx=mx-s.x,dy=my-s.y;
+      if((dx*dx)/(RX*RX)+(dy*dy)/(RY*RY)<1.6){blocked=true;break;}
+    }
+    const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+    if(blocked){
+      const nx=-(t.y-f.y),ny=t.x-f.x,nd=Math.sqrt(nx*nx+ny*ny)||1;
+      const off=Math.max(45,Math.sqrt((t.x-f.x)**2+(t.y-f.y)**2)*0.18);
+      line.setAttribute('d','M '+p1.x+' '+p1.y+' Q '+(mx+nx/nd*off)+' '+(my+ny/nd*off)+' '+p2.x+' '+p2.y);
+    }else{
+      line.setAttribute('d','M '+p1.x+' '+p1.y+' L '+p2.x+' '+p2.y);
+    }
+    line.setAttribute('class','arrow-line');
+    arrowsG.appendChild(line);
+    // 标签
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',(f.x+t.x)/2);lbl.setAttribute('y',(f.y+t.y)/2-8);
+    lbl.setAttribute('class','arrow-label');lbl.textContent='→ '+t.label;
+    arrowsG.appendChild(lbl);
+  }
+  // 状态节点
+  for(const st of STATES){
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','state-group');g.dataset.id=st.id;
+    const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    el.setAttribute('cx',st.x);el.setAttribute('cy',st.y);
+    el.setAttribute('rx',RX);el.setAttribute('ry',RY);
+    el.setAttribute('fill',st.color);el.setAttribute('stroke','rgba(0,0,0,.1)');el.setAttribute('stroke-width','2');
+    el.setAttribute('class','state-bg');
+    g.appendChild(el);
+    const tc=isLight(st.color)?'#1a2332':'#fff';
+    const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lb.setAttribute('x',st.x);lb.setAttribute('y',st.y);
+    lb.setAttribute('fill',tc);lb.setAttribute('class','state-label');
+    lb.textContent=st.label;g.appendChild(lb);
+    // 拖拽事件
+    g.addEventListener('mousedown',function(e){
+      dragState=st;dragOffX=e.clientX-st.x;dragOffY=e.clientY-st.y;
+      e.preventDefault();
+    });
+    statesG.appendChild(g);
+  }
+}
+
+// 全局鼠标事件
+document.addEventListener('mousemove',function(e){
+  if(!dragState)return;
+  dragState.x=Math.max(RX,Math.min(820-RX,e.clientX-dragOffX));
+  dragState.y=Math.max(RY,Math.min(730-RY,e.clientY-dragOffY));
+  draw();
+});
+document.addEventListener('mouseup',function(){dragState=null;});
+
+function exportCoords(){
+  let out='const POSITIONS={\n';
+  for(const st of STATES){
+    out+='  '+st.id+':{x:'+Math.round(st.x)+',y:'+Math.round(st.y)+'},\n';
+  }
+  out+='};';
+  document.getElementById('output').textContent=out;
+  // 自动复制
+  navigator.clipboard.writeText(out).then(()=>{
+    document.getElementById('output').textContent=out+'\n\n✅ 已复制到剪贴板！';
+  }).catch(()=>{});
+}
+
+function resetPos(){
+  const defaults={detect:{x:410,y:85},polling:{x:410,y:195},configuration:{x:410,y:315},l0:{x:340,y:455},l0s:{x:170,y:450},l1:{x:170,y:560},l2:{x:170,y:670},recovery:{x:600,y:510},loopback:{x:600,y:630},hotreset:{x:600,y:340},disabled:{x:600,y:455}};
+  for(const st of STATES){const d=defaults[st.id];if(d){st.x=d.x;st.y=d.y;}}
+  draw();
+  document.getElementById('output').textContent='已重置为默认布局';
+}
+
+draw();
+</script>
+</body>
+</html>
