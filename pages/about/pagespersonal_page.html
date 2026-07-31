@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个人主页</title>
+    <style>
+        /* ========== RESET & BASE ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial,
+                sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 24px;
+        }
+
+        /* ========== CARD ========== */
+        .card {
+            max-width: 420px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 28px;
+            padding: 48px 40px 40px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.08),
+                0 8px 24px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 28px 72px rgba(0, 0, 0, 0.10),
+                0 12px 32px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ========== AVATAR ========== */
+        .avatar-wrapper {
+            width: 108px;
+            height: 108px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            background: #e9eef4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            font-size: 40px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* ========== NAME & TITLE ========== */
+        .name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+
+        .title {
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 32px;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        /* ========== DIVIDER ========== */
+        .divider {
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            margin: 0 auto 32px;
+        }
+
+        /* ========== INFO LIST ========== */
+        .info-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 16px;
+            color: #334155;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            transition: background 0.2s;
+        }
+
+        .info-list li:hover {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .info-list .icon {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .info-list .label {
+            color: #94a3b8;
+            font-size: 15px;
+            min-width: 36px;
+        }
+
+        .info-list .value {
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .info-list .value a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .info-list .value a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        /* ========== POPUP 弹窗 ========== */
+        .popup-trigger {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .popup {
+            display: none;
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 14px);
+            transform: translateX(-50%);
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .popup.show {
+            display: flex;
+        }
+
+        .popup img {
+            width: 140px;
+            height: auto;
+            max-height: 300px;
+            border-radius: 8px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .popup .popup-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .popup::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #fff;
+        }
+
+        /* ========== SOCIAL / ACTION BUTTONS ========== */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            border: 1.5px solid transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.30);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        /* ========== FOOTER ========== */
+        .footer {
+            margin-top: 28px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 24px 28px;
+            }
+
+            .name {
+                font-size: 24px;
+            }
+
+            .info-list li {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .actions a {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+
+        <!-- ===== 头像 ===== -->
+        <div class="avatar-wrapper">
+            <!-- 替换为你的头像图片路径 -->
+            <img src="https://profile-avatar.csdnimg.cn/2ccae461a3234042bfc57525a1eb789d_weixin_40357487.jpg" alt="头像" />
+            <!-- 如果没有图片，取消下面注释并使用上面的 <img> 注释掉 -->
+            <!-- <span class="avatar-placeholder">😊</span> -->
+        </div>
+
+        <!-- ===== 姓名 & 身份 ===== -->
+        <h1 class="name">MangoPapa</h1>
+        <p class="title">Focus on PCIe</p>
+
+        <div class="divider"></div>
+
+        <!-- ===== 联系信息 ===== -->
+        <ul class="info-list">
+
+            <!-- 微信（点击显示二维码） -->
+            <li class="popup-trigger" id="wechatRow">
+                <span class="icon">💬</span>
+                <span class="label">微信</span>
+                <span class="value">loveic_lovelife (点击扫码）</span>
+                <!-- 二维码弹窗 -->
+                <div class="popup" id="qrPopup">
+                    <!-- 替换为你的微信二维码图片路径 -->
+                    <img src="https://img-blog.csdnimg.cn/f52057d1c2614828b2860deb1508fe97.png" alt="微信二维码" />
+                    <span class="popup-label">扫一扫加好友</span>
+                </div>
+            </li>
+
+            <!-- 个人博客 -->
+            <li>
+                <span class="icon">📝</span>
+                <span class="label">博客</span>
+                <span class="value">
+                    <a href="https://mangopapa.blog.csdn.net" target="_blank" rel="noopener">
+                        mangopapa.blog.csdn.net
+                    </a>
+                </span>
+            </li>
+
+            <!-- GitHub -->
+			<!--
+            <li>
+                <span class="icon">🐙</span>
+                <span class="label">GitHub</span>
+                <span class="value">
+                    <a href="https://github.com/yourname" target="_blank" rel="noopener">
+                        github.com/yourname
+                    </a>
+                </span>
+            </li>
+			-->
+
+            <!-- 邮箱 -->
+            <li>
+                <span class="icon">✉️</span>
+                <span class="label">邮箱</span>
+                <span class="value">
+                    <a href="https://mangopapa.blog.csdn.net">
+                        mangopapa@yeah.net
+                    </a>
+                </span>
+            </li>
+
+        </ul>
+
+        <!-- ===== 更多链接 ===== -->
+        <div class="actions">
+            <a href="https://mangopapa.blog.csdn.net" target="_blank" class="btn-primary">
+                🌐 访问博客
+            </a>
+            <a href="javascript:void(0)" class="btn-outline popup-trigger" id="contactBtn">
+                📧 联系我
+                <!-- 联系图片弹窗 -->
+                <div class="popup" id="contactPopup">
+                    <!-- 替换为你想展示的图片路径 -->
+                    <img src="https://img-community.csdnimg.cn/bgimage/a5679a1658ab44359f2fb5bbc22e7556.png" alt="联系方式" />
+                    <span class="popup-label">扫码联系我</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            ✦ 交个朋友 · 学点东西 ✦
+        </div>
+
+    </div>
+
+    <script>
+        // 微信二维码点击切换显示
+        const wechatRow = document.getElementById('wechatRow');
+        const qrPopup   = document.getElementById('qrPopup');
+
+        wechatRow.addEventListener('click', function (e) {
+            e.stopPropagation();
+            contactPopup.classList.remove('show');
+            qrPopup.classList.toggle('show');
+        });
+
+        // 联系我弹窗点击切换显示
+        const contactBtn  = document.getElementById('contactBtn');
+        const contactPopup = document.getElementById('contactPopup');
+
+        contactBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            qrPopup.classList.remove('show');
+            contactPopup.classList.toggle('show');
+        });
+
+        // 点击页面其他地方关闭所有弹窗
+        document.addEventListener('click', function () {
+            qrPopup.classList.remove('show');
+            contactPopup.classList.remove('show');
+        });
+
+        // 点击弹窗本身不关闭
+        qrPopup.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+        contactPopup.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    </script>
+
+</body>
+</html>
