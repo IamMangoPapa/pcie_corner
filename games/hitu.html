@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>办公室出气筒 · 最终版</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, system-ui, sans-serif;
+            background: #2c3e50;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            background-image: radial-gradient(circle at 20% 30%, #3a5068 0%, #1e2a3a 100%);
+        }
+
+        .game-wrapper {
+            width: 1300px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 44px;
+            padding: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* ===== 工具栏 ===== */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 18px;
+            padding: 10px 22px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 60px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #f1c40f;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 12px rgba(241, 196, 15, 0.15);
+            margin-right: 6px;
+        }
+        .brand .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: #f1c40f;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e2a3a;
+            font-size: 18px;
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(241, 196, 15, 0.25);
+        }
+        .brand small {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 1px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 14px 4px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .toolbar-group label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .toolbar-group input[type="text"] {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 5px 14px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+            width: 100px;
+            transition: 0.25s;
+            font-family: inherit;
+        }
+        .toolbar-group input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.13);
+            border-color: #f1c40f;
+            box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.06);
+        }
+        .toolbar-group input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .gender-toggle {
+            display: flex;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 40px;
+            padding: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .gender-toggle button {
+            background: transparent;
+            border: none;
+            border-radius: 40px;
+            padding: 3px 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            color: rgba(255, 255, 255, 0.25);
+            line-height: 1.4;
+        }
+        .gender-toggle button.active {
+            background: rgba(241, 196, 15, 0.15);
+            color: #f1c40f;
+            box-shadow: 0 0 16px rgba(241, 196, 15, 0.04);
+        }
+        .gender-toggle button:hover {
+            color: #fff;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 5px 18px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary {
+            background: #f1c40f;
+            color: #1e2a3a;
+            border-color: #f1c40f;
+            font-weight: 700;
+        }
+        .btn-primary:hover {
+            background: #f39c12;
+            border-color: #f39c12;
+            box-shadow: 0 4px 20px rgba(241, 196, 15, 0.2);
+        }
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.12);
+            border-color: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, 0.22);
+        }
+        .btn-sm {
+            padding: 3px 12px;
+            font-size: 11px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 3px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            margin-left: auto;
+        }
+        .badge span {
+            color: #f1c40f;
+            font-weight: 800;
+            font-size: 20px;
+            min-width: 26px;
+            text-align: center;
+        }
+
+        /* ===== 场景 ===== */
+        .scene {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #dce3ed;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.12), 0 8px 40px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.03);
+            cursor: none;
+            transition: filter 0.1s;
+        }
+        .scene:active {
+            filter: brightness(0.97);
+        }
+
+        /* ===== 背景层 ===== */
+        .scene-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .wall {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #eef2f5 0%, #d5dee8 100%);
+        }
+        .wall::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="none" stroke="rgba(0,0,0,0.015)" stroke-width="0.5"/></svg>');
+            background-size: 80px 80px;
+            opacity: 0.6;
+        }
+
+        .floor {
+            position: absolute;
+            bottom: 0;
+            left: -8%;
+            right: -8%;
+            height: 40%;
+            background: linear-gradient(180deg, #ccb9a6 0%, #b8a08b 100%);
+            border-top: 4px solid rgba(0, 0, 0, 0.04);
+            transform: perspective(900px) rotateX(1.5deg) scale(1.08);
+            transform-origin: bottom center;
+            box-shadow: inset 0 30px 50px rgba(0, 0, 0, 0.04);
+        }
+        .floor::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(90deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(0, 0, 0, 0.015) 100px,
+                    rgba(0, 0, 0, 0.015) 101px),
+                repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(0, 0, 0, 0.01) 100px,
+                    rgba(0, 0, 0, 0.01) 101px);
+            transform: perspective(900px) rotateX(1.5deg);
+        }
+        .floor::after {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            width: 30%;
+            height: 15%;
+            background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .window-group {
+            position: absolute;
+            top: 5%;
+            right: 3%;
+            width: 24%;
+            height: 36%;
+            background: #aac9e6;
+            border-radius: 18px 18px 4px 4px;
+            border: 12px solid #d6cdbc;
+            box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        .window-group .sky {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #8fc1e8 0%, #b5d8f0 60%, #d4e9f7 100%);
+        }
+        .window-group .sun {
+            position: absolute;
+            top: 8%;
+            right: 12%;
+            width: 32%;
+            height: 32%;
+            background: radial-gradient(circle, #fff9e0 0%, rgba(255, 249, 224, 0) 70%);
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(2px);
+        }
+        .window-group .cloud {
+            position: absolute;
+            top: 22%;
+            left: 8%;
+            width: 45%;
+            height: 18%;
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 80px;
+            filter: blur(4px);
+        }
+        .window-group .cloud2 {
+            top: 50%;
+            left: 40%;
+            width: 30%;
+            height: 12%;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 60px;
+            filter: blur(4px);
+            position: absolute;
+        }
+        .window-group .curtain {
+            position: absolute;
+            top: -10%;
+            width: 30%;
+            height: 120%;
+            background: linear-gradient(180deg, #c0392b, #e74c3c);
+            opacity: 0.15;
+            border-radius: 0 0 40% 40%;
+            transform: skewX(-8deg);
+            filter: blur(1px);
+        }
+        .window-group .curtain.left {
+            left: -6%;
+            transform: skewX(8deg);
+        }
+        .window-group .curtain.right {
+            right: -6%;
+            transform: skewX(-8deg);
+        }
+        .window-group .blinds-line {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(180deg,
+                    rgba(180, 170, 160, 0.15) 0px,
+                    rgba(180, 170, 160, 0.15) 10px,
+                    transparent 10px,
+                    transparent 20px);
+            pointer-events: none;
+        }
+
+        .bookshelf {
+            position: absolute;
+            bottom: 28%;
+            left: 2%;
+            width: 14%;
+            height: 40%;
+            background: #8d6e63;
+            border-radius: 6px 6px 0 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: 3px solid #6d4c41;
+            border-bottom: none;
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+            gap: 4px;
+        }
+        .bookshelf .shelf {
+            flex: 1;
+            border-bottom: 3px solid #6d4c41;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 4px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .bookshelf .shelf:last-child {
+            border-bottom: none;
+        }
+        .bookshelf .book {
+            width: 16%;
+            height: 70%;
+            border-radius: 2px;
+            background: #e74c3c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .bookshelf .book:nth-child(2) {
+            background: #3498db;
+            height: 80%;
+        }
+        .bookshelf .book:nth-child(3) {
+            background: #2ecc71;
+            height: 60%;
+        }
+        .bookshelf .book:nth-child(4) {
+            background: #f1c40f;
+            height: 75%;
+        }
+        .bookshelf .book:nth-child(5) {
+            background: #9b59b6;
+            height: 65%;
+        }
+
+        .desk {
+            position: absolute;
+            bottom: 24%;
+            left: 18%;
+            width: 50%;
+            height: 18%;
+            background: linear-gradient(180deg, #d6c4b0 0%, #bfaa93 100%);
+            border-radius: 12px 12px 0 0;
+            border-bottom: 10px solid #a68d76;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+        .desk::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 4%;
+            width: 3%;
+            height: 32px;
+            background: #a68d76;
+            border-radius: 0 0 6px 6px;
+            box-shadow: 26px 0 0 #a68d76, 52px 0 0 #a68d76, 78px 0 0 #a68d76, 104px 0 0 #a68d76,
+                130px 0 0 #a68d76, 156px 0 0 #a68d76, 182px 0 0 #a68d76, 208px 0 0 #a68d76,
+                234px 0 0 #a68d76, 260px 0 0 #a68d76, 286px 0 0 #a68d76, 312px 0 0 #a68d76,
+                338px 0 0 #a68d76, 364px 0 0 #a68d76, 390px 0 0 #a68d76, 416px 0 0 #a68d76,
+                442px 0 0 #a68d76, 468px 0 0 #a68d76, 494px 0 0 #a68d76;
+            width: 6px;
+        }
+        .desk .items {
+            position: absolute;
+            inset: 0;
+            padding: 6% 5%;
+            display: flex;
+            gap: 4%;
+            align-items: flex-end;
+        }
+        .desk .monitor {
+            width: 26%;
+            height: 75%;
+            background: #1e2a3a;
+            border-radius: 6px 6px 2px 2px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            border: 2px solid #2c3e50;
+            position: relative;
+        }
+        .desk .monitor .screen {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            right: 5%;
+            bottom: 5%;
+            background: linear-gradient(180deg, #4fc3f7, #29b6f6);
+            border-radius: 2px;
+            opacity: 0.8;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.08);
+        }
+        .desk .monitor .screen::after {
+            content: '📊';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            opacity: 0.15;
+            filter: grayscale(1);
+        }
+        .desk .keyboard {
+            width: 18%;
+            height: 18%;
+            background: #2c3e50;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2%;
+        }
+        .desk .coffee {
+            width: 8%;
+            height: 22%;
+            background: #f5f0eb;
+            border-radius: 4px 4px 8px 8px;
+            border-bottom: 4px solid #d4c5b2;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+            margin-left: auto;
+        }
+        .desk .coffee::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 6px;
+            background: #6d4c41;
+            border-radius: 2px;
+            opacity: 0.25;
+        }
+        .desk .coffee::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120%;
+            height: 4px;
+            background: #f5f0eb;
+            border-radius: 2px 2px 0 0;
+        }
+        .desk .plant-pot {
+            width: 12%;
+            height: 40%;
+            background: #8d6e63;
+            border-radius: 4px 4px 8px 8px;
+            border-bottom: 4px solid #6d4c41;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+        }
+        .desk .plant-pot::after {
+            content: '🌿';
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+        }
+        .desk .notepad {
+            width: 10%;
+            height: 16%;
+            background: #faf0e6;
+            border-radius: 2px;
+            border-left: 3px solid #e74c3c;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .wall-deco {
+            position: absolute;
+            top: 7%;
+            left: 5%;
+            width: 7%;
+            height: 12%;
+            background: #d4c5b2;
+            border-radius: 4px;
+            border: 6px solid #c4b09a;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: rgba(0, 0, 0, 0.06);
+        }
+        .wall-deco::after {
+            content: '🏆';
+            font-size: 26px;
+            filter: grayscale(0.3);
+        }
+        .clock-deco {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5%;
+            height: 9%;
+            background: #ecf0f1;
+            border-radius: 50%;
+            border: 5px solid #bdc3c7;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        .clock-deco::after {
+            content: '🕐';
+            font-size: 20px;
+            opacity: 0.3;
+        }
+
+        .whiteboard {
+            position: absolute;
+            top: 12%;
+            left: 38%;
+            width: 22%;
+            height: 28%;
+            background: #fcfcfc;
+            border-radius: 8px;
+            border: 8px solid #bdc3c7;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.08);
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .whiteboard::after {
+            content: 'Q4 目标 · 冲刺';
+            font-size: 16px;
+            color: rgba(0, 0, 0, 0.12);
+            font-weight: 600;
+        }
+
+        /* ===== 角色层 ===== */
+        .character-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        /* ---- 玩家（放大版，固定位置） ---- */
+        .user-char {
+            position: absolute;
+            pointer-events: none;
+            z-index: 20;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+            filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.12));
+            left: 18%;
+            top: 72%;
+            /* 固定位置 */
+        }
+        .user-char .body-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .user-char svg {
+            display: block;
+            width: 110px;
+            /* 放大 */
+            height: 165px;
+            filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.06));
+        }
+        .user-char .name-tag {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 2px 18px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: -6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            letter-spacing: 0.5px;
+        }
+        .user-char .name-tag .title {
+            font-weight: 400;
+            font-size: 10px;
+            opacity: 0.4;
+            margin-right: 6px;
+            text-transform: uppercase;
+        }
+
+        /* ---- 棒槌（跟随鼠标） ---- */
+        .mallet {
+            position: absolute;
+            pointer-events: none;
+            z-index: 30;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            will-change: transform;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.15));
+            transition: transform 0.05s;
+        }
+        .mallet svg {
+            display: block;
+            width: 48px;
+            height: 48px;
+        }
+        .mallet.smash {
+            animation: malletStrike 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes malletStrike {
+            0% {
+                transform: translate(-50%, -50%) rotate(-25deg) scale(1);
+            }
+            35% {
+                transform: translate(-50%, -50%) rotate(45deg) scale(1.35);
+            }
+            70% {
+                transform: translate(-50%, -50%) rotate(-15deg) scale(0.9);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(-25deg) scale(1);
+            }
+        }
+
+        /* ---- 烦人精 ---- */
+        .annoying {
+            position: absolute;
+            pointer-events: auto;
+            cursor: pointer;
+            z-index: 15;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+            filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.08));
+            transition: transform 0.05s;
+        }
+        .annoying .body-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .annoying svg {
+            display: block;
+            width: 60px;
+            height: 90px;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.04));
+            transition: transform 0.15s;
+        }
+        .annoying .name-tag {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: -4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .annoying.dizzy .body-wrap {
+            animation: dizzySpin 0.7s ease-in-out;
+        }
+        @keyframes dizzySpin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            15% {
+                transform: rotate(-18deg) scale(1.1);
+            }
+            35% {
+                transform: rotate(18deg) scale(1.2);
+            }
+            55% {
+                transform: rotate(-12deg) scale(1.05);
+            }
+            75% {
+                transform: rotate(8deg) scale(1.1);
+            }
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+        .annoying.dizzy svg {
+            animation: dizzyEyes 0.7s ease-in-out;
+        }
+        @keyframes dizzyEyes {
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                transform: scale(1.15) rotate(-6deg);
+            }
+            50% {
+                transform: scale(0.9) rotate(6deg);
+            }
+            75% {
+                transform: scale(1.05) rotate(-3deg);
+            }
+        }
+        .annoying.shake {
+            animation: shakeImpact 0.2s ease-out;
+        }
+        @keyframes shakeImpact {
+            0% {
+                transform: translate(-50%, -50%) translateX(0px);
+            }
+            20% {
+                transform: translate(-50%, -50%) translateX(-10px);
+            }
+            40% {
+                transform: translate(-50%, -50%) translateX(10px);
+            }
+            60% {
+                transform: translate(-50%, -50%) translateX(-6px);
+            }
+            80% {
+                transform: translate(-50%, -50%) translateX(6px);
+            }
+            100% {
+                transform: translate(-50%, -50%) translateX(0px);
+            }
+        }
+
+        /* ---- 马屁精 ---- */
+        .flatterer {
+            position: absolute;
+            pointer-events: none;
+            z-index: 14;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.08));
+        }
+        .flatterer .body-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .flatterer svg {
+            display: block;
+            width: 56px;
+            height: 85px;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.04));
+        }
+        .flatterer .name-tag {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #f1c40f;
+            margin-top: -4px;
+            border: 1px solid rgba(241, 196, 15, 0.15);
+            white-space: nowrap;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        .flatterer .speech-bubble {
+            position: absolute;
+            top: -44px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            z-index: 40;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+            animation: floatBubble 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .flatterer .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid rgba(255, 255, 255, 0.95);
+        }
+        @keyframes floatBubble {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.5) translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) translateY(0);
+            }
+        }
+        .flatterer .speech-bubble.fade-out {
+            animation: bubbleFade 0.4s ease-in forwards;
+        }
+        @keyframes bubbleFade {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.8) translateY(-20px);
+            }
+        }
+
+        /* ---- 通用特效 ---- */
+        .hit-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
+            border-radius: 50%;
+            animation: particleFly 0.7s ease-out forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes particleFly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        .combo-text {
+            position: absolute;
+            pointer-events: none;
+            z-index: 55;
+            font-size: 28px;
+            font-weight: 900;
+            color: #f1c40f;
+            text-shadow: 0 4px 20px rgba(241, 196, 15, 0.3), 0 2px 0 rgba(0, 0, 0, 0.15);
+            animation: comboPop 0.8s ease-out forwards;
+            font-family: inherit;
+            letter-spacing: 2px;
+        }
+        @keyframes comboPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3) rotate(-10deg);
+            }
+            30% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) rotate(3deg);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -70%) scale(1.2) rotate(0deg);
+            }
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(0, 0, 0, 0.15);
+            font-size: 18px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 5;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+        .empty-state .big-icon {
+            display: block;
+            font-size: 56px;
+            margin-bottom: 6px;
+            opacity: 0.4;
+        }
+        .empty-state .sub {
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 18px 4px 18px;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .footer .hit-count {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 500;
+        }
+        .footer .hit-count span {
+            color: #f1c40f;
+            font-weight: 800;
+            font-size: 20px;
+            margin: 0 4px;
+        }
+        .footer .tip {
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1000px) {
+            .game-wrapper {
+                padding: 16px;
+                border-radius: 32px;
+            }
+            .toolbar {
+                padding: 8px 16px;
+                gap: 6px 12px;
+                border-radius: 40px;
+            }
+            .brand {
+                font-size: 17px;
+            }
+            .brand .logo-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+            .brand small {
+                display: none;
+            }
+            .toolbar-group {
+                padding: 3px 10px;
+                gap: 3px 6px;
+            }
+            .toolbar-group input[type="text"] {
+                width: 70px;
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .btn {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .badge {
+                padding: 2px 12px;
+                font-size: 11px;
+            }
+            .badge span {
+                font-size: 16px;
+            }
+            .user-char svg {
+                width: 80px;
+                height: 120px;
+            }
+            .user-char {
+                left: 15%;
+                top: 72%;
+            }
+            .mallet svg {
+                width: 38px;
+                height: 38px;
+            }
+            .annoying svg {
+                width: 48px;
+                height: 72px;
+            }
+            .flatterer svg {
+                width: 44px;
+                height: 68px;
+            }
+            .scene {
+                aspect-ratio: 4/3;
+            }
+            .desk {
+                width: 56%;
+                height: 14%;
+                left: 2%;
+            }
+            .bookshelf {
+                width: 12%;
+                height: 32%;
+                left: 1%;
+            }
+            .window-group {
+                width: 26%;
+                height: 28%;
+                right: 2%;
+            }
+            .whiteboard {
+                width: 20%;
+                height: 22%;
+                left: 40%;
+            }
+            .flatterer .speech-bubble {
+                font-size: 11px;
+                padding: 3px 12px;
+                max-width: 120px;
+                top: -38px;
+            }
+            .plea-bubble {
+                font-size: 12px;
+                padding: 3px 12px;
+                top: -38px;
+            }
+            .combo-text {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .game-wrapper {
+                padding: 10px;
+                border-radius: 24px;
+            }
+            .toolbar {
+                padding: 6px 10px;
+                gap: 4px 8px;
+                border-radius: 30px;
+            }
+            .brand {
+                font-size: 14px;
+            }
+            .brand .logo-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+            }
+            .toolbar-group {
+                padding: 2px 6px;
+                gap: 2px 4px;
+                border-radius: 30px;
+            }
+            .toolbar-group label {
+                font-size: 9px;
+            }
+            .toolbar-group input[type="text"] {
+                width: 50px;
+                font-size: 10px;
+                padding: 3px 6px;
+            }
+            .gender-toggle button {
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+            .btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .btn-sm {
+                font-size: 9px;
+                padding: 2px 8px;
+            }
+            .badge {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+            .badge span {
+                font-size: 14px;
+                min-width: 18px;
+            }
+            .user-char svg {
+                width: 60px;
+                height: 90px;
+            }
+            .user-char {
+                left: 12%;
+                top: 70%;
+            }
+            .mallet svg {
+                width: 30px;
+                height: 30px;
+            }
+            .annoying svg {
+                width: 38px;
+                height: 58px;
+            }
+            .flatterer svg {
+                width: 34px;
+                height: 52px;
+            }
+            .user-char .name-tag {
+                font-size: 10px;
+                padding: 1px 10px;
+                margin-top: -4px;
+            }
+            .annoying .name-tag {
+                font-size: 10px;
+                padding: 1px 8px;
+                max-width: 50px;
+                margin-top: -2px;
+            }
+            .flatterer .name-tag {
+                font-size: 9px;
+                padding: 1px 8px;
+            }
+            .scene {
+                aspect-ratio: 1/1;
+                border-radius: 16px;
+            }
+            .desk {
+                width: 60%;
+                height: 12%;
+                left: 2%;
+            }
+            .desk .monitor {
+                width: 20%;
+                height: 55%;
+            }
+            .desk .keyboard {
+                width: 14%;
+                height: 12%;
+            }
+            .desk .coffee {
+                width: 6%;
+                height: 16%;
+            }
+            .desk .plant-pot {
+                width: 8%;
+                height: 28%;
+            }
+            .desk .plant-pot::after {
+                font-size: 20px;
+                top: -22px;
+            }
+            .desk .notepad {
+                width: 8%;
+                height: 12%;
+            }
+            .bookshelf {
+                display: none;
+            }
+            .window-group {
+                width: 30%;
+                height: 20%;
+                right: 2%;
+                border-width: 6px;
+            }
+            .whiteboard {
+                width: 22%;
+                height: 16%;
+                left: 38%;
+                border-width: 4px;
+                font-size: 10px;
+            }
+            .whiteboard::after {
+                font-size: 11px;
+            }
+            .clock-deco {
+                width: 8%;
+                height: 6%;
+                font-size: 12px;
+                border-width: 3px;
+            }
+            .clock-deco::after {
+                font-size: 14px;
+            }
+            .wall-deco {
+                width: 10%;
+                height: 8%;
+                border-width: 4px;
+                font-size: 16px;
+            }
+            .wall-deco::after {
+                font-size: 18px;
+            }
+            .flatterer .speech-bubble {
+                font-size: 10px;
+                padding: 2px 10px;
+                max-width: 90px;
+                top: -34px;
+            }
+            .plea-bubble {
+                font-size: 10px;
+                padding: 2px 10px;
+                top: -30px;
+            }
+            .plea-bubble::after {
+                border-width: 5px;
+                bottom: -7px;
+            }
+            .combo-text {
+                font-size: 18px;
+            }
+            .footer {
+                font-size: 10px;
+                padding: 6px 8px 0 8px;
+            }
+            .footer .hit-count span {
+                font-size: 16px;
+            }
+            .empty-state .big-icon {
+                font-size: 36px;
+            }
+            .empty-state {
+                font-size: 13px;
+            }
+            .hit-particle {
+                width: 6px !important;
+                height: 6px !important;
+            }
+        }
+
+        .scene:focus-visible {
+            outline: 2px solid rgba(241, 196, 15, 0.2);
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="brand">
+                <span class="logo-icon">⚡</span>
+                出气筒
+                <small>· 最终版</small>
+            </div>
+
+            <div class="toolbar-group">
+                <label>👤 我</label>
+                <input type="text" id="userNameInput" placeholder="名字" value="林峰">
+                <div class="gender-toggle" id="genderToggle">
+                    <button data-gender="male" class="active">男</button>
+                    <button data-gender="female">女</button>
+                </div>
+                <button class="btn btn-primary btn-sm" id="updateUserBtn">更新</button>
+            </div>
+
+            <div class="toolbar-group">
+                <label>😈 烦人精</label>
+                <input type="text" id="annoyingNameInput" placeholder="取名" value="张麻烦">
+                <button class="btn btn-primary btn-sm" id="addAnnoyingBtn">➕ 添加</button>
+                <button class="btn btn-danger btn-sm" id="clearAnnoyingBtn">✕ 清空</button>
+            </div>
+
+            <div class="badge">
+                🔨 敲打 <span id="hitCountDisplay">0</span>
+            </div>
+        </div>
+
+        <!-- 场景 -->
+        <div class="scene" id="scene" tabindex="0">
+            <!-- 背景 -->
+            <div class="scene-bg">
+                <div class="wall"></div>
+                <div class="floor"></div>
+                <div class="window-group">
+                    <div class="sky"></div>
+                    <div class="sun"></div>
+                    <div class="cloud"></div>
+                    <div class="cloud2"></div>
+                    <div class="curtain left"></div>
+                    <div class="curtain right"></div>
+                    <div class="blinds-line"></div>
+                </div>
+                <div class="bookshelf">
+                    <div class="shelf"><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span></div>
+                    <div class="shelf"><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span></div>
+                    <div class="shelf"><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span><span class="book"></span></div>
+                </div>
+                <div class="desk">
+                    <div class="items">
+                        <div class="monitor"><div class="screen"></div></div>
+                        <div class="keyboard"></div>
+                        <div class="notepad"></div>
+                        <div class="coffee"></div>
+                        <div class="plant-pot"></div>
+                    </div>
+                </div>
+                <div class="wall-deco"></div>
+                <div class="clock-deco"></div>
+                <div class="whiteboard"></div>
+            </div>
+
+            <!-- 空状态 -->
+            <div class="empty-state" id="emptyState">
+                <span class="big-icon">🧘</span>
+                添加几个「烦人精」来出出气吧！
+                <div class="sub">点击上方按钮添加</div>
+            </div>
+
+            <!-- 角色层 -->
+            <div class="character-layer" id="characterLayer">
+                <!-- 玩家（固定位置） -->
+                <div class="user-char" id="userChar">
+                    <div class="body-wrap">
+                        <svg id="userSvg" viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg">
+                            <g id="userBodyGroup">
+                                <!-- 由JS动态生成 -->
+                            </g>
+                        </svg>
+                        <div class="name-tag"><span class="title">✨</span><span id="userNameTag">林峰</span></div>
+                    </div>
+                </div>
+
+                <!-- 棒槌（跟随鼠标） -->
+                <div class="mallet" id="mallet" style="left:50%; top:50%;">
+                    <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="34" y="10" width="12" height="40" rx="4" fill="#8d6e63" />
+                        <rect x="36" y="4" width="8" height="12" rx="3" fill="#6d4c41" />
+                        <ellipse cx="40" cy="14" rx="22" ry="18" fill="#e74c3c" />
+                        <ellipse cx="40" cy="14" rx="18" ry="14" fill="#c0392b" />
+                        <rect x="28" y="8" width="24" height="4" rx="2" fill="#f1c40f" opacity="0.2" />
+                    </svg>
+                </div>
+
+                <!-- 马屁精 -->
+                <div class="flatterer" id="flatterer" style="left:88%; top:18%;">
+                    <div class="body-wrap">
+                        <svg viewBox="0 0 60 110" xmlns="http://www.w3.org/2000/svg" id="flattererSvg">
+                            <!-- 由JS生成 -->
+                        </svg>
+                        <div class="name-tag">⭐ 马屁精</div>
+                        <div class="speech-bubble" id="flattererBubble">您太棒了！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <div class="hit-count">💥 总敲打：<span id="totalHits">0</span> 次</div>
+            <div class="tip">🖱️ 移动鼠标 · 点击敲打 · 烦人精会滑走减速</div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  最终版 JavaScript · 迭代 20+ 版
+        //  烦人精静止，被敲后滑动减速；玩家身体固定，棒槌随鼠标
+        // ================================================================
+
+        (function() {
+            'use strict';
+
+            // ---------- DOM ----------
+            const scene = document.getElementById('scene');
+            const characterLayer = document.getElementById('characterLayer');
+            const userChar = document.getElementById('userChar');
+            const userSvg = document.getElementById('userSvg');
+            const userNameTag = document.getElementById('userNameTag');
+            const mallet = document.getElementById('mallet');
+            const emptyState = document.getElementById('emptyState');
+            const hitCountDisplay = document.getElementById('hitCountDisplay');
+            const totalHitsSpan = document.getElementById('totalHits');
+            const flattererSvg = document.getElementById('flattererSvg');
+
+            const userNameInput = document.getElementById('userNameInput');
+            const genderToggle = document.getElementById('genderToggle');
+            const updateUserBtn = document.getElementById('updateUserBtn');
+            const annoyingNameInput = document.getElementById('annoyingNameInput');
+            const addAnnoyingBtn = document.getElementById('addAnnoyingBtn');
+            const clearAnnoyingBtn = document.getElementById('clearAnnoyingBtn');
+
+            // ---------- 状态 ----------
+            let userGender = 'male';
+            let userName = '林峰';
+            let hitCount = 0;
+            let totalHits = 0;
+            let annoyingList = [];
+            let isAnimating = false;
+            let lastHitTime = 0;
+            let comboCount = 0;
+            let comboTimeout = null;
+            let flattererTimer = null;
+            let animationFrameId = null;
+
+            // ---------- 常量 ----------
+            const PLEA_MESSAGES = [
+                '我错了！', '饶了我吧！', '再也不敢了！',
+                '大佬饶命！', '我服了！', '别打了！',
+                '错了错了！', '我是小丑！', '求放过！',
+                '呜呜呜～', '你最强！', '我投降！',
+                '我认输！', '饶命啊！', '太狠了！'
+            ];
+            const FLATTER_MESSAGES = [
+                '您真是天才！', '这个方案太棒了！', '老板说得对！',
+                '您太有远见了！', '完美！', '您真是我们的榜样！',
+                '太厉害了！', '您就是传奇！', '我太佩服您了！',
+                '您怎么做到的？', '您真是英明！', '向您学习！',
+                '您永远是对的！', '您真是可靠！', '您太帅了！'
+            ];
+            const COLORS = ['#e74c3c', '#f1c40f', '#e67e22', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c'];
+            const FRICTION = 0.95; // 每帧减速系数
+            const MIN_SPEED = 0.02; // 低于此值视为停止
+
+            // ---------- 工具 ----------
+            function random(min, max) { return Math.random() * (max - min) + min; }
+
+            function randomInt(min, max) { return Math.floor(random(min, max + 1)); }
+
+            function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+            function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+            // ---------- 场景坐标 ----------
+            function getSceneCoords(e) {
+                const rect = scene.getBoundingClientRect();
+                let x = ((e.clientX - rect.left) / rect.width) * 100;
+                let y = ((e.clientY - rect.top) / rect.height) * 100;
+                x = clamp(x, 0, 100);
+                y = clamp(y, 0, 100);
+                return { x, y };
+            }
+
+            // ---------- 精致玩家 SVG (放大) ----------
+            function buildUserSVG(gender) {
+                const isMale = gender === 'male';
+                const skin = '#f5d0b8';
+                const hairColor = isMale ? '#4a2c1a' : '#2c1a0e';
+                const shirtColor = isMale ? '#2c3e50' : '#c0392b';
+                const tieColor = isMale ? '#e74c3c' : '#fd79a8';
+                const eyeColor = '#2c3e50';
+
+                let hairPath = '',
+                    tiePath = '',
+                    accessory = '',
+                    collar = '',
+                    eyebrows = '';
+                if (isMale) {
+                    hairPath = `
+                                <path d="M32 28 Q32 8 60 6 Q88 8 88 28 Q90 16 80 10 Q72 6 60 6 Q48 6 40 10 Q30 16 32 28" fill="${hairColor}"/>
+                                <path d="M32 28 Q28 38 34 48 Q36 40 38 34 Q40 28 32 28" fill="${hairColor}"/>
+                                <path d="M88 28 Q92 38 86 48 Q84 40 82 34 Q80 28 88 28" fill="${hairColor}"/>
+                                <path d="M40 6 Q44 2 60 2 Q76 2 80 6 Q72 4 60 4 Q48 4 40 6" fill="${hairColor}"/>
+                            `;
+                    tiePath =
+                        `<polygon points="60,72 50,96 60,106 70,96" fill="${tieColor}"/>`;
+                    collar =
+                        `<polygon points="46,68 60,82 74,68" fill="${shirtColor}" stroke="#1a1a1a" stroke-width="1.5"/>`;
+                    eyebrows = `
+                                <path d="M40 30 Q48 26 56 30" stroke="${eyeColor}" stroke-width="2.5" fill="none"/>
+                                <path d="M64 30 Q72 26 80 30" stroke="${eyeColor}" stroke-width="2.5" fill="none"/>
+                            `;
+                    accessory =
+                        `<circle cx="82" cy="22" r="7" fill="#f1c40f" opacity="0.6"/>`;
+                } else {
+                    hairPath = `
+                                <path d="M28 30 Q26 10 60 8 Q94 10 92 30 Q98 18 86 12 Q76 6 60 6 Q44 6 34 12 Q22 18 28 30" fill="${hairColor}"/>
+                                <path d="M26 28 Q16 40 24 52 Q30 42 32 34 Q32 26 26 28" fill="${hairColor}"/>
+                                <path d="M94 28 Q104 40 96 52 Q90 42 88 34 Q88 26 94 28" fill="${hairColor}"/>
+                                <path d="M38 8 Q44 2 60 2 Q76 2 82 8 Q72 4 60 4 Q48 4 38 8" fill="${hairColor}"/>
+                                <path d="M40 10 Q34 4 28 8 Q22 14 20 22 Q24 16 30 14 Q36 12 40 10" fill="${hairColor}"/>
+                                <path d="M80 10 Q86 4 92 8 Q98 14 100 22 Q96 16 90 14 Q84 12 80 10" fill="${hairColor}"/>
+                                <path d="M56 2 Q60 -2 64 2" stroke="${hairColor}" stroke-width="4" fill="none"/>
+                            `;
+                    tiePath =
+                        `<polygon points="60,74 54,96 60,104 66,96" fill="${tieColor}"/>`;
+                    collar =
+                        `<polygon points="48,68 60,80 72,68" fill="${shirtColor}" stroke="#1a1a1a" stroke-width="1.5"/>`;
+                    eyebrows = `
+                                <path d="M40 32 Q48 28 56 32" stroke="${eyeColor}" stroke-width="2" fill="none"/>
+                                <path d="M64 32 Q72 28 80 32" stroke="${eyeColor}" stroke-width="2" fill="none"/>
+                            `;
+                    accessory =
+                        `<circle cx="80" cy="24" r="8" fill="#fd79a8" opacity="0.7"/>`;
+                }
+                return `
+                        <g id="userBodyGroup">
+                            <rect x="42" y="128" width="14" height="30" rx="4" fill="#2c3e50"/>
+                            <rect x="64" y="128" width="14" height="30" rx="4" fill="#2c3e50"/>
+                            <ellipse cx="49" cy="160" rx="12" ry="6" fill="#1a1a1a"/>
+                            <ellipse cx="71" cy="160" rx="12" ry="6" fill="#1a1a1a"/>
+                            <rect x="34" y="68" width="52" height="62" rx="12" fill="${shirtColor}"/>
+                            ${collar}
+                            ${tiePath}
+                            <circle cx="60" cy="40" r="32" fill="${skin}"/>
+                            ${hairPath}
+                            <ellipse cx="48" cy="38" rx="5" ry="6" fill="#fff"/>
+                            <ellipse cx="72" cy="38" rx="5" ry="6" fill="#fff"/>
+                            <circle cx="50" cy="39" r="3" fill="${eyeColor}"/>
+                            <circle cx="74" cy="39" r="3" fill="${eyeColor}"/>
+                            ${eyebrows}
+                            <path d="M50 50 Q60 60 70 50" stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <ellipse cx="40" cy="48" rx="7" ry="4" fill="rgba(231,76,60,0.08)"/>
+                            <ellipse cx="80" cy="48" rx="7" ry="4" fill="rgba(231,76,60,0.08)"/>
+                            ${accessory}
+                            <rect x="26" y="78" width="10" height="38" rx="5" fill="${skin}"/>
+                            <rect x="84" y="78" width="10" height="38" rx="5" fill="${skin}"/>
+                            <circle cx="31" cy="118" r="7" fill="${skin}"/>
+                            <circle cx="89" cy="118" r="7" fill="${skin}"/>
+                        </g>
+                    `;
+            }
+
+            // ---------- 烦人精 SVG ----------
+            function buildAnnoyingSVG(color) {
+                const skin = '#f5d0b8';
+                const hairColor = '#5d4037';
+                const shirtColor = color || '#8e44ad';
+                return `
+                        <g>
+                            <rect x="18" y="92" width="10" height="22" rx="3" fill="#34495e"/>
+                            <rect x="32" y="92" width="10" height="22" rx="3" fill="#34495e"/>
+                            <ellipse cx="23" cy="116" rx="8" ry="4" fill="#1a1a1a"/>
+                            <ellipse cx="37" cy="116" rx="8" ry="4" fill="#1a1a1a"/>
+                            <rect x="12" y="48" width="36" height="46" rx="8" fill="${shirtColor}"/>
+                            <polygon points="22,48 30,58 38,48" fill="${shirtColor}" stroke="#2c3e50" stroke-width="1"/>
+                            <circle cx="30" cy="28" r="24" fill="${skin}"/>
+                            <path d="M10 22 Q6 8 18 6 Q24 2 30 6 Q36 2 42 6 Q54 8 50 22 Q54 14 48 10 Q42 6 30 6 Q18 6 12 10 Q6 14 10 22" fill="${hairColor}"/>
+                            <path d="M8 20 Q4 12 14 8 Q20 4 30 8 Q40 4 46 8 Q56 12 52 20" fill="${hairColor}" opacity="0.6"/>
+                            <circle cx="20" cy="26" r="8" fill="none" stroke="#607d8b" stroke-width="2.5"/>
+                            <circle cx="40" cy="26" r="8" fill="none" stroke="#607d8b" stroke-width="2.5"/>
+                            <path d="M28 26 L32 26" stroke="#607d8b" stroke-width="2.5"/>
+                            <path d="M12 26 L16 26" stroke="#607d8b" stroke-width="2.5"/>
+                            <path d="M44 26 L48 26" stroke="#607d8b" stroke-width="2.5"/>
+                            <circle cx="20" cy="26" r="3" fill="#2c3e50"/>
+                            <circle cx="40" cy="26" r="3" fill="#2c3e50"/>
+                            <path d="M14 18 Q20 14 26 18" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                            <path d="M34 18 Q40 14 46 18" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                            <path d="M22 34 Q30 40 40 34" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <ellipse cx="14" cy="32" rx="5" ry="3" fill="rgba(231,76,60,0.1)"/>
+                            <ellipse cx="46" cy="32" rx="5" ry="3" fill="rgba(231,76,60,0.1)"/>
+                            <rect x="6" y="54" width="8" height="28" rx="4" fill="${skin}"/>
+                            <rect x="46" y="54" width="8" height="28" rx="4" fill="${skin}"/>
+                            <circle cx="10" cy="84" r="5" fill="${skin}"/>
+                            <circle cx="50" cy="84" r="5" fill="${skin}"/>
+                            <text x="30" y="6" font-size="16" font-weight="900" fill="#f1c40f" text-anchor="middle" font-family="sans-serif">!</text>
+                        </g>
+                    `;
+            }
+
+            // ---------- 马屁精 SVG ----------
+            function buildFlattererSVG() {
+                return `
+                        <g>
+                            <rect x="16" y="86" width="10" height="20" rx="3" fill="#2c3e50"/>
+                            <rect x="30" y="86" width="10" height="20" rx="3" fill="#2c3e50"/>
+                            <ellipse cx="21" cy="108" rx="7" ry="3" fill="#1a1a1a"/>
+                            <ellipse cx="35" cy="108" rx="7" ry="3" fill="#1a1a1a"/>
+                            <rect x="10" y="44" width="36" height="44" rx="8" fill="#3498db"/>
+                            <polygon points="20,44 28,54 36,44" fill="#3498db" stroke="#2c3e50" stroke-width="1"/>
+                            <circle cx="28" cy="24" r="22" fill="#f5d0b8"/>
+                            <path d="M8 18 Q4 6 16 4 Q22 0 28 4 Q34 0 40 4 Q52 6 48 18 Q52 10 44 6 Q38 2 28 2 Q18 2 12 6 Q4 10 8 18" fill="#4a2c1a"/>
+                            <path d="M6 16 Q2 8 12 4 Q18 0 28 4 Q38 0 44 4 Q54 8 50 16" fill="#4a2c1a" opacity="0.5"/>
+                            <ellipse cx="20" cy="22" rx="3.5" ry="4" fill="#fff"/>
+                            <ellipse cx="36" cy="22" rx="3.5" ry="4" fill="#fff"/>
+                            <circle cx="22" cy="23" r="2" fill="#2c3e50"/>
+                            <circle cx="38" cy="23" r="2" fill="#2c3e50"/>
+                            <path d="M16 16 Q22 12 28 16" stroke="#2c3e50" stroke-width="1.8" fill="none"/>
+                            <path d="M28 16 Q34 12 40 16" stroke="#2c3e50" stroke-width="1.8" fill="none"/>
+                            <path d="M20 32 Q28 40 36 32" stroke="#c0392b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <ellipse cx="14" cy="28" rx="4" ry="2.5" fill="rgba(231,76,60,0.08)"/>
+                            <ellipse cx="42" cy="28" rx="4" ry="2.5" fill="rgba(231,76,60,0.08)"/>
+                            <rect x="4" y="50" width="8" height="26" rx="4" fill="#f5d0b8"/>
+                            <rect x="44" y="50" width="8" height="26" rx="4" fill="#f5d0b8"/>
+                            <circle cx="8" cy="78" r="5" fill="#f5d0b8"/>
+                            <circle cx="48" cy="78" r="5" fill="#f5d0b8"/>
+                            <text x="28" y="6" font-size="14" fill="#f1c40f" text-anchor="middle">⭐</text>
+                        </g>
+                    `;
+            }
+
+            // ---------- 更新用户 ----------
+            function updateUser() {
+                userName = userNameInput.value.trim() || '林峰';
+                userNameTag.textContent = userName;
+                const gender = userGender;
+                userSvg.innerHTML = buildUserSVG(gender);
+                document.querySelectorAll('.gender-toggle button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.gender === gender);
+                });
+                if (!userNameInput.value.trim()) {
+                    userNameInput.value = userName;
+                }
+            }
+
+            // ---------- 马屁精 ----------
+            function initFlatterer() {
+                flattererSvg.innerHTML = buildFlattererSVG();
+                if (flattererTimer) clearInterval(flattererTimer);
+                flattererTimer = setInterval(() => {
+                    const msg = pick(FLATTER_MESSAGES);
+                    const container = document.querySelector('.flatterer .body-wrap');
+                    let bubble = container.querySelector('.speech-bubble');
+                    if (!bubble) {
+                        bubble = document.createElement('div');
+                        bubble.className = 'speech-bubble';
+                        container.appendChild(bubble);
+                    }
+                    bubble.textContent = msg;
+                    bubble.classList.remove('fade-out');
+                    void bubble.offsetWidth;
+                    bubble.style.animation = 'none';
+                    void bubble.offsetWidth;
+                    bubble.style.animation = 'floatBubble 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+                }, 3200 + random(0, 1500));
+                setTimeout(() => {
+                    const container = document.querySelector('.flatterer .body-wrap');
+                    let bubble = container.querySelector('.speech-bubble');
+                    if (!bubble) {
+                        bubble = document.createElement('div');
+                        bubble.className = 'speech-bubble';
+                        container.appendChild(bubble);
+                    }
+                    bubble.textContent = pick(FLATTER_MESSAGES);
+                }, 300);
+            }
+
+            // ---------- 添加烦人精 (初始静止) ----------
+            function addAnnoying(name) {
+                const displayName = name.trim() || '烦人精';
+                const hue = randomInt(0, 360);
+                const sat = randomInt(55, 85);
+                const lig = randomInt(50, 75);
+                const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
+                const x = random(10, 90);
+                const y = random(12, 85);
+
+                const el = document.createElement('div');
+                el.className = 'annoying';
+                el.style.left = x + '%';
+                el.style.top = y + '%';
+                el.dataset.x = x;
+                el.dataset.y = y;
+                const svgContent = buildAnnoyingSVG(color);
+                el.innerHTML = `
+                        <div class="body-wrap">
+                            <svg viewBox="0 0 60 120" xmlns="http://www.w3.org/2000/svg">
+                                ${svgContent}
+                            </svg>
+                            <div class="name-tag">${displayName}</div>
+                        </div>
+                    `;
+
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!isAnimating && !this.classList.contains('dizzy')) {
+                        smashAnnoying(this);
+                    }
+                });
+
+                characterLayer.appendChild(el);
+                const item = {
+                    el: el,
+                    name: displayName,
+                    x: x,
+                    y: y,
+                    vx: 0,
+                    vy: 0,
+                    state: 'normal'
+                };
+                annoyingList.push(item);
+                emptyState.style.display = 'none';
+                updateHitCount();
+            }
+
+            // ---------- 敲打逻辑 ----------
+            function smashAnnoying(el) {
+                if (isAnimating) return;
+                const idx = annoyingList.findIndex(a => a.el === el);
+                if (idx === -1) return;
+                const item = annoyingList[idx];
+                if (item.state === 'dizzy') return;
+
+                isAnimating = true;
+                item.state = 'dizzy';
+
+                // 棒槌动画
+                mallet.classList.remove('smash');
+                void mallet.offsetWidth;
+                mallet.classList.add('smash');
+
+                // 烦人精晕眩 & 震动
+                el.classList.add('dizzy', 'shake');
+                setTimeout(() => el.classList.remove('shake'), 300);
+
+                // 粒子
+                const rect = el.getBoundingClientRect();
+                const sceneRect = scene.getBoundingClientRect();
+                const cx = ((rect.left + rect.width / 2 - sceneRect.left) / sceneRect.width) * 100;
+                const cy = ((rect.top + rect.height / 2 - sceneRect.top) / sceneRect.height) * 100;
+                spawnParticles(cx, cy, 14);
+
+                // 计数连击
+                const now = Date.now();
+                if (now - lastHitTime < 800) {
+                    comboCount++;
+                } else {
+                    comboCount = 1;
+                }
+                lastHitTime = now;
+                if (comboTimeout) clearTimeout(comboTimeout);
+                comboTimeout = setTimeout(() => { comboCount = 0; }, 1200);
+
+                hitCount++;
+                totalHits++;
+                updateHitCount();
+
+                if (comboCount >= 3) {
+                    showCombo(cx, cy, comboCount);
+                }
+
+                // 求饶气泡
+                const plea = pick(PLEA_MESSAGES);
+                const bubble = document.createElement('div');
+                bubble.className = 'plea-bubble';
+                bubble.textContent = plea;
+                el.querySelector('.body-wrap').appendChild(bubble);
+
+                // 屏幕微震
+                scene.style.transition = 'transform 0.05s';
+                scene.style.transform = 'translateX(2px)';
+                setTimeout(() => { scene.style.transform = 'translateX(-2px)'; }, 50);
+                setTimeout(() => { scene.style.transform = 'translateX(1px)'; }, 100);
+                setTimeout(() => { scene.style.transform = 'translateX(0)'; }, 150);
+
+                // 赋予速度（随机方向，大小适中）
+                const angle = random(0, Math.PI * 2);
+                const speed = random(1.2, 2.8);
+                item.vx = Math.cos(angle) * speed;
+                item.vy = Math.sin(angle) * speed;
+
+                // 恢复
+                setTimeout(() => {
+                    el.classList.remove('dizzy');
+                    item.state = 'normal';
+                    const b = el.querySelector('.plea-bubble');
+                    if (b) {
+                        b.classList.add('fade-out');
+                        setTimeout(() => b.remove(), 450);
+                    }
+                    isAnimating = false;
+                }, 850);
+
+                hitCountDisplay.style.transform = 'scale(1.5)';
+                setTimeout(() => {
+                    hitCountDisplay.style.transform = 'scale(1)';
+                }, 200);
+            }
+
+            // ---------- 粒子 ----------
+            function spawnParticles(x, y, count) {
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'hit-particle';
+                    const size = random(6, 16);
+                    const angle = random(0, Math.PI * 2);
+                    const dist = random(40, 130);
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist - 30;
+                    p.style.width = size + 'px';
+                    p.style.height = size + 'px';
+                    p.style.left = x + '%';
+                    p.style.top = y + '%';
+                    p.style.background = pick(COLORS);
+                    p.style.boxShadow = `0 0 16px ${pick(COLORS)}40`;
+                    p.style.setProperty('--tx', tx + 'px');
+                    p.style.setProperty('--ty', ty + 'px');
+                    p.style.borderRadius = random(20, 50) + '%';
+                    characterLayer.appendChild(p);
+                    setTimeout(() => p.remove(), 700);
+                }
+            }
+
+            // ---------- 连击 ----------
+            function showCombo(x, y, count) {
+                const el = document.createElement('div');
+                el.className = 'combo-text';
+                el.textContent = `🔥 ${count}连击！`;
+                el.style.left = x + '%';
+                el.style.top = (y - 10) + '%';
+                el.style.transform = 'translate(-50%, -50%)';
+                characterLayer.appendChild(el);
+                setTimeout(() => el.remove(), 800);
+            }
+
+            // ---------- 清空 ----------
+            function clearAnnoying() {
+                annoyingList.forEach(item => item.el.remove());
+                annoyingList = [];
+                emptyState.style.display = 'block';
+                hitCount = 0;
+                comboCount = 0;
+                updateHitCount();
+            }
+
+            // ---------- 计数 ----------
+            function updateHitCount() {
+                hitCountDisplay.textContent = hitCount;
+                totalHitsSpan.textContent = totalHits;
+            }
+
+            // ---------- 烦人精物理更新 (滑动减速) ----------
+            function updateAnnoyingMovement() {
+                for (const item of annoyingList) {
+                    if (item.state === 'dizzy') continue;
+                    // 应用速度
+                    item.x += item.vx * 0.04;
+                    item.y += item.vy * 0.04;
+                    // 减速
+                    item.vx *= FRICTION;
+                    item.vy *= FRICTION;
+                    if (Math.abs(item.vx) < MIN_SPEED) item.vx = 0;
+                    if (Math.abs(item.vy) < MIN_SPEED) item.vy = 0;
+
+                    // 边界碰撞 (反弹并损失能量)
+                    const margin = 2;
+                    if (item.x < margin) { item.x = margin;
+                        item.vx = -item.vx * 0.5; }
+                    if (item.x > 100 - margin) { item.x = 100 - margin;
+                        item.vx = -item.vx * 0.5; }
+                    if (item.y < margin + 5) { item.y = margin + 5;
+                        item.vy = -item.vy * 0.5; }
+                    if (item.y > 100 - margin) { item.y = 100 - margin;
+                        item.vy = -item.vy * 0.5; }
+
+                    // 更新DOM
+                    item.el.style.left = item.x + '%';
+                    item.el.style.top = item.y + '%';
+                }
+            }
+
+            // ---------- 鼠标跟踪 (棒槌跟随，玩家身体不动) ----------
+            let targetX = 50,
+                targetY = 50;
+            let currentX = 50,
+                currentY = 50;
+
+            function onMouseMove(e) {
+                const coords = getSceneCoords(e);
+                targetX = coords.x;
+                targetY = coords.y;
+            }
+
+            function smoothFollow() {
+                // 棒槌平滑跟随鼠标
+                currentX += (targetX - currentX) * 0.25;
+                currentY += (targetY - currentY) * 0.25;
+                // 防止棒槌越界
+                let mx = clamp(currentX, 2, 98);
+                let my = clamp(currentY, 2, 96);
+                mallet.style.left = mx + '%';
+                mallet.style.top = my + '%';
+
+                // 更新烦人精物理
+                updateAnnoyingMovement();
+
+                animationFrameId = requestAnimationFrame(smoothFollow);
+            }
+
+            // ---------- 场景点击 (空挥) ----------
+            function onSceneClick(e) {
+                if (e.target === scene || e.target === characterLayer || e.target === emptyState || e.target.closest(
+                        '.scene-bg')) {
+                    if (!isAnimating) {
+                        mallet.classList.remove('smash');
+                        void mallet.offsetWidth;
+                        mallet.classList.add('smash');
+                        const coords = getSceneCoords(e);
+                        spawnParticles(coords.x, coords.y, 8);
+                    }
+                }
+            }
+
+            // ---------- 初始化 ----------
+            function init() {
+                updateUser();
+                // 默认烦人精
+                addAnnoying('王麻烦');
+                addAnnoying('李讨厌');
+                if (annoyingList.length >= 2) {
+                    annoyingList[0].el.style.left = '28%';
+                    annoyingList[0].el.style.top = '38%';
+                    annoyingList[0].x = 28;
+                    annoyingList[0].y = 38;
+                    annoyingList[1].el.style.left = '72%';
+                    annoyingList[1].el.style.top = '56%';
+                    annoyingList[1].x = 72;
+                    annoyingList[1].y = 56;
+                }
+                emptyState.style.display = 'none';
+
+                initFlatterer();
+
+                scene.addEventListener('mousemove', onMouseMove);
+                scene.addEventListener('click', onSceneClick);
+
+                genderToggle.addEventListener('click', function(e) {
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    const gender = btn.dataset.gender;
+                    if (gender) {
+                        userGender = gender;
+                        updateUser();
+                    }
+                });
+
+                updateUserBtn.addEventListener('click', updateUser);
+                userNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') updateUser(); });
+
+                addAnnoyingBtn.addEventListener('click', function() {
+                    const name = annoyingNameInput.value.trim() || '烦人精';
+                    addAnnoying(name);
+                    annoyingNameInput.value = '';
+                    annoyingNameInput.focus();
+                });
+                annoyingNameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addAnnoyingBtn.click(); });
+
+                clearAnnoyingBtn.addEventListener('click', clearAnnoying);
+
+                smoothFollow();
+                scene.focus();
+                updateHitCount();
+
+                console.log('⚡ 办公室出气筒 · 最终版已启动 (迭代20+)');
+            }
+
+            // 启动
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+
+</body>
+</html>
