@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>PCIe 帧格式</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
+            background: #f0f2f5;
+            color: #1a2332;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #d0d5dd;
+            padding: 8px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+        .topbar h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a56db;
+            white-space: nowrap;
+        }
+        .topbar .tabs {
+            display: flex;
+            gap: 2px;
+            flex-wrap: wrap;
+        }
+        .topbar .tab {
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7c93;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.12s;
+            user-select: none;
+            border-bottom: 2px solid transparent;
+        }
+        .topbar .tab:hover {
+            background: #eef2f7;
+            color: #1a2332;
+        }
+        .topbar .tab.active {
+            color: #1a56db;
+            border-bottom-color: #1a56db;
+            background: #f0f5ff;
+        }
+        .topbar .mode-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            font-size: 12px;
+            color: #6b7c93;
+        }
+        .topbar .mode-switch label {
+            cursor: pointer;
+            user-select: none;
+        }
+        .topbar .mode-switch .sw {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .topbar .mode-switch .sw input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .topbar .mode-switch .sl {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #d0d5dd;
+            border-radius: 20px;
+            transition: .3s;
+        }
+        .topbar .mode-switch .sl:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s;
+        }
+        .topbar .mode-switch .sw input:checked+.sl {
+            background: #1a56db;
+        }
+        .topbar .mode-switch .sw input:checked+.sl:before {
+            transform: translateX(18px);
+        }
+        .topbar .mode-badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .topbar .mode-badge.nf {
+            background: #e8eefb;
+            color: #1a56db;
+        }
+        .topbar .mode-badge.fl {
+            background: #f0e8fb;
+            color: #7c3aed;
+        }
+
+        .main {
+            display: flex;
+            height: calc(100vh - 56px);
+        }
+
+        .sidebar {
+            width: 200px;
+            min-width: 200px;
+            background: #fff;
+            border-right: 1px solid #d0d5dd;
+            padding: 8px 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar .s-head {
+            font-size: 11px;
+            color: #6b7c93;
+            padding: 6px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid #eef2f7;
+        }
+        .sidebar .item {
+            padding: 5px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #4a5568;
+            border-left: 3px solid transparent;
+            transition: all 0.1s;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sidebar .item:hover {
+            background: #f0f5ff;
+            color: #1a56db;
+        }
+        .sidebar .item.active {
+            color: #1a56db;
+            border-left-color: #1a56db;
+            background: #f0f5ff;
+            font-weight: 600;
+        }
+        .sidebar .sep {
+            height: 1px;
+            background: #eef2f7;
+            margin: 4px 12px;
+        }
+        .sidebar .cat-label {
+            font-size: 10px;
+            color: #8899b4;
+            padding: 8px 16px 2px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            flex: 1;
+            padding: 16px 24px;
+            overflow-y: auto;
+            background: #f0f2f5;
+        }
+        .content .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a2332;
+            margin-bottom: 2px;
+        }
+        .content .page-sub {
+            font-size: 13px;
+            color: #1a56db;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .content .page-desc {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 12px;
+            max-width: 900px;
+        }
+
+        .tlp-container {
+            background: #fff;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tlp-container .tlp-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+        .tlp-container .tlp-label .sub {
+            font-weight: 400;
+            font-size: 11px;
+            color: #8899b4;
+        }
+
+        /* 通用表格样式 (32列) */
+        .tlp-table, .ts-table, .cfg-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            border: 2px solid #1a1a1a;
+            font-size: 13px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            table-layout: fixed;
+        }
+        .ts-table {
+            max-width: 420px;
+        }
+        .cfg-table {
+            width: 630px; /* 54 + 32*18 */
+            max-width: 630px;
+            table-layout: fixed;
+        }
+        .tlp-table th, .tlp-table td,
+        .ts-table th, .ts-table td,
+        .cfg-table th, .cfg-table td {
+            border: 1px solid #444;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .tlp-table tbody td, .ts-table tbody td, .cfg-table tbody td {
+            padding: 7px 2px !important;
+            height: 23px !important;
+        }
+        .tlp-table td:first-child, .tlp-table th:first-child,
+        .ts-table td:first-child, .ts-table th:first-child,
+        .cfg-table td:first-child, .cfg-table th:first-child {
+            border: 1px solid #444 !important;
+            width: 54px !important;
+            min-width: 54px !important;
+            max-width: 54px !important;
+        }
+        .cfg-table td:not(:first-child) {
+            width: 18px !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+        }
+        .tlp-table .byte-label th:first-child,
+        .tlp-table .bit-label th:first-child,
+        .tlp-table tbody tr:first-child td:first-child,
+        .ts-table .bit-label th:first-child,
+        .ts-table tbody tr:first-child td:first-child,
+        .cfg-table .byte-label th:first-child,
+        .cfg-table .bit-label th:first-child,
+        .cfg-table tbody tr:first-child td:first-child {
+            border-top: none !important;
+        }
+
+        .tlp-table .row-label, .ts-table .row-label, .cfg-table .row-label {
+            background: transparent !important;
+            font-weight: bold;
+            width: 100% !important;
+            font-size: 12px;
+            color: #888;
+            cursor: default;
+            text-align: right !important;
+            padding-right: 10px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: clip !important;
+        }
+
+        .tlp-table .byte-label th, .ts-table .byte-label th, .cfg-table .byte-label th {
+            background: transparent !important;
+            height: 20px;
+            line-height: 20px;
+            padding: 0 !important;
+            font-size: 11px;
+            cursor: default;
+            font-weight: bold;
+            white-space: nowrap !important;
+            border-top: 2px solid #1a1a1a !important;
+            text-align: center !important;
+            color: #888 !important;
+        }
+        .tlp-table .byte-label, .ts-table .byte-label, .cfg-table .byte-label {
+            border-bottom: 2px solid #000;
+        }
+
+        .tlp-table .bit-label th, .ts-table .bit-label th, .cfg-table .bit-label th {
+            background: transparent !important;
+            height: 20px;
+            line-height: 20px;
+            padding: 0 !important;
+            font-size: 11px;
+            cursor: default;
+            font-weight: bold;
+            white-space: nowrap !important;
+            border-bottom: 2px solid #000;
+            text-align: center !important;
+        }
+        .tlp-table .bit-cell, .ts-table .bit-cell, .cfg-table .bit-cell {
+            padding: 0 !important;
+            border: 1px solid #444;
+            font-family: monospace;
+            text-align: center !important;
+            vertical-align: middle !important;
+            color: #888 !important;
+        }
+        .tlp-table tbody tr:last-child td:not(:first-child),
+        .ts-table tbody tr:last-child td:not(:first-child),
+        .cfg-table tbody tr:last-child td:not(:first-child) {
+            border-bottom: 2px solid #1a1a1a !important;
+        }
+
+        .tlp-table .field-cell, .ts-table .field-cell, .cfg-table .field-cell {
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 6px 4px !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            position: relative;
+        }
+        .cfg-table .field-cell {
+            font-size: 11px;
+        }
+        .tlp-table .field-cell.dark-text, .ts-table .field-cell.dark-text, .cfg-table .field-cell.dark-text {
+            color: #111;
+        }
+        .tlp-table .field-cell:hover, .ts-table .field-cell:hover, .cfg-table .field-cell:hover {
+            opacity: 0.85;
+            border: 2px solid #000;
+            z-index: 2;
+            transform: scale(1.02);
+        }
+        .cfg-table .field-cell:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .tlp-table .field-cell:active, .ts-table .field-cell:active, .cfg-table .field-cell:active {
+            transform: scale(0.96);
+        }
+
+        /* 配色 (TLP & TS) */
+        .bg-fmt { background-color: #2980b9; }
+        .bg-type { background-color: #1abc9c; }
+        .bg-tc { background-color: #c0392b; }
+        .bg-r { background-color: #95a5a6; }
+        .bg-th { background-color: #8e44ad; }
+        .bg-td { background-color: #16a085; }
+        .bg-ep { background-color: #e74c3c; }
+        .bg-attr { background-color: #2ecc71; }
+        .bg-at { background-color: #3498db; }
+        .bg-length { background-color: #34495e; }
+        .bg-reqid { background-color: #f39c12; }
+        .bg-tag { background-color: #9b59b6; }
+        .bg-lbe { background-color: #1abc9c; }
+        .bg-fbe { background-color: #e74c3c; }
+        .bg-addr-high { background-color: #2c3e50; }
+        .bg-addr-low { background-color: #7f8c8d; }
+        .bg-ph { background-color: #bdc3c7; color: #222; }
+        .bg-reserved { background-color: #e0e0e0; color: #222; }
+        .bg-msgcode { background-color: #d35400; }
+        .bg-status { background-color: #be185d; }
+        .bg-bcm { background-color: #0284c7; }
+        .bg-bytecnt { background-color: #0891b2; }
+        .bg-lowaddr { background-color: #7f8c8d; }
+        .bg-cplid { background-color: #f39c12; }
+        .bg-bus { background-color: #e67e22; }
+        .bg-devfn { background-color: #d35400; }
+        .bg-extreg { background-color: #16a085; }
+        .bg-regnum { background-color: #2980b9; }
+        .bg-destbus { background-color: #e67e22; }
+        .bg-devfunc { background-color: #d35400; }
+        .bg-routing { background-color: #8e44ad; }
+        .bg-data { background-color: #7c3aed; }
+
+        /* TS 配色 */
+        .bg-com { background-color: #2980b9; }
+        .bg-tsid1 { background-color: #1abc9c; }
+        .bg-tsid2 { background-color: #d35400; }
+        .bg-link { background-color: #f39c12; }
+        .bg-lane { background-color: #e67e22; }
+        .bg-nfts { background-color: #9b59b6; }
+        .bg-speed { background-color: #2ecc71; }
+        .bg-enIdle { background-color: #3498db; }
+        .bg-disScramble { background-color: #8e44ad; }
+        .bg-loopback { background-color: #16a085; }
+        .bg-dislink { background-color: #c0392b; }
+        .bg-hotreset { background-color: #e74c3c; }
+        .bg-bitrate { background-color: #e67e22; }
+        .bg-vendor { background-color: #34495e; }
+        .bg-end { background-color: #bdc3c7; color: #222; }
+
+        /* 释义面板 — 紧挨表格，宽度一致 */
+        .info-panel {
+            width: 100%;
+            max-width: 1000px;
+            margin: 12px auto 0;
+            background: #fff;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 16px 22px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+        .info-panel h3 {
+            margin: 0 0 4px 0;
+            color: #1a2332;
+            border-bottom: 2px solid #eef2f7;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+        .info-panel h3 span {
+            color: #6b7c93;
+            font-weight: normal;
+            font-size: 13px;
+        }
+        .info-panel p.desc {
+            color: #444;
+            margin: 8px 0 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .info-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            font-size: 13px;
+            border: 1px solid #d0d5dd;
+        }
+        .info-panel th, .info-panel td {
+            border: 1px solid #d0d5dd;
+            padding: 6px 12px;
+            text-align: left;
+            cursor: default;
+        }
+        .info-panel th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .info-panel .empty-state {
+            color: #8899b4;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        /* CFG 内部的 Tab 切换 */
+        .cfg-tab-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        .cfg-tab-btn {
+            padding: 6px 20px;
+            border-radius: 6px;
+            border: 1px solid #d0d5dd;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: #4a5568;
+            transition: all 0.15s;
+        }
+        .cfg-tab-btn:hover {
+            background: #f0f5ff;
+        }
+        .cfg-tab-btn.active {
+            background: #1a56db;
+            color: #fff;
+            border-color: #1a56db;
+        }
+        .cfg-tab-content {
+            display: none;
+        }
+        .cfg-tab-content.active {
+            display: block;
+        }
+
+        /* 配置空间容器 — 与释义面板宽度一致 */
+        .cfg-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+        }
+        .cfg-container .cfg-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+
+        .cfg-wrapper {
+            display: inline-block;
+            margin: 0 auto;
+            width: auto;
+            text-align: left;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0.4; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 4px; }
+        .sidebar::-webkit-scrollbar { width: 3px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 3px; }
+
+        @media (max-width: 720px) {
+            .main { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #d0d5dd; max-height: 200px; overflow-y: auto; }
+            .content { padding: 12px 14px; }
+            .topbar { padding: 6px 12px; }
+            .topbar h1 { font-size: 15px; }
+            .topbar .tab { font-size: 11px; padding: 4px 10px; }
+            .tlp-table, .ts-table, .cfg-table { font-size: 11px; }
+            .tlp-table .field-cell, .ts-table .field-cell, .cfg-table .field-cell { font-size: 10px; padding: 4px 2px !important; }
+            .tlp-table .row-label, .ts-table .row-label, .cfg-table .row-label { font-size: 10px; padding-right: 4px !important; }
+            .tlp-table .byte-label th, .tlp-table .bit-label th,
+            .ts-table .byte-label th, .ts-table .bit-label th,
+            .cfg-table .byte-label th, .cfg-table .bit-label th { font-size: 9px; }
+            .info-panel { padding: 12px 14px; }
+            .ts-table { max-width: 380px; }
+            .cfg-table { width: 100%; max-width: 100%; }
+            .cfg-wrapper { width: 100%; }
+            .cfg-container { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <h1>🥭 PCIe 帧格式</h1>
+    <div class="tabs" id="mainTabs">
+        <div class="tab active" data-cat="tlp">TLP</div>
+        <div class="tab" data-cat="ts">OS</div>
+        <div class="tab" data-cat="cfg">CFG</div>
+    </div>
+    <div class="mode-switch">
+        <label>Non-FLIT</label>
+        <label class="sw">
+            <input type="checkbox" id="flitSwitch">
+            <span class="sl"></span>
+        </label>
+        <label>FLIT</label>
+        <span class="mode-badge nf" id="modeBadge">Non-FLIT</span>
+    </div>
+</div>
+
+<div class="main">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8899b4;flex-direction:column;gap:6px">
+            <div style="font-size:32px">🔍</div>
+            <div style="font-size:14px">选择左侧 TLP 类型查看</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =====================================================================
+    //  1. 字段释义字典（合并 TLP + TS + CFG）
+    // =====================================================================
+    const fieldDefinitions = {
+        // ---- TLP 字段 ----
+        'Fmt': { bits:3, desc:'TLP 格式编码 (头部长度 & 数据负载)。', values:{'000':'3DW无数据','001':'4DW无数据','010':'3DW有数据','011':'4DW有数据','100':'TLP Prefix'} },
+        'Type': { bits:5, desc:'TLP 事务类型编码。', values:{'00000':'MRd/MWr','00010':'IORd/IOWr','00100':'CfgRd0/Wr0','00101':'CfgRd1/Wr1','01010':'Cpl/CplD','01011':'CplLk(废弃)','01100':'FetchAdd','01101':'Swap','01110':'CAS','01111':'DMWr','10010':'Msg/MsgD','11111':'VDM'} },
+        'TC': { bits:3, desc:'流量类别 (Traffic Class)。', values:{'000':'TC0','001':'TC1','010':'TC2','011':'TC3','100':'TC4','101':'TC5','110':'TC6','111':'TC7'} },
+        'Reserved': { bits:32, desc:'硬件保留区域。读操作必须忽略该值，写入时必须保持原有值。', values: { '任意值': '必须忽略或保持不变' } },
+        'R': { bits:1, desc:'保留位，必须置0。', values:{'0':'必须为0','1':'无效'} },
+        'TH': { bits:1, desc:'TLP 处理提示 (TPH)。', values:{'0':'无提示','1':'启用提示'} },
+        'TD': { bits:1, desc:'TLP 摘要 (ECRC) 标志。', values:{'0':'无ECRC','1':'含ECRC'} },
+        'EP': { bits:1, desc:'错误毒化 (Poisoned)。', values:{'0':'正常','1':'有毒'} },
+        'Attr': { bits:3, desc:'属性 (A2+Attr[1:0])。', values:{'000':'默认','001':'保留','010':'放松排序','011':'保留','100':'ID排序','101':'保留','110':'保留','111':'保留'} },
+        'AT': { bits:2, desc:'地址类型 (ATS)。', values:{'00':'未转换','01':'保留','10':'已转换','11':'保留'} },
+        'Length': { bits:10, desc:'数据负载长度 (DW)，0表示1024。', values:{'0x000~0x3FF':'0~1023 DW (0=1024)'} },
+        'Requester ID': { bits:16, desc:'请求者标识 (Bus:Device:Function)。', values:{'组合':'Bus[7:0]+Device[4:0]+Function[2:0]'} },
+        'Completer ID': { bits:16, desc:'完成者标识 (Bus:Device:Function)。', values:{'组合':'Bus[7:0]+Device[4:0]+Function[2:0]'} },
+        'Tag': { bits:10, desc:'事务标签 (T9+T8+Tag[7:0])。', values:{'0x000~0x3FF':'10-bit Tag'} },
+        'Tag[7:0]': { bits:8, desc:'Tag 的低 8 位。', values:{'0x00~0xFF':'与 T9/T8 组成 10-bit Tag'} },
+        'Last DW BE': { bits:4, desc:'末双字字节使能。', values:{'0001':'Byte0','0010':'Byte1','0011':'B0-1','0100':'Byte2','1000':'Byte3','1100':'B2-3','1111':'全部'} },
+        'First DW BE': { bits:4, desc:'首双字字节使能。', values:{'0001':'Byte0','0010':'Byte1','0011':'B0-1','0100':'Byte2','1000':'Byte3','1100':'B2-3','1111':'全部'} },
+        'Address High': { bits:32, desc:'64位地址高32位 [63:32]。', values:{'任意':'高地址' } },
+        'Address Low': { bits:30, desc:'64位地址低30位 [31:2]，低2位为0。', values:{'任意':'低地址' } },
+        'PH': { bits:2, desc:'处理提示或保留。', values:{'00':'默认','其他':'实现定义'} },
+        'Status': { bits:3, desc:'完成状态。', values:{'000':'SC(成功)','001':'UR(不支持)','010':'CRS(重试)','100':'CA(中止)'} },
+        'BCM': { bits:1, desc:'字节计数修改 (恒为0)。', values:{'0':'恒为0'} },
+        'Byte Count': { bits:12, desc:'完成数据字节数。', values:{'0x000~0xFFF':'0~4095字节'} },
+        'Byte Count[11:8]': { bits:4, desc:'Byte Count 的高 4 位。', values:{'组合':'与 Byte Count[7:0] 组成 12-bit 字节计数'} },
+        'Byte Count[7:0]': { bits:8, desc:'Byte Count 的低 8 位。', values:{'组合':'与 Byte Count[11:8] 组成 12-bit 字节计数'} },
+        'Lower Address': { bits:7, desc:'完成数据起始低地址[6:0]。', values:{'0x00~0x7F':'偏移'} },
+        'Lower Address[6:0]': { bits:7, desc:'完成数据起始的低地址 [6:0]。', values:{'0x00~0x7F':'字节偏移'} },
+        'Message Code': { bits:8, desc:'消息编码。', values:{'0x00':'INTx_Assert','0x01':'INTx_Deassert','0x30':'PM_Active_Nak','0x40':'ERR_COR','0x41':'ERR_NONFATAL','0x42':'ERR_FATAL','0x7F':'VDM (Vendor Defined)','0x80':'LTR'} },
+        'Routing': { bits:3, desc:'消息路由方式 (Type[2:0])。', values:{'000':'RC','001':'地址','010':'ID','011':'广播','100':'本地'} },
+        'Routing / Extended': { bits:32, desc:'消息路由信息及扩展字段。', values:{'组合':'路由方式 + 扩展数据'} },
+        'Bus Number': { bits:8, desc:'目标总线号。', values:{'0x00~0xFF':'总线号'} },
+        'Device Number': { bits:5, desc:'目标设备号。', values:{'0x00~0x1F':'设备号'} },
+        'Function Number': { bits:3, desc:'目标功能号。', values:{'0x00~0x07':'功能号'} },
+        'Ext Reg Number': { bits:4, desc:'扩展寄存器号。', values:{'0x0~0xF':'扩展寄存器'} },
+        'Register Number': { bits:6, desc:'寄存器号 (配置偏移)。', values:{'0x00~0x3F':'寄存器号'} },
+        'Dest Bus Number': { bits:8, desc:'目标总线号 (Type1)。', values:{'0x00~0xFF':'总线号'} },
+        'Dev Func Number': { bits:8, desc:'Device+Function (Type1)。', values:{'组合':'Device[4:0]+Function[2:0]'} },
+        'T9': { bits:1, desc:'Tag 的第 9 位 (扩展标签高位)。', values:{'0':'Tag[9]=0','1':'Tag[9]=1'} },
+        'T8': { bits:1, desc:'Tag 的第 8 位 (扩展标签次高位)。', values:{'0':'Tag[8]=0','1':'Tag[8]=1'} },
+        'A2': { bits:1, desc:'Attr 的 bit2 (ID-Based Ordering)。', values:{'0':'禁用 IDO','1':'启用 IDO'} },
+        'Attr[1:0]': { bits:2, desc:'Attr 的低 2 位 (Relaxed Ordering + No Snoop)。', values:{'00':'默认','01':'No Snoop','10':'Relaxed Ordering','11':'RO+NS'} },
+        // ---- TS 字段 ----
+        'COM': { bits:8, desc:'逗号字符 K28.5，符号对齐。', values:{'K28.5':'0xBC'} },
+        'TS_ID': { bits:8, desc:'序列标识符。', values:{'K28.1':'TS1','K28.2':'TS2'} },
+        'Link_Num': { bits:8, desc:'链路号。', values:{'0x00~0x1F':'链路号'} },
+        'Lane_Num': { bits:8, desc:'通道号。', values:{'0x00~0x1F':'通道号'} },
+        'N_FTS': { bits:8, desc:'快速训练序列数量。', values:{'0x00~0xFF':'FTS数量'} },
+        'TS_HotReset': { bits:1, desc:'热复位请求。', values:{'0':'无','1':'热复位'} },
+        'TS_DisableLink': { bits:1, desc:'禁用链路。', values:{'0':'无','1':'禁用'} },
+        'TS_Loopback': { bits:1, desc:'环回请求。', values:{'0':'无','1':'环回'} },
+        'TS_DisableScrambling': { bits:1, desc:'禁用扰码。', values:{'0':'启用','1':'禁用'} },
+        'TS_EnableIdle': { bits:1, desc:'允许空闲推断。', values:{'0':'禁用','1':'启用'} },
+        'TS_SpeedChange': { bits:1, desc:'速度变更准备。', values:{'0':'无','1':'准备'} },
+        'TS_BitRate_ID': { bits:4, desc:'数据速率标识。', values:{'0000':'2.5GT/s','0001':'5.0GT/s','0010':'8.0GT/s','0011':'16GT/s','0100':'32GT/s','0101':'64GT/s'} },
+        'Vendor_Defined': { bits:8, desc:'厂商自定义数据。', values:{'任意':'厂商自定义'} },
+        'End_Reserved': { bits:8, desc:'序列结束/保留。', values:{'任意':'忽略'} },
+        // ---- CFG 字段 ----
+        'Vendor ID': { bits: 16, desc:'由 PCI-SIG 分配的 16 位供应商 ID。标识设备制造商。', values: { '0x10EE': 'Xilinx', '0x8086': 'Intel', '0x1002': 'AMD', '0x10DE': 'NVIDIA' } },
+        'Device ID': { bits: 16, desc:'由供应商分配的 16 位设备 ID。标识该厂商下的特定硬件型号。', values: { '任意值': '由设备厂商自定义的标识符' } },
+        'Command Register': { bits: 16, desc:'命令寄存器。控制设备的行为，如内存/IO空间响应、总线主控启用等。', values: { '0000h': '功能全部禁用', '0001h': '启用 IO 空间', '0002h': '启用 内存空间', '0004h': '启用 总线主控' } },
+        'Status Register': { bits: 16, desc:'状态寄存器。反映设备当前的配置状态和中断信息。', values: { '0x0010': 'Capabilities List 已存在', '0x0020': '66MHz 能力' } },
+        'Revision ID': { bits: 8, desc:'修订版 ID，用于标识芯片版本。', values: { '0x00~0xFF': '厂家定义的修订号' } },
+        'Class Code': { bits: 24, desc:'类别代码，由基础类、子类和编程接口组成。', values: { '0x060400': 'PCI-to-PCI 桥接器', '0x0C0300': 'USB 控制器', '0x010000': '大容量存储控制器' } },
+        'Header Type': { bits: 8, desc:'头部类型，Bit 7 表示多功能，Bit 6-0 定义布局类型。', values: { '0x00': 'Type 0 头部', '0x01': 'Type 1 头部', '0x80': 'Type 0 多功能', '0x81': 'Type 1 多功能' } },
+        'Cache Line Size': { bits: 8, desc:'缓存行大小，以 32-bit 字为单位。', values: { '任意值': '系统设定值' } },
+        'Primary Latency Timer': { bits: 8, desc:'主总线延迟计时器，控制设备在总线上的最大突发时间。', values: { '任意值': '以 PCI 时钟周期为单位' } },
+        'Latency Timer': { bits: 8, desc:'延迟计时器，控制设备在总线上的最大突发时间。', values: { '任意值': '以 PCI 时钟周期为单位' } },
+        'BIST': { bits: 8, desc:'内建自测试寄存器。', values: { '0x00': '不支持/正常', '0x80': '支持自测试', '0x40': '测试中', '0x00~0x3F': '状态码' } },
+        'Base Address Registers': { bits: 32, desc:'基址寄存器 (BAR)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统 BIOS/OS 分配的内存或 I/O 地址' } },
+        'Base Address Register 0': { bits: 32, desc:'基址寄存器 0 (BAR0)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Base Address Register 1': { bits: 32, desc:'基址寄存器 1 (BAR1)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Base Address Register 2': { bits: 32, desc:'基址寄存器 2 (BAR2)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Base Address Register 3': { bits: 32, desc:'基址寄存器 3 (BAR3)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Base Address Register 4': { bits: 32, desc:'基址寄存器 4 (BAR4)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Base Address Register 5': { bits: 32, desc:'基址寄存器 5 (BAR5)。系统软件在此处填入内存或 IO 空间的基地址。', values: { '任意值': '由系统分配的内存或 I/O 基址' } },
+        'Primary Bus Number': { bits: 8, desc:'主总线号，PCI 桥接器所在的上一级总线号。', values: { '任意值': '由系统分配的 8 位总线号' } },
+        'Secondary Bus Number': { bits: 8, desc:'次总线号，桥接器下游的总线号。', values: { '任意值': '由系统分配的 8 位总线号' } },
+        'Subordinate Bus Number': { bits: 8, desc:'下属总线号，桥接器下游链路的最高编号。', values: { '任意值': '由系统分配的 8 位总线号' } },
+        'Secondary Latency Timer': { bits: 8, desc:'次总线延迟计时器，控制次总线上的突发长度。', values: { '任意值': '以 PCI 时钟周期为单位' } },
+        'Secondary Status': { bits: 16, desc:'次总线状态寄存器，反映下游总线的配置和错误状态。', values: { '任意值': '包含下游总线错误及速度等状态' } },
+        'I/O Base': { bits: 8, desc:'IO 基址寄存器，定义下游设备 IO 空间范围的基址。', values: { '任意值': '8 位 IO 地址基址' } },
+        'I/O Limit': { bits: 8, desc:'IO 限制寄存器，定义下游设备 IO 空间范围的上限。', values: { '任意值': '8 位 IO 地址限制' } },
+        'Memory Base': { bits: 16, desc:'内存基址寄存器，定义下游设备内存空间范围的基址。', values: { '任意值': '16 位内存地址基址' } },
+        'Memory Limit': { bits: 16, desc:'内存限制寄存器，定义下游设备内存空间范围的上限。', values: { '任意值': '16 位内存地址限制' } },
+        '64-bit Memory Base': { bits: 16, desc:'64 位预取内存基址寄存器 (低位 16 位)。', values: { '任意值': '16 位预取内存地址基址' } },
+        '64-bit Memory Limit': { bits: 16, desc:'64 位预取内存限制寄存器 (低位 16 位)。', values: { '任意值': '16 位预取内存地址限制' } },
+        '64-bit Base Upper 32 Bits': { bits: 32, desc:'64 位预取内存基址寄存器 (高 32 位)。', values: { '任意值': '高位 32 位预取内存地址基址' } },
+        '64-bit Limit Upper 32 Bits': { bits: 32, desc:'64 位预取内存限制寄存器 (高 32 位)。', values: { '任意值': '高位 32 位预取内存地址限制' } },
+        'I/O Base Limit 16 Bits': { bits: 16, desc:'IO 基址/限制高位 16 位寄存器。', values: { '任意值': '16 位高位 IO 地址' } },
+        'I/O Base Upper 16 Bits': { bits: 16, desc:'IO 基址高位 16 位寄存器。', values: { '任意值': '16 位高位 IO 地址' } },
+        'Capabilities Pointer': { bits: 8, desc:'能力列表指针，指向配置空间中第一个能力结构的偏移。', values: { '任意值': '8 位偏移地址 (必须为 0x00 或 0x34 以上)' } },
+        'Expansion ROM Base Address': { bits: 32, desc:'扩展 ROM 基址寄存器，存储设备可选扩展 ROM 的基址。', values: { '任意值': '扩展 ROM 的物理内存基址' } },
+        'Bridge Control': { bits: 16, desc:'桥接控制寄存器，启用/禁用桥接器的具体控制功能。', values: { '0x0000': '默认' } },
+        'Interrupt Line': { bits: 8, desc:'中断线寄存器，映射到系统中断控制器引脚。', values: { '0x00': '无连接', '0x01~0x0F': '对应 IRQ 1-15' } },
+        'Interrupt Pin': { bits: 8, desc:'中断引脚寄存器，指示设备使用的 PCI 中断引脚。', values: { '0x00': '未使用', '0x01': 'INTA#', '0x02': 'INTB#', '0x03': 'INTC#', '0x04': 'INTD#' } },
+        'Min_Gnt': { bits: 8, desc:'最小授权寄存器，设备需要的总线占用时间。', values: { '任意值': '以 1/4 微秒为单位' } },
+        'Max_Lat': { bits: 8, desc:'最大延迟寄存器，设备可接受的总线访问最大延迟。', values: { '任意值': '以 1/4 微秒为单位' } },
+        'Subsystem Vendor ID': { bits: 16, desc:'子系统供应商 ID，由板卡供应商分配。', values: { '任意值': '板卡/子系统的供应商 ID' } },
+        'Subsystem ID': { bits: 16, desc:'子系统 ID，配合供应商 ID 定位具体板卡型号。', values: { '任意值': '由子系统供应商分配的 ID' } },
+        'Cardbus CIS Pointer': { bits: 32, desc:'CardBus CIS 指针，指向 CardBus 卡信息结构。', values: { '任意值': '指向 CIS 结构的 32 位地址指针' } }
+    };
+
+    // =====================================================================
+    //  2. TLP 类型定义
+    // =====================================================================
+    function f(start, end, name, color, descKey) {
+        return [start, end, name, color, descKey || name];
+    }
+
+    function dw0_common(fmtVal, typeVal) {
+        return [
+            [31,29,'Fmt','bg-fmt','Fmt'],
+            [28,24,'Type','bg-type','Type'],
+            [23,23,'T9','bg-tag','T9'],
+            [22,20,'TC','bg-tc','TC'],
+            [19,19,'T8','bg-tag','T8'],
+            [18,18,'A2','bg-attr','A2'],
+            [17,17,'R','bg-reserved','R'],
+            [16,16,'TH','bg-th','TH'],
+            [15,15,'TD','bg-td','TD'],
+            [14,14,'EP','bg-ep','EP'],
+            [13,12,'Attr[1:0]','bg-attr','Attr[1:0]'],
+            [11,10,'AT','bg-at','AT'],
+            [9,8,'Length','bg-length','Length'],
+            [7,0,'Length','bg-length','Length']
+        ];
+    }
+
+    function makeRow(label, fields) { return { label, fields }; }
+
+    const TLP_TYPES = {};
+
+    // --- MRd32 ---
+    TLP_TYPES['MRd32'] = {
+        name: 'MRd32', fullName: 'Memory Read 32-bit',
+        desc: '32位地址读，Non-Posted，需CplD。Fmt=000, Type=0_0000。',
+        rows: [
+            makeRow('DW0', dw0_common('000','00000')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- MRd64 ---
+    TLP_TYPES['MRd64'] = {
+        name: 'MRd64', fullName: 'Memory Read 64-bit',
+        desc: '64位地址读，Non-Posted，需CplD。Fmt=001, Type=0_0000。',
+        rows: [
+            makeRow('DW0', dw0_common('001','00000')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,0,'Address High','bg-addr-high','Address High']
+            ]),
+            makeRow('DW3', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- MWr32 ---
+    TLP_TYPES['MWr32'] = {
+        name: 'MWr32', fullName: 'Memory Write 32-bit',
+        desc: '32位地址写，Posted。Fmt=010, Type=0_0000。',
+        rows: [
+            makeRow('DW0', dw0_common('010','00000')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- MWr64 ---
+    TLP_TYPES['MWr64'] = {
+        name: 'MWr64', fullName: 'Memory Write 64-bit',
+        desc: '64位地址写，Posted。Fmt=011, Type=0_0000。',
+        rows: [
+            makeRow('DW0', dw0_common('011','00000')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,0,'Address High','bg-addr-high','Address High']
+            ]),
+            makeRow('DW3', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- IORd ---
+    TLP_TYPES['IORd'] = {
+        name: 'IORd', fullName: 'I/O Read',
+        desc: 'I/O读，Non-Posted，需CplD。Fmt=000, Type=0_0010。',
+        rows: [
+            makeRow('DW0', dw0_common('000','00010')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- IOWr ---
+    TLP_TYPES['IOWr'] = {
+        name: 'IOWr', fullName: 'I/O Write',
+        desc: 'I/O写，Non-Posted，需Cpl。Fmt=010, Type=0_0010。',
+        rows: [
+            makeRow('DW0', dw0_common('010','00010')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- CfgRd0 ---
+    TLP_TYPES['CfgRd0'] = {
+        name: 'CfgRd0', fullName: 'Config Read Type 0',
+        desc: '配置读Type0 (Endpoint)，Non-Posted，需CplD。Fmt=000, Type=0_0100。',
+        rows: [
+            makeRow('DW0', dw0_common('000','00100')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Reserved','bg-reserved','Reserved'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,24,'Bus Number','bg-bus','Bus Number'],
+                [23,19,'Device Number','bg-devfn','Device Number'],
+                [18,16,'Function Number','bg-devfn','Function Number'],
+                [15,12,'Reserved','bg-reserved','Reserved'],
+                [11,8,'Ext Reg Number','bg-extreg','Ext Reg Number'],
+                [7,2,'Register Number','bg-regnum','Register Number'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- CfgWr0 ---
+    TLP_TYPES['CfgWr0'] = {
+        name: 'CfgWr0', fullName: 'Config Write Type 0',
+        desc: '配置写Type0，Non-Posted，需Cpl。Fmt=010, Type=0_0100。',
+        rows: [
+            makeRow('DW0', dw0_common('010','00100')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Reserved','bg-reserved','Reserved'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,24,'Bus Number','bg-bus','Bus Number'],
+                [23,19,'Device Number','bg-devfn','Device Number'],
+                [18,16,'Function Number','bg-devfn','Function Number'],
+                [15,12,'Reserved','bg-reserved','Reserved'],
+                [11,8,'Ext Reg Number','bg-extreg','Ext Reg Number'],
+                [7,2,'Register Number','bg-regnum','Register Number'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- CfgRd1 ---
+    TLP_TYPES['CfgRd1'] = {
+        name: 'CfgRd1', fullName: 'Config Read Type 1',
+        desc: '配置读Type1 (桥)，Non-Posted，需CplD。Fmt=000, Type=0_0101。',
+        rows: [
+            makeRow('DW0', dw0_common('000','00101')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Reserved','bg-reserved','Reserved'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,24,'Dest Bus Number','bg-destbus','Dest Bus Number'],
+                [23,16,'Dev Func Number','bg-devfunc','Dev Func Number'],
+                [15,12,'Reserved','bg-reserved','Reserved'],
+                [11,8,'Ext Reg Number','bg-extreg','Ext Reg Number'],
+                [7,2,'Register Number','bg-regnum','Register Number'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- CfgWr1 ---
+    TLP_TYPES['CfgWr1'] = {
+        name: 'CfgWr1', fullName: 'Config Write Type 1',
+        desc: '配置写Type1 (桥)，Non-Posted，需Cpl。Fmt=010, Type=0_0101。',
+        rows: [
+            makeRow('DW0', dw0_common('010','00101')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Reserved','bg-reserved','Reserved'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,24,'Dest Bus Number','bg-destbus','Dest Bus Number'],
+                [23,16,'Dev Func Number','bg-devfunc','Dev Func Number'],
+                [15,12,'Reserved','bg-reserved','Reserved'],
+                [11,8,'Ext Reg Number','bg-extreg','Ext Reg Number'],
+                [7,2,'Register Number','bg-regnum','Register Number'],
+                [1,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- Msg ---
+    TLP_TYPES['Msg'] = {
+        name: 'Msg', fullName: 'Message (no data)',
+        desc: '消息 (无数据)，Posted。Fmt=001, Type=1_0rrr。',
+        rows: [
+            makeRow('DW0', dw0_common('001','10010')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,0,'Message Code','bg-msgcode','Message Code']
+            ]),
+            makeRow('DW2', [
+                [31,0,'Routing / Extended','bg-routing','Routing / Extended']
+            ]),
+            makeRow('DW3', [
+                [31,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- MsgD ---
+    TLP_TYPES['MsgD'] = {
+        name: 'MsgD', fullName: 'Message with Data',
+        desc: '消息 (带数据)，Posted。Fmt=011, Type=1_0rrr。',
+        rows: [
+            makeRow('DW0', dw0_common('011','10010')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,0,'Message Code','bg-msgcode','Message Code']
+            ]),
+            makeRow('DW2', [
+                [31,0,'Routing / Extended','bg-routing','Routing / Extended']
+            ]),
+            makeRow('DW3', [
+                [31,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- VDM ---
+    TLP_TYPES['VDM'] = {
+        name: 'VDM', fullName: 'Vendor Defined Message',
+        desc: '厂商自定义消息 (Vendor Defined Message)。Posted。Fmt=001 (无数据) 或 011 (带数据)，Type=1_0rrr (与Msg相同)，Message Code=0x7F。',
+        rows: [
+            makeRow('DW0', dw0_common('001','10010')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,0,'Message Code','bg-msgcode','Message Code']
+            ]),
+            makeRow('DW2', [
+                [31,0,'Routing / Extended','bg-routing','Routing / Extended']
+            ]),
+            makeRow('DW3', [
+                [31,0,'Vendor Data','bg-data','Vendor_Defined']
+            ])
+        ]
+    };
+    // --- Cpl ---
+    TLP_TYPES['Cpl'] = {
+        name: 'Cpl', fullName: 'Completion (no data)',
+        desc: '完成 (无数据)。Fmt=000, Type=0_1010。',
+        rows: [
+            makeRow('DW0', dw0_common('000','01010')),
+            makeRow('DW1', [
+                [31,16,'Completer ID','bg-cplid','Completer ID'],
+                [15,13,'Status','bg-status','Status'],
+                [12,12,'BCM','bg-bcm','BCM'],
+                [11,8,'Byte Count[11:8]','bg-bytecnt','Byte Count[11:8]'],
+                [7,0,'Byte Count[7:0]','bg-bytecnt','Byte Count[7:0]']
+            ]),
+            makeRow('DW2', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,1,'Lower Address[6:0]','bg-lowaddr','Lower Address[6:0]'],
+                [0,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- CplD ---
+    TLP_TYPES['CplD'] = {
+        name: 'CplD', fullName: 'Completion with Data',
+        desc: '完成 (带数据)。Fmt=010, Type=0_1010。',
+        rows: [
+            makeRow('DW0', dw0_common('010','01010')),
+            makeRow('DW1', [
+                [31,16,'Completer ID','bg-cplid','Completer ID'],
+                [15,13,'Status','bg-status','Status'],
+                [12,12,'BCM','bg-bcm','BCM'],
+                [11,8,'Byte Count[11:8]','bg-bytecnt','Byte Count[11:8]'],
+                [7,0,'Byte Count[7:0]','bg-bytecnt','Byte Count[7:0]']
+            ]),
+            makeRow('DW2', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,1,'Lower Address[6:0]','bg-lowaddr','Lower Address[6:0]'],
+                [0,0,'Reserved','bg-reserved','Reserved']
+            ])
+        ]
+    };
+    // --- FetchAdd ---
+    TLP_TYPES['FetchAdd'] = {
+        name: 'FetchAdd', fullName: 'Fetch and Add (AtomicOp)',
+        desc: 'FetchAdd原子操作，Non-Posted，需CplD。Fmt=010/011, Type=0_1100。',
+        rows: [
+            makeRow('DW0', dw0_common('010','01100')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- Swap ---
+    TLP_TYPES['Swap'] = {
+        name: 'Swap', fullName: 'Swap (AtomicOp)',
+        desc: 'Swap原子操作，Non-Posted，需CplD。Fmt=010/011, Type=0_1101。',
+        rows: [
+            makeRow('DW0', dw0_common('010','01101')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- CAS ---
+    TLP_TYPES['CAS'] = {
+        name: 'CAS', fullName: 'Compare and Swap (AtomicOp)',
+        desc: 'CAS原子操作，Non-Posted，需CplD。Fmt=010/011, Type=0_1110。',
+        rows: [
+            makeRow('DW0', dw0_common('010','01110')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+    // --- DMWr ---
+    TLP_TYPES['DMWr'] = {
+        name: 'DMWr', fullName: 'Deferrable Memory Write',
+        desc: '可推迟存储器写，Posted。Fmt=010, Type=0_1111。PCIe 6.0+。',
+        rows: [
+            makeRow('DW0', dw0_common('010','01111')),
+            makeRow('DW1', [
+                [31,16,'Requester ID','bg-reqid','Requester ID'],
+                [15,8,'Tag[7:0]','bg-tag','Tag[7:0]'],
+                [7,4,'Last DW BE','bg-lbe','Last DW BE'],
+                [3,0,'First DW BE','bg-fbe','First DW BE']
+            ]),
+            makeRow('DW2', [
+                [31,2,'Address Low','bg-addr-low','Address Low'],
+                [1,0,'PH','bg-ph','PH']
+            ])
+        ]
+    };
+
+    // =====================================================================
+    //  3. TS1 / TS2 数据
+    // =====================================================================
+    const TS_DATA = {
+        ts1: {
+            name: 'TS1', fullName: 'Training Sequence 1',
+            desc: 'TS1 训练序列，包含 COM、标识、链路号、通道号、N_FTS 及控制位。',
+            rows: [
+                { label:'Symbol 0', fields:[[7,0,'COM','bg-com','COM']] },
+                { label:'Symbol 1', fields:[[7,0,'TS_ID','bg-tsid1','TS_ID']] },
+                { label:'Symbol 2', fields:[[7,0,'Link_Num','bg-link','Link_Num']] },
+                { label:'Symbol 3', fields:[[7,0,'Lane_Num','bg-lane','Lane_Num']] },
+                { label:'Symbol 4', fields:[[7,0,'N_FTS','bg-nfts','N_FTS']] },
+                { label:'Symbol 5', fields:[
+                    [7,6,'Reserved','bg-reserved','Reserved'],
+                    [5,5,'TS_SpeedChange','bg-speed','TS_SpeedChange'],
+                    [4,4,'TS_EnableIdle','bg-enIdle','TS_EnableIdle'],
+                    [3,3,'TS_DisableScrambling','bg-disScramble','TS_DisableScrambling'],
+                    [2,2,'TS_Loopback','bg-loopback','TS_Loopback'],
+                    [1,1,'TS_DisableLink','bg-dislink','TS_DisableLink'],
+                    [0,0,'TS_HotReset','bg-hotreset','TS_HotReset']
+                ] },
+                { label:'Symbol 6', fields:[[7,0,'Reserved','bg-reserved','Reserved']] },
+                { label:'Symbol 7', fields:[
+                    [7,4,'Reserved','bg-reserved','Reserved'],
+                    [3,0,'TS_BitRate_ID','bg-bitrate','TS_BitRate_ID']
+                ] },
+                { label:'Symbol 8', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 9', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 10', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 11', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 12', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 13', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 14', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 15', fields:[[7,0,'End_Reserved','bg-end','End_Reserved']] }
+            ]
+        },
+        ts2: {
+            name: 'TS2', fullName: 'Training Sequence 2',
+            desc: 'TS2 训练序列，与 TS1 结构相同，仅 TS_ID 为 K28.2。',
+            rows: [
+                { label:'Symbol 0', fields:[[7,0,'COM','bg-com','COM']] },
+                { label:'Symbol 1', fields:[[7,0,'TS_ID','bg-tsid2','TS_ID']] },
+                { label:'Symbol 2', fields:[[7,0,'Link_Num','bg-link','Link_Num']] },
+                { label:'Symbol 3', fields:[[7,0,'Lane_Num','bg-lane','Lane_Num']] },
+                { label:'Symbol 4', fields:[[7,0,'N_FTS','bg-nfts','N_FTS']] },
+                { label:'Symbol 5', fields:[
+                    [7,6,'Reserved','bg-reserved','Reserved'],
+                    [5,5,'TS_SpeedChange','bg-speed','TS_SpeedChange'],
+                    [4,4,'TS_EnableIdle','bg-enIdle','TS_EnableIdle'],
+                    [3,3,'TS_DisableScrambling','bg-disScramble','TS_DisableScrambling'],
+                    [2,2,'TS_Loopback','bg-loopback','TS_Loopback'],
+                    [1,1,'TS_DisableLink','bg-dislink','TS_DisableLink'],
+                    [0,0,'TS_HotReset','bg-hotreset','TS_HotReset']
+                ] },
+                { label:'Symbol 6', fields:[[7,0,'Reserved','bg-reserved','Reserved']] },
+                { label:'Symbol 7', fields:[
+                    [7,4,'Reserved','bg-reserved','Reserved'],
+                    [3,0,'TS_BitRate_ID','bg-bitrate','TS_BitRate_ID']
+                ] },
+                { label:'Symbol 8', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 9', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 10', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 11', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 12', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 13', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 14', fields:[[7,0,'Vendor_Defined','bg-vendor','Vendor_Defined']] },
+                { label:'Symbol 15', fields:[[7,0,'End_Reserved','bg-end','End_Reserved']] }
+            ]
+        }
+    };
+
+    // =====================================================================
+    //  4. 渲染引擎
+    // =====================================================================
+
+    function colgroup32() {
+        let html = '<colgroup><col style="width:60px;">';
+        for (let i=0; i<31; i++) html += '<col>';
+        html += '</colgroup>';
+        return html;
+    }
+    function colgroup8() {
+        let html = '<colgroup><col style="width:60px;">';
+        for (let i=0; i<8; i++) html += '<col style="width:45px;">';
+        html += '</colgroup>';
+        return html;
+    }
+    // CFG colgroup: 第一列 54px, 32个bit列各18px
+    function colgroupCfg() {
+        let html = '<colgroup>';
+        html += '<col style="width:54px; min-width:54px; max-width:54px;">';
+        for (let i=0; i<32; i++) html += '<col style="width:18px; min-width:18px; max-width:18px;">';
+        html += '</colgroup>';
+        return html;
+    }
+
+    function bitRow32() {
+        const bits = [7,6,5,4,3,2,1,0];
+        let html = `<tr class="bit-label"><th class="row-label">Bit</th>`;
+        for (let b=0; b<4; b++) {
+            for (let i=0; i<8; i++) html += `<th class="bit-cell">${bits[i]}</th>`;
+        }
+        html += '</tr>';
+        return html;
+    }
+    function bitRow8() {
+        let html = `<tr class="bit-label"><th class="row-label">Bit</th>`;
+        for (let i=7; i>=0; i--) html += `<th class="bit-cell">${i}</th>`;
+        html += '</tr>';
+        return html;
+    }
+
+    function buildColSpans32(fields) {
+        const sorted = [...fields].sort((a,b) => b[0] - a[0]);
+        const merged = [];
+        for (const f of sorted) {
+            const name = f[2];
+            if (merged.length > 0 && merged[merged.length-1].name === name) {
+                const prev = merged[merged.length-1];
+                prev.bits += (f[0] - f[1] + 1);
+                prev.end = f[1];
+            } else {
+                merged.push({
+                    start: f[0],
+                    end: f[1],
+                    name: f[2],
+                    bits: f[0] - f[1] + 1,
+                    color: f[3],
+                    descKey: f[4]
+                });
+            }
+        }
+        let html = '';
+        let currentBit = 31;
+        for (const m of merged) {
+            const gap = currentBit - m.start;
+            if (gap > 0) {
+                html += `<td colspan="${gap}" class="field-cell bg-reserved dark-text" data-field="Reserved">R</td>`;
+                currentBit = m.start;
+            }
+            html += `<td colspan="${m.bits}" class="field-cell ${m.color}" data-field="${m.name}">${m.name}</td>`;
+            currentBit = m.end - 1;
+        }
+        if (currentBit >= 0) {
+            html += `<td colspan="${currentBit+1}" class="field-cell bg-reserved dark-text" data-field="Reserved">R</td>`;
+        }
+        return html;
+    }
+
+    function buildColSpans8(fields) {
+        const sorted = [...fields].sort((a,b) => b[0] - a[0]);
+        const merged = [];
+        for (const f of sorted) {
+            const name = f[2];
+            if (merged.length > 0 && merged[merged.length-1].name === name) {
+                const prev = merged[merged.length-1];
+                prev.bits += (f[0] - f[1] + 1);
+                prev.end = f[1];
+            } else {
+                merged.push({
+                    start: f[0],
+                    end: f[1],
+                    name: f[2],
+                    bits: f[0] - f[1] + 1,
+                    color: f[3],
+                    descKey: f[4]
+                });
+            }
+        }
+        let html = '';
+        let currentBit = 7;
+        for (const m of merged) {
+            const gap = currentBit - m.start;
+            if (gap > 0) {
+                html += `<td colspan="${gap}" class="field-cell bg-reserved dark-text" data-field="Reserved">R</td>`;
+                currentBit = m.start;
+            }
+            html += `<td colspan="${m.bits}" class="field-cell ${m.color}" data-field="${m.name}">${m.name}</td>`;
+            currentBit = m.end - 1;
+        }
+        if (currentBit >= 0) {
+            html += `<td colspan="${currentBit+1}" class="field-cell bg-reserved dark-text" data-field="Reserved">R</td>`;
+        }
+        return html;
+    }
+
+    function renderTLPTable(typeKey) {
+        const data = TLP_TYPES[typeKey];
+        if (!data) return '<div style="color:#8899b4;padding:20px;">未找到该TLP类型</div>';
+        let html = `<table class="tlp-table">${colgroup32()}<thead>`;
+        html += `<tr class="byte-label"><th class="row-label">Byte Offset</th>`;
+        for (let b=0; b<4; b++) html += `<th colspan="8">+${b}</th>`;
+        html += `</tr>`;
+        html += bitRow32();
+        html += `</thead><tbody>`;
+        for (const row of data.rows) {
+            html += `<tr><td class="row-label">${row.label}</td>`;
+            html += buildColSpans32(row.fields);
+            html += `</tr>`;
+        }
+        html += `</tbody></table>`;
+        return html;
+    }
+
+    function renderTSTable(tsKey) {
+        const data = TS_DATA[tsKey];
+        if (!data) return '<div style="color:#8899b4;padding:20px;">未找到该TS类型</div>';
+        let html = `<table class="ts-table">${colgroup8()}<thead>`;
+        html += bitRow8();
+        html += `</thead><tbody>`;
+        for (const row of data.rows) {
+            html += `<tr><td class="row-label">${row.label}</td>`;
+            html += buildColSpans8(row.fields);
+            html += `</tr>`;
+        }
+        html += `</tbody></table>`;
+        return html;
+    }
+
+    // ---- CFG 专用渲染：直接生成内联颜色 ----
+    function buildCFGColSpans(fields) {
+        const sorted = [...fields].sort((a,b) => b[0] - a[0]);
+        let html = '';
+        let currentBit = 31;
+        for (const f of sorted) {
+            const bits = f[0] - f[1] + 1;
+            const gap = currentBit - f[0];
+            if (gap > 0) {
+                html += `<td colspan="${gap}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e0e0e0;color:#222;">R</td>`;
+                currentBit = f[0];
+            }
+            const color = f[3];
+            const name = f[2];
+            const bgColor = color || '#7f8c8d';
+            html += `<td colspan="${bits}" class="field-cell" data-field="${name}" style="background-color:${bgColor};color:#fff;font-weight:600;">${name}</td>`;
+            currentBit = f[1] - 1;
+        }
+        if (currentBit >= 0) {
+            html += `<td colspan="${currentBit+1}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e0e0e0;color:#222;">R</td>`;
+        }
+        return html;
+    }
+
+    // CFG 渲染函数
+    function renderCFGContent() {
+        // 定义颜色映射 (十六进制)
+        const COLORS = {
+            'dev-id': '#2980b9',
+            'vendor-id': '#1abc9c',
+            'status-reg': '#2ecc71',
+            'cmd-reg': '#e74c3c',
+            'class-code': '#3498db',
+            'rev-id': '#d35400',
+            'bist': '#9b59b6',
+            'header-type': '#e67e22',
+            'lat-timer': '#16a085',
+            'cache-line': '#f39c12',
+            'bar0': '#9b59b6',
+            'bar1': '#8e44ad',
+            'bar2': '#3498db',
+            'bar3': '#1abc9c',
+            'bar4': '#e67e22',
+            'bar5': '#d35400',
+            'cis': '#f39c12',
+            'sub': '#34495e',
+            'exprom': '#8e44ad',
+            'cap': '#1abc9c',
+            'intr': '#c0392b',
+            'bus': '#e67e22',
+            'io': '#3498db',
+            'mem': '#16a085',
+            'pref': '#e67e22',
+            'bridge-ctrl': '#2c3e50',
+            'rsvd-grey': '#bdc3c7',
+            'devfn': '#d35400',
+            'cmd-stat': '#1abc9c',
+            'class': '#2ecc71',
+            'bist-lat': '#e74c3c',
+            'bar': '#9b59b6',
+            'mem-base': '#f39c12',
+            'mem-limit': '#c0392b',
+            '64base': '#2980b9',
+            '64limit': '#1abc9c',
+            'io-base': '#8e44ad',
+            'io-limit': '#d35400',
+            'sec-status': '#2ecc71',
+            'sec-lat': '#e74c3c'
+        };
+
+        function cfgTable(type) {
+            let html = `<table class="cfg-table"><colgroup>`;
+            html += colgroupCfg();
+            html += `</colgroup><thead>`;
+            html += `<tr class="byte-label"><th class="row-label">Offset</th>`;
+            html += `<th colspan="8">+003h</th><th colspan="8">+002h</th><th colspan="8">+001h</th><th colspan="8">+000h</th>`;
+            html += `</tr>`;
+            html += `<tr class="bit-label"><th class="row-label">Bit</th>`;
+            const bits = [7,6,5,4,3,2,1,0];
+            for (let b=0; b<4; b++) {
+                for (let i=0; i<8; i++) {
+                    html += `<th class="bit-cell">${bits[i]}</th>`;
+                }
+            }
+            html += `</tr>`;
+            html += `</thead><tbody>`;
+
+            // Type0 行定义
+            const rowsType0 = [
+                { offset: '+000h', fields: [
+                    [31,16,'Device ID', COLORS['dev-id'], 'Device ID'],
+                    [15,0,'Vendor ID', COLORS['vendor-id'], 'Vendor ID']
+                ] },
+                { offset: '+004h', fields: [
+                    [31,16,'Status Register', COLORS['status-reg'], 'Status Register'],
+                    [15,0,'Command Register', COLORS['cmd-reg'], 'Command Register']
+                ] },
+                { offset: '+008h', fields: [
+                    [31,8,'Class Code', COLORS['class-code'], 'Class Code'],
+                    [7,0,'Revision ID', COLORS['rev-id'], 'Revision ID']
+                ] },
+                { offset: '+00Ch', fields: [
+                    [31,24,'BIST', COLORS['bist'], 'BIST'],
+                    [23,16,'Header Type', COLORS['header-type'], 'Header Type'],
+                    [15,8,'Latency Timer', COLORS['lat-timer'], 'Latency Timer'],
+                    [7,0,'Cache Line Size', COLORS['cache-line'], 'Cache Line Size']
+                ] },
+                { offset: '+010h', fields: [[31,0,'Base Address Register 0', COLORS['bar0'], 'Base Address Register 0']] },
+                { offset: '+014h', fields: [[31,0,'Base Address Register 1', COLORS['bar1'], 'Base Address Register 1']] },
+                { offset: '+018h', fields: [[31,0,'Base Address Register 2', COLORS['bar2'], 'Base Address Register 2']] },
+                { offset: '+01Ch', fields: [[31,0,'Base Address Register 3', COLORS['bar3'], 'Base Address Register 3']] },
+                { offset: '+020h', fields: [[31,0,'Base Address Register 4', COLORS['bar4'], 'Base Address Register 4']] },
+                { offset: '+024h', fields: [[31,0,'Base Address Register 5', COLORS['bar5'], 'Base Address Register 5']] },
+                { offset: '+028h', fields: [[31,0,'Cardbus CIS Pointer', COLORS['cis'], 'Cardbus CIS Pointer']] },
+                { offset: '+02Ch', fields: [
+                    [31,16,'Subsystem ID', COLORS['sub'], 'Subsystem ID'],
+                    [15,0,'Subsystem Vendor ID', COLORS['devfn'], 'Subsystem Vendor ID']
+                ] },
+                { offset: '+030h', fields: [[31,0,'Expansion ROM Base Address', COLORS['exprom'], 'Expansion ROM Base Address']] },
+                { offset: '+034h', fields: [
+                    [31,8,'Reserved', COLORS['rsvd-grey'], 'Reserved'],
+                    [7,0,'Capabilities Pointer', COLORS['cap'], 'Capabilities Pointer']
+                ] },
+                { offset: '+038h', fields: [[31,0,'Reserved', COLORS['rsvd-grey'], 'Reserved']] },
+                { offset: '+03Ch', fields: [
+                    [31,24,'Max_Lat', COLORS['intr'], 'Max_Lat'],
+                    [23,16,'Min_Gnt', COLORS['bus'], 'Min_Gnt'],
+                    [15,8,'Interrupt Pin', COLORS['io'], 'Interrupt Pin'],
+                    [7,0,'Interrupt Line', COLORS['mem'], 'Interrupt Line']
+                ] }
+            ];
+
+            // Type1 行定义
+            const rowsType1 = [
+                { offset: '+000h', fields: [
+                    [31,16,'Device ID', COLORS['dev-id'], 'Device ID'],
+                    [15,0,'Vendor ID', COLORS['vendor-id'], 'Vendor ID']
+                ] },
+                { offset: '+004h', fields: [
+                    [31,16,'Status Register', COLORS['status-reg'], 'Status Register'],
+                    [15,0,'Command Register', COLORS['cmd-reg'], 'Command Register']
+                ] },
+                { offset: '+008h', fields: [
+                    [31,8,'Class Code', COLORS['class-code'], 'Class Code'],
+                    [7,0,'Revision ID', COLORS['rev-id'], 'Revision ID']
+                ] },
+                { offset: '+00Ch', fields: [
+                    [31,24,'BIST', COLORS['bist'], 'BIST'],
+                    [23,16,'Header Type', COLORS['header-type'], 'Header Type'],
+                    [15,8,'Primary Latency Timer', COLORS['lat-timer'], 'Primary Latency Timer'],
+                    [7,0,'Cache Line Size', COLORS['cache-line'], 'Cache Line Size']
+                ] },
+                { offset: '+010h', fields: [[31,0,'Base Address Register 0', COLORS['bar0'], 'Base Address Register 0']] },
+                { offset: '+014h', fields: [[31,0,'Base Address Register 1', COLORS['bar1'], 'Base Address Register 1']] },
+                { offset: '+018h', fields: [
+                    [31,24,'Secondary Latency Timer', COLORS['sec-lat'], 'Secondary Latency Timer'],
+                    [23,16,'Subordinate Bus Number', COLORS['io'], 'Subordinate Bus Number'],
+                    [15,8,'Secondary Bus Number', COLORS['mem'], 'Secondary Bus Number'],
+                    [7,0,'Primary Bus Number', COLORS['pref'], 'Primary Bus Number']
+                ] },
+                { offset: '+01Ch', fields: [
+                    [31,16,'Secondary Status', COLORS['sec-status'], 'Secondary Status'],
+                    [15,8,'I/O Limit', COLORS['io-limit'], 'I/O Limit'],
+                    [7,0,'I/O Base', COLORS['io-base'], 'I/O Base']
+                ] },
+                { offset: '+020h', fields: [
+                    [31,16,'Memory Limit', COLORS['mem-limit'], 'Memory Limit'],
+                    [15,0,'Memory Base', COLORS['mem-base'], 'Memory Base']
+                ] },
+                { offset: '+024h', fields: [
+                    [31,16,'64-bit Memory Limit', COLORS['64limit'], '64-bit Memory Limit'],
+                    [15,0,'64-bit Memory Base', COLORS['64base'], '64-bit Memory Base']
+                ] },
+                { offset: '+028h', fields: [[31,0,'64-bit Base Upper 32 Bits', COLORS['cmd-stat'], '64-bit Base Upper 32 Bits']] },
+                { offset: '+02Ch', fields: [[31,0,'64-bit Limit Upper 32 Bits', COLORS['class'], '64-bit Limit Upper 32 Bits']] },
+                { offset: '+030h', fields: [
+                    [31,16,'I/O Base Limit 16 Bits', COLORS['bist-lat'], 'I/O Base Limit 16 Bits'],
+                    [15,0,'I/O Base Upper 16 Bits', COLORS['bar'], 'I/O Base Upper 16 Bits']
+                ] },
+                { offset: '+034h', fields: [
+                    [31,8,'Reserved', COLORS['rsvd-grey'], 'Reserved'],
+                    [7,0,'Capabilities Pointer', COLORS['cap'], 'Capabilities Pointer']
+                ] },
+                { offset: '+038h', fields: [[31,0,'Expansion ROM Base Address', COLORS['exprom'], 'Expansion ROM Base Address']] },
+                { offset: '+03Ch', fields: [
+                    [31,16,'Bridge Control', COLORS['bridge-ctrl'], 'Bridge Control'],
+                    [15,8,'Interrupt Pin', COLORS['io'], 'Interrupt Pin'],
+                    [7,0,'Interrupt Line', COLORS['mem'], 'Interrupt Line']
+                ] }
+            ];
+
+            const rows = (type === 'type0') ? rowsType0 : rowsType1;
+            for (const row of rows) {
+                html += `<tr><td class="row-label">${row.offset}</td>`;
+                html += buildCFGColSpans(row.fields);
+                html += `</tr>`;
+            }
+            html += `</tbody></table>`;
+            return html;
+        }
+
+        const type0Table = cfgTable('type0');
+        const type1Table = cfgTable('type1');
+
+        return `
+            <div class="cfg-container">
+                <div class="cfg-label">配置空间寄存器布局</div>
+                <div class="cfg-tab-bar">
+                    <div class="cfg-tab-btn active" data-cfg="type0">Type 0 (Endpoint)</div>
+                    <div class="cfg-tab-btn" data-cfg="type1">Type 1 (Bridge)</div>
+                </div>
+                <div style="text-align: center;">
+                    <div class="cfg-wrapper">
+                        <div class="cfg-tab-content active" id="cfg-type0">${type0Table}</div>
+                        <div class="cfg-tab-content" id="cfg-type1">${type1Table}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // =====================================================================
+    //  5. 交互控制
+    // =====================================================================
+
+    let currentCategory = 'tlp';
+    let currentType = 'MRd32';
+    let currentTS = 'ts1';
+    let isFlit = false;
+
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+
+    // 释义显示函数 — 完全替换面板内容
+    function showFieldDetail(fieldKey) {
+        let panel = document.getElementById('info-panel');
+        if (!panel) {
+            const container = document.createElement('div');
+            container.className = 'info-panel';
+            container.id = 'info-panel';
+            document.getElementById('content').appendChild(container);
+            panel = container;
+        }
+
+        const data = fieldDefinitions[fieldKey];
+        if (!data) {
+            panel.innerHTML = `<div class="empty-state">暂无字段 "${fieldKey}" 的释义。</div>`;
+            return;
+        }
+
+        let html = '';
+        html += `<div class="empty-state" style="display:none;"></div>`;
+        html += `<div id="fieldDetail">`;
+        html += `<h3 id="fieldTitle">${fieldKey} <span id="fieldBits">(${data.bits} bits)</span></h3>`;
+        html += `<p class="desc" id="fieldDesc">${data.desc}</p>`;
+        html += `<table><thead><tr><th style="width:20%;text-align:center;">值 (Value)</th><th style="width:80%;">含义 (Meaning)</th></tr></thead><tbody id="fieldValuesList">`;
+
+        const entries = Object.entries(data.values);
+        entries.sort((a,b) => {
+            const isBinA = /^[01]+$/.test(a[0]);
+            const isBinB = /^[01]+$/.test(b[0]);
+            if (isBinA && isBinB) return parseInt(a[0],2) - parseInt(b[0],2);
+            if (isBinA) return -1;
+            if (isBinB) return 1;
+            return a[0].localeCompare(b[0]);
+        });
+
+        for (const [val, meaning] of entries) {
+            let displayVal = val;
+            if (/^[01]+$/.test(val)) displayVal = val + 'b';
+            html += `<tr><td style="text-align:center;${/^[01]+$/.test(val) || val.includes('x') ? 'font-family:monospace;' : ''}">${displayVal}</td><td>${meaning}</td></tr>`;
+        }
+
+        html += `</tbody></table></div>`;
+        panel.innerHTML = html;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // 主 Tab 切换
+    document.querySelectorAll('#mainTabs .tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('#mainTabs .tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.dataset.cat;
+            if (currentCategory === 'tlp') currentType = 'MRd32';
+            else if (currentCategory === 'ts') currentTS = 'ts1';
+            renderSidebar();
+            renderContent();
+        });
+    });
+
+    document.getElementById('flitSwitch').addEventListener('change', function() {
+        isFlit = this.checked;
+        const badge = document.getElementById('modeBadge');
+        if (isFlit) { badge.textContent = 'FLIT'; badge.className = 'mode-badge fl'; }
+        else { badge.textContent = 'Non-FLIT'; badge.className = 'mode-badge nf'; }
+        if (currentCategory === 'tlp') renderContent();
+    });
+
+    function renderSidebar() {
+        sidebar.innerHTML = '';
+        if (currentCategory === 'tlp') {
+            const head = document.createElement('div');
+            head.className = 's-head';
+            head.textContent = '📦 TLP 事务类型';
+            sidebar.appendChild(head);
+
+            const order = ['MRd32','MRd64','MWr32','MWr64','IORd','IOWr','CfgRd0','CfgWr0','CfgRd1','CfgWr1','Msg','MsgD','VDM','Cpl','CplD','FetchAdd','Swap','CAS','DMWr'];
+            const groups = [
+                { label:'Memory', items:['MRd32','MRd64','MWr32','MWr64'] },
+                { label:'I/O', items:['IORd','IOWr'] },
+                { label:'Configuration', items:['CfgRd0','CfgWr0','CfgRd1','CfgWr1'] },
+                { label:'Message', items:['Msg','MsgD','VDM'] },
+                { label:'Completion', items:['Cpl','CplD'] },
+                { label:'AtomicOp', items:['FetchAdd','Swap','CAS'] },
+                { label:'Other', items:['DMWr'] }
+            ];
+            for (const g of groups) {
+                const items = g.items.filter(k => TLP_TYPES[k]);
+                if (!items.length) continue;
+                const label = document.createElement('div');
+                label.className = 'cat-label';
+                label.textContent = g.label;
+                sidebar.appendChild(label);
+                for (const k of items) {
+                    const el = document.createElement('div');
+                    el.className = 'item' + (k === currentType ? ' active' : '');
+                    el.textContent = TLP_TYPES[k].name;
+                    el.dataset.key = k;
+                    el.addEventListener('click', function() {
+                        currentType = this.dataset.key;
+                        renderSidebar();
+                        renderContent();
+                    });
+                    sidebar.appendChild(el);
+                }
+                const sep = document.createElement('div');
+                sep.className = 'sep';
+                sidebar.appendChild(sep);
+            }
+        } else if (currentCategory === 'ts') {
+            const head = document.createElement('div');
+            head.className = 's-head';
+            head.textContent = '🔁 训练序列';
+            sidebar.appendChild(head);
+            const items = [{key:'ts1',label:'TS1'},{key:'ts2',label:'TS2'}];
+            for (const it of items) {
+                const el = document.createElement('div');
+                el.className = 'item' + (it.key === currentTS ? ' active' : '');
+                el.textContent = it.label;
+                el.dataset.key = it.key;
+                el.addEventListener('click', function() {
+                    currentTS = this.dataset.key;
+                    renderSidebar();
+                    renderContent();
+                });
+                sidebar.appendChild(el);
+            }
+        } else { // cfg
+            const head = document.createElement('div');
+            head.className = 's-head';
+            head.textContent = '⚙️ 配置空间';
+            sidebar.appendChild(head);
+        }
+    }
+
+    function renderContent() {
+        content.className = 'content fade-in';
+        content.style.animation = 'none';
+        void content.offsetHeight;
+        content.style.animation = 'fadeIn 0.15s ease-out';
+
+        let html = '';
+        if (currentCategory === 'tlp') {
+            const data = TLP_TYPES[currentType];
+            if (!data) { content.innerHTML = '<div style="color:#8899b4;padding:20px;">未找到该TLP类型</div>'; return; }
+            const modeLabel = isFlit ? ' (FLIT Mode)' : ' (Non-FLIT Mode)';
+            html += `<div class="page-title">${data.name} — ${data.fullName}</div>`;
+            html += `<div class="page-sub">PCIe 7.0 ${modeLabel}</div>`;
+            html += `<div class="page-desc">${data.desc}</div>`;
+            html += `<div class="tlp-container"><div class="tlp-label">帧格式</div>`;
+            html += renderTLPTable(currentType);
+            html += `</div>`;
+        } else if (currentCategory === 'ts') {
+            const data = TS_DATA[currentTS];
+            if (!data) { content.innerHTML = '<div style="color:#8899b4;padding:20px;">未找到该TS类型</div>'; return; }
+            html += `<div class="page-title">${data.name} — ${data.fullName}</div>`;
+            html += `<div class="page-desc">${data.desc}</div>`;
+            html += `<div class="tlp-container"><div class="tlp-label">符号格式</div>`;
+            html += renderTSTable(currentTS);
+            html += `</div>`;
+        } else { // cfg
+            html += renderCFGContent();
+        }
+
+        html += `<div class="info-panel" id="info-panel">
+                    <div class="empty-state">👆 点击表格中的字段，此处显示详细释义</div>
+                 </div>`;
+
+        content.innerHTML = html;
+
+        // 绑定点击事件
+        const tables = content.querySelectorAll('.tlp-table, .ts-table, .cfg-table');
+        tables.forEach(table => {
+            table.addEventListener('click', function(e) {
+                const cell = e.target.closest('[data-field]');
+                if (cell) {
+                    const key = cell.dataset.field;
+                    showFieldDetail(key);
+                }
+            });
+        });
+
+        // CFG 内部 Tab 切换
+        const cfgTabs = content.querySelectorAll('.cfg-tab-btn');
+        if (cfgTabs.length) {
+            cfgTabs.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    cfgTabs.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const target = this.dataset.cfg;
+                    const contents = content.querySelectorAll('.cfg-tab-content');
+                    contents.forEach(c => c.classList.remove('active'));
+                    const targetEl = content.querySelector(`#cfg-${target}`);
+                    if (targetEl) targetEl.classList.add('active');
+                });
+            });
+        }
+    }
+
+    // =====================================================================
+    //  初始化
+    // =====================================================================
+    renderSidebar();
+    renderContent();
+    console.log('PCIe 7.0 帧格式可视化 (CFG最终修复) 加载完成 ✓');
+</script>
+</body>
+</html>
