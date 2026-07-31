@@ -1,0 +1,3185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📋 ToDoList</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, sans-serif;
+            background: #f5f7fb;
+            color: #1e2a3a;
+            min-height: 100vh;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app {
+            max-width: 1400px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 16px 20px 20px;
+            border: 1px solid #e8ecf1;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+        }
+
+        /* ===== 顶部栏 ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-left .logo {
+            font-size: 26px;
+        }
+        .header-left h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e2a3a;
+            letter-spacing: -0.3px;
+        }
+        .header-left h1 span {
+            color: #4A90D9;
+        }
+
+        .digital-clock {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e2a3a;
+            background: #f0f2f5;
+            padding: 3px 14px;
+            border-radius: 10px;
+            border: 1px solid #d8dfe8;
+            display: inline-block;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .digital-clock .date-part {
+            font-weight: 500;
+            color: #6b7c93;
+            font-size: 18px;
+        }
+        .digital-clock .time-part {
+            font-weight: 600;
+            font-size: 18px;
+            color: #1e2a3a;
+        }
+        .digital-clock .sep {
+            color: #b0c0d0;
+            font-weight: 400;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== 视图切换 & 日期导航 ===== */
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .view-tabs {
+            display: flex;
+            gap: 3px;
+            background: #f0f2f5;
+            border-radius: 10px;
+            padding: 3px;
+        }
+        .view-tab {
+            padding: 5px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7c93;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .view-tab:hover {
+            color: #1e2a3a;
+        }
+        .view-tab.active {
+            background: #ffffff;
+            color: #4A90D9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .date-nav .nav-btn {
+            padding: 4px 10px;
+            border: 1px solid #d8dfe8;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            color: #4a5568;
+            transition: all 0.15s;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+        .date-nav .nav-btn:hover {
+            background: #f0f2f5;
+        }
+        .date-nav .date-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e2a3a;
+            min-width: 120px;
+            text-align: center;
+            padding: 0 6px;
+            white-space: nowrap;
+        }
+        .date-nav .today-btn {
+            padding: 4px 12px;
+            border: 1px solid #d8dfe8;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            color: #4A90D9;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.15s;
+            line-height: 1.4;
+        }
+        .date-nav .today-btn:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+        }
+
+        .granularity-wrapper {
+            display: inline-block;
+        }
+        .granularity-wrapper.hidden {
+            display: none;
+        }
+        .granularity-select {
+            padding: 4px 10px;
+            border: 1px solid #d8dfe8;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #1e2a3a;
+            background: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            outline: none;
+            height: 30px;
+        }
+        .granularity-select:focus {
+            border-color: #4A90D9;
+        }
+
+        .action-btn {
+            padding: 4px 12px;
+            border: 1px solid #d8dfe8;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #4a5568;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            height: 30px;
+        }
+        .action-btn:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+            color: #4A90D9;
+        }
+
+        .data-status {
+            font-size: 11px;
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 2px 10px;
+            border-radius: 12px;
+            border: 1px solid #a5d6a7;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 26px;
+        }
+        .data-status.empty {
+            color: #6b7c93;
+            background: #f0f2f5;
+            border-color: #d8dfe8;
+        }
+        .data-status .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .data-status .dot.green {
+            background: #2e7d32;
+        }
+        .data-status .dot.gray {
+            background: #6b7c93;
+        }
+
+        /* ===== 主体内容 ===== */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 400px;
+            position: relative;
+            padding-top: 12px;
+        }
+
+        /* ===== 日视图 ===== */
+        .day-view {
+            display: none;
+            position: relative;
+        }
+        .day-view.active {
+            display: block;
+        }
+
+        .day-layout {
+            display: flex;
+            gap: 16px;
+            height: 100%;
+            min-height: 500px;
+        }
+
+        .day-timeline-wrapper {
+            flex: 0 0 66.666%;
+            overflow-y: auto;
+            max-height: 700px;
+            border: 1px solid #e8ecf1;
+            border-radius: 12px;
+            background: #fafbfc;
+            position: relative;
+        }
+
+        .timeline {
+            padding-left: 70px;
+            position: relative;
+        }
+
+        .timeline-divider {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            z-index: 6;
+            pointer-events: none;
+            background: linear-gradient(90deg, #e74c3c 40%, transparent 100%);
+            opacity: 1;
+            display: flex;
+            align-items: center;
+        }
+        .timeline-divider::before {
+            content: '⏰ 现在';
+            position: absolute;
+            left: 8px;
+            top: -10px;
+            font-size: 12px;
+            color: #e74c3c;
+            font-weight: 700;
+            background: #fafbfc;
+            padding: 0 10px;
+            border-radius: 10px;
+            border: 1px solid #e74c3c;
+            box-shadow: 0 1px 4px rgba(231, 76, 60, 0.15);
+            letter-spacing: 0.3px;
+        }
+        .timeline-divider .divider-dot {
+            position: absolute;
+            left: 0;
+            top: -6px;
+            width: 12px;
+            height: 12px;
+            background: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #e74c3c;
+        }
+
+        .timeline-hour {
+            display: flex;
+            border-bottom: 1px solid #e8ecf1;
+            min-height: 52px;
+            position: relative;
+            align-items: stretch;
+        }
+        .timeline-hour .time-label {
+            position: absolute;
+            left: -70px;
+            top: 0;
+            width: 60px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #8a9fb0;
+            text-align: right;
+            padding-right: 10px;
+            line-height: 52px;
+            height: 52px;
+        }
+        .timeline-hour .slot-content {
+            flex: 1;
+            padding: 2px 6px;
+            min-height: 52px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* ===== 任务行（日视图） ===== */
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #ffffff;
+            border-radius: 6px;
+            border-left: 4px solid #4A90D9;
+            transition: all 0.1s;
+            min-height: 32px;
+            flex-wrap: nowrap;
+            position: relative;
+            width: 100%;
+        }
+        .task-row:hover {
+            background: #f0f5ff;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(74, 144, 217, 0.15);
+            z-index: 2;
+        }
+        .task-row.past-task {
+            background: #f0f2f5;
+            opacity: 0.7;
+            border-left-color: #8a9fb0;
+        }
+        .task-row.past-task .task-check {
+            cursor: pointer;
+            opacity: 1;
+        }
+        .task-row.past-task .task-title-input,
+        .task-row.past-task .task-tag-select,
+        .task-row.past-task .task-priority-select {
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .task-row.past-task .task-comment-input {
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .task-row.completed-task {
+            opacity: 0.6;
+            border-left-color: #8a9fb0;
+        }
+        .task-row.completed-task .task-title-input {
+            text-decoration: line-through;
+        }
+        .task-row.active-task {
+            border-left-width: 6px;
+            border-left-color: #4A90D9;
+            background: #e8f0fe;
+        }
+
+        .task-row .task-check {
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            flex-shrink: 0;
+            width: 20px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .task-row .task-title-input {
+            flex: 2 1 280px;
+            min-width: 120px;
+            max-width: 400px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e2a3a;
+            outline: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.15s;
+            word-break: break-word;
+            white-space: normal;
+            line-height: 1.4;
+            height: auto;
+            min-height: 26px;
+            resize: none;
+        }
+        .task-row .task-title-input:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 2px #4A90D9;
+        }
+        .task-row .task-title-input::placeholder {
+            color: #b0c0d0;
+        }
+        .task-row .task-title-input:disabled {
+            cursor: not-allowed;
+        }
+
+        .task-row .task-tag-select {
+            flex: 0 1 60px;
+            min-width: 40px;
+            max-width: 80px;
+            padding: 2px 4px;
+            border: 1px solid #d8dfe8;
+            border-radius: 4px;
+            font-size: 10px;
+            font-family: inherit;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+            height: 24px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: none;
+            padding-right: 2px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            color: #1e2a3a;
+        }
+        .task-row .task-tag-select:focus {
+            border-color: #4A90D9;
+        }
+        .task-row .task-tag-select:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .task-row .task-tag-select option.add-tag-option {
+            color: #4A90D9;
+            font-weight: 600;
+        }
+        .task-row .task-tag-select.has-tag {
+            background-color: #e8f0fe;
+            border-color: #b0c8e0;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
+        .task-row .task-priority-select {
+            flex: 0 0 32px;
+            min-width: 28px;
+            max-width: 36px;
+            padding: 2px 2px 2px 4px;
+            border: 1px solid #d8dfe8;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+            height: 24px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: none;
+            text-align: center;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: clip;
+        }
+        .task-row .task-priority-select:focus {
+            border-color: #4A90D9;
+        }
+        .task-row .task-priority-select:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .task-row .task-priority-select option {
+            font-size: 14px;
+            text-align: center;
+        }
+        .task-row .task-priority-select::-ms-expand {
+            display: none;
+        }
+
+        .task-row .task-comment-input {
+            flex: 1 1 80px;
+            min-width: 40px;
+            max-width: 140px;
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            font-family: inherit;
+            color: #6b7c93;
+            outline: none;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.15s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task-row .task-comment-input:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 2px #b0c8e0;
+        }
+        .task-row .task-comment-input::placeholder {
+            color: #c0c8d0;
+            font-size: 11px;
+        }
+
+        .task-row .task-status-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 36px;
+            text-align: center;
+            line-height: 16px;
+            height: 18px;
+        }
+        .task-row .task-status-badge.status-active {
+            background: #d4e0f0;
+            color: #1a6a8a;
+        }
+        .task-row .task-status-badge.status-done {
+            background: #d4f0d4;
+            color: #2a7a3a;
+        }
+        .task-row .task-status-badge.status-past {
+            background: #e8e8e8;
+            color: #6b7c93;
+        }
+
+        .empty-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 8px;
+            color: #b0c0d0;
+            font-size: 13px;
+            border: 1px dashed #d8dfe8;
+            border-radius: 6px;
+            min-height: 34px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #f8f9fc;
+        }
+        .empty-slot:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+            color: #4A90D9;
+        }
+
+        /* ===== 每日总结 ===== */
+        .daily-summary-panel {
+            flex: 1;
+            min-width: 180px;
+            max-width: 33.333%;
+            background: #f8f9fc;
+            border-radius: 12px;
+            border: 1px solid #e8ecf1;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-height: 700px;
+            min-height: 400px;
+        }
+        .daily-summary-panel .summary-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e2a3a;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .daily-summary-panel .summary-title .summary-date {
+            font-weight: 400;
+            color: #6b7c93;
+            font-size: 12px;
+        }
+        .daily-summary-panel textarea {
+            flex: 1;
+            border: 1px solid #d8dfe8;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            background: #fff;
+            min-height: 200px;
+            transition: border-color 0.15s;
+        }
+        .daily-summary-panel textarea:focus {
+            border-color: #4A90D9;
+        }
+        .daily-summary-panel .summary-save-btn {
+            margin-top: 8px;
+            padding: 6px;
+            background: #4A90D9;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .daily-summary-panel .summary-save-btn:hover {
+            background: #3a7bc8;
+        }
+
+        /* ===== 周视图 ===== */
+        .week-view {
+            display: none;
+        }
+        .week-view.active {
+            display: block;
+        }
+
+        .week-sub-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 3px;
+            width: fit-content;
+        }
+        .week-sub-tab {
+            padding: 4px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7c93;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .week-sub-tab:hover {
+            color: #1e2a3a;
+        }
+        .week-sub-tab.active {
+            background: #ffffff;
+            color: #4A90D9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .week-sub-content {
+            display: none;
+        }
+        .week-sub-content.active {
+            display: block;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        .week-day {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 12px 10px;
+            border: 1px solid #e8ecf1;
+            min-height: 300px;
+            transition: all 0.2s;
+            position: relative;
+            cursor: default;
+        }
+        .week-day:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(74, 144, 217, 0.12);
+            z-index: 2;
+        }
+        .week-day.today-highlight {
+            border-color: #4A90D9;
+            border-width: 2px;
+            background: #f0f5ff;
+        }
+        .week-day .day-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e2a3a;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8ecf1;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .week-day .day-header .day-num {
+            font-weight: 400;
+            color: #6b7c93;
+            font-size: 13px;
+        }
+        .week-day .day-header .day-name {
+            font-size: 13px;
+            color: #6b7c93;
+            font-weight: 400;
+        }
+        .week-day .day-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .week-day .day-tasks .task-item {
+            font-size: 13px;
+            padding: 6px 10px;
+            background: #ffffff;
+            border-radius: 6px;
+            border-left: 3px solid #4A90D9;
+            cursor: default;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .week-day .day-tasks .task-item:hover {
+            background: #f0f5ff;
+            transform: scale(1.03);
+            box-shadow: 0 2px 10px rgba(74, 144, 217, 0.12);
+            z-index: 2;
+        }
+        .week-day .day-tasks .task-item .task-tag {
+            font-size: 10px;
+            background: #e8ecf1;
+            padding: 0 6px;
+            border-radius: 3px;
+            color: #4a5568;
+        }
+        .week-day .day-tasks .task-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        .week-day .day-tasks .task-item .task-time {
+            font-size: 11px;
+            color: #8a9fb0;
+            margin-right: 4px;
+        }
+        .week-day .day-tasks .task-item .task-check {
+            font-size: 14px;
+            margin-right: 2px;
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        .week-day .day-tasks .task-item .priority-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .week-day .empty-tasks {
+            font-size: 13px;
+            color: #b0c0d0;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* 周计划列表 */
+        .week-plan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .week-plan-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: #f8f9fc;
+            border-radius: 4px;
+            border-left: 3px solid #f1c40f;
+            flex-wrap: wrap;
+        }
+        .week-plan-item .plan-check {
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .week-plan-item .plan-text {
+            flex: 1;
+            font-size: 13px;
+        }
+        .week-plan-item .plan-day {
+            font-size: 11px;
+            color: #6b7c93;
+            font-weight: 600;
+            min-width: 30px;
+        }
+        .week-plan-item .plan-tag {
+            font-size: 10px;
+            background: #e8ecf1;
+            padding: 0 6px;
+            border-radius: 3px;
+            color: #4a5568;
+        }
+        .week-plan-item .plan-priority-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .week-plan-item .plan-del {
+            border: none;
+            background: transparent;
+            color: #b04040;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+        }
+        .week-plan-item .plan-del:hover {
+            color: #dc2626;
+        }
+        .week-plan-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        .week-plan-empty {
+            color: #b0c0d0;
+            font-size: 13px;
+            padding: 8px 0;
+            text-align: center;
+        }
+        .week-plan-add {
+            margin-top: 8px;
+            padding: 4px 12px;
+            border: 1px dashed #d8dfe8;
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            color: #4A90D9;
+            font-family: inherit;
+            transition: all 0.15s;
+            width: 100%;
+            text-align: center;
+        }
+        .week-plan-add:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+        }
+
+        /* ===== 月视图 ===== */
+        .month-view {
+            display: none;
+        }
+        .month-view.active {
+            display: block;
+        }
+
+        .month-sub-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 3px;
+            width: fit-content;
+        }
+        .month-sub-tab {
+            padding: 4px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7c93;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .month-sub-tab:hover {
+            color: #1e2a3a;
+        }
+        .month-sub-tab.active {
+            background: #ffffff;
+            color: #4A90D9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .month-sub-content {
+            display: none;
+        }
+        .month-sub-content.active {
+            display: block;
+        }
+
+        .month-layout {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .month-calendar-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .month-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .month-calendar .month-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7c93;
+            text-align: center;
+            padding: 6px 0;
+            background: #f8f9fc;
+            border-radius: 6px;
+        }
+        .month-calendar .month-day {
+            aspect-ratio: 1;
+            min-height: 44px;
+            padding: 3px 4px;
+            border-radius: 6px;
+            background: #fafbfc;
+            border: 1px solid #e8ecf1;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+        .month-calendar .month-day:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+            transform: scale(1.04);
+            box-shadow: 0 2px 12px rgba(74, 144, 217, 0.1);
+            z-index: 2;
+        }
+        .month-calendar .month-day .day-number {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e2a3a;
+        }
+        .month-calendar .month-day .day-number.other-month {
+            color: #b0c0d0;
+        }
+        .month-calendar .month-day .day-dots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px;
+            margin-top: 2px;
+        }
+        .month-calendar .month-day .day-dots .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+        .month-calendar .month-day.today-highlight {
+            border-color: #4A90D9;
+            border-width: 2px;
+            background: #f0f5ff;
+        }
+        .month-calendar .month-day.has-tasks {
+            border-color: #c8d8e8;
+        }
+        .month-calendar .month-day .task-count {
+            font-size: 9px;
+            color: #6b7c93;
+            margin-top: 1px;
+            font-weight: 500;
+        }
+
+        /* 月详情面板 */
+        .month-detail-panel {
+            width: 280px;
+            min-width: 220px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: #f8f9fc;
+            border-radius: 12px;
+            border: 1px solid #e8ecf1;
+            padding: 12px 14px;
+            flex-shrink: 0;
+            display: none;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+        }
+        .month-detail-panel.active {
+            display: block;
+        }
+
+        .month-detail-panel .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e8ecf1;
+        }
+        .month-detail-panel .detail-header .detail-date {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .month-detail-panel .detail-header .close-detail {
+            border: none;
+            background: transparent;
+            font-size: 18px;
+            cursor: pointer;
+            color: #6b7c93;
+            padding: 0 4px;
+        }
+        .month-detail-panel .detail-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .month-detail-panel .detail-tasks .task-item {
+            padding: 5px 10px;
+            background: #ffffff;
+            border-radius: 6px;
+            border-left: 3px solid #4A90D9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .month-detail-panel .detail-tasks .task-item:hover {
+            background: #f0f5ff;
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(74, 144, 217, 0.1);
+        }
+        .month-detail-panel .detail-tasks .task-item .task-check-display {
+            font-size: 14px;
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.8;
+            margin-left: auto;
+        }
+
+        /* 月计划列表 */
+        .month-plan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .month-plan-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: #f8f9fc;
+            border-radius: 4px;
+            border-left: 3px solid #f1c40f;
+            flex-wrap: wrap;
+        }
+        .month-plan-item .plan-check {
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .month-plan-item .plan-text {
+            flex: 1;
+            font-size: 13px;
+        }
+        .month-plan-item .plan-tag {
+            font-size: 10px;
+            background: #e8ecf1;
+            padding: 0 6px;
+            border-radius: 3px;
+            color: #4a5568;
+        }
+        .month-plan-item .plan-priority-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .month-plan-item .plan-del {
+            border: none;
+            background: transparent;
+            color: #b04040;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+        }
+        .month-plan-item .plan-del:hover {
+            color: #dc2626;
+        }
+        .month-plan-item.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        .month-plan-empty {
+            color: #b0c0d0;
+            font-size: 13px;
+            padding: 8px 0;
+            text-align: center;
+        }
+        .month-plan-add {
+            margin-top: 8px;
+            padding: 4px 12px;
+            border: 1px dashed #d8dfe8;
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            color: #4A90D9;
+            font-family: inherit;
+            transition: all 0.15s;
+            width: 100%;
+            text-align: center;
+        }
+        .month-plan-add:hover {
+            background: #f0f5ff;
+            border-color: #4A90D9;
+        }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .modal .form-group {
+            margin-bottom: 12px;
+        }
+        .modal .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 4px;
+        }
+        .modal .form-group input,
+        .modal .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d8dfe8;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .modal .form-group input:focus,
+        .modal .form-group select:focus {
+            border-color: #4A90D9;
+        }
+        .modal .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+        .modal .modal-actions button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+        .modal .modal-actions .btn-save {
+            background: #4A90D9;
+            color: #fff;
+        }
+        .modal .modal-actions .btn-save:hover {
+            background: #3a7bc8;
+        }
+        .modal .modal-actions .btn-cancel {
+            background: #f0f2f5;
+            color: #4a5568;
+        }
+        .modal .modal-actions .btn-cancel:hover {
+            background: #e0e4e8;
+        }
+
+        /* ===== 标签管理 ===== */
+        .modal .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .modal .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px 4px 16px;
+            background: #f0f2f5;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .modal .tag-item .tag-del {
+            border: none;
+            background: transparent;
+            color: #b04040;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 2px;
+            line-height: 1;
+        }
+        .modal .tag-item .tag-del:hover {
+            color: #dc2626;
+        }
+        .modal .add-tag-row {
+            display: flex;
+            gap: 8px;
+        }
+        .modal .add-tag-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d8dfe8;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+        }
+        .modal .add-tag-row input:focus {
+            border-color: #4A90D9;
+        }
+        .modal .add-tag-row button {
+            padding: 8px 16px;
+            background: #4A90D9;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .modal .modal-close {
+            margin-top: 16px;
+            padding: 8px;
+            background: #f0f2f5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+        .modal .modal-close:hover {
+            background: #e0e4e8;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1024px) {
+            .day-timeline-wrapper {
+                flex: 0 0 60%;
+            }
+            .daily-summary-panel {
+                max-width: 40%;
+                min-height: 300px;
+            }
+            .month-detail-panel {
+                width: 220px;
+                min-width: 160px;
+            }
+            .task-row .task-title-input {
+                flex: 1 1 180px;
+                min-width: 80px;
+                max-width: 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .day-layout {
+                flex-direction: column;
+            }
+            .day-timeline-wrapper {
+                flex: 1 1 auto;
+                max-height: 500px;
+            }
+            .daily-summary-panel {
+                max-width: 100%;
+                min-height: 120px;
+                max-height: 200px;
+            }
+            .daily-summary-panel textarea {
+                min-height: 80px;
+            }
+            .month-layout {
+                flex-direction: column;
+            }
+            .month-detail-panel {
+                width: 100%;
+                min-width: auto;
+                max-height: 250px;
+                position: static;
+            }
+            .task-row {
+                flex-wrap: wrap;
+                padding: 6px 8px;
+            }
+            .task-row .task-title-input {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .task-row .task-comment-input {
+                flex: 1 1 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .header-center {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .header-right {
+                justify-content: center;
+            }
+            .nav-controls {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .month-calendar .month-day {
+                min-height: 36px;
+                padding: 3px 4px;
+            }
+            .month-calendar .month-day .day-number {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app {
+                padding: 12px 10px 14px;
+            }
+            .header-left h1 {
+                font-size: 17px;
+            }
+            .digital-clock {
+                font-size: 15px;
+                padding: 2px 10px;
+            }
+            .digital-clock .date-part,
+            .digital-clock .time-part {
+                font-size: 15px;
+            }
+            .date-nav .date-label {
+                font-size: 13px;
+                min-width: 80px;
+            }
+            .view-tab {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .week-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .week-day {
+                min-height: auto;
+                padding: 10px;
+            }
+            .month-calendar {
+                font-size: 12px;
+            }
+            .month-calendar .month-day {
+                min-height: 32px;
+                padding: 2px 3px;
+            }
+            .month-calendar .month-day .day-number {
+                font-size: 11px;
+            }
+            .day-timeline-wrapper {
+                max-height: 450px;
+            }
+            .timeline {
+                padding-left: 50px;
+            }
+            .timeline-hour .time-label {
+                left: -50px;
+                width: 40px;
+                font-size: 11px;
+                line-height: 44px;
+                height: 44px;
+            }
+            .timeline-hour {
+                min-height: 44px;
+            }
+            .timeline-hour .slot-content {
+                min-height: 44px;
+            }
+            .month-detail-panel {
+                max-height: 220px;
+            }
+            .month-sub-tabs,
+            .week-sub-tabs {
+                width: 100%;
+                justify-content: center;
+            }
+            .week-plan-item,
+            .month-plan-item {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .view-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .view-tab {
+                padding: 3px 10px;
+                font-size: 11px;
+            }
+            .month-calendar .month-day {
+                min-height: 28px;
+                padding: 2px 2px;
+            }
+            .month-calendar .month-day .day-number {
+                font-size: 10px;
+            }
+            .month-calendar .month-day .day-dots .dot {
+                width: 4px;
+                height: 4px;
+            }
+            .digital-clock {
+                font-size: 13px;
+                padding: 2px 8px;
+            }
+            .digital-clock .date-part,
+            .digital-clock .time-part {
+                font-size: 13px;
+            }
+            .data-status {
+                font-size: 10px;
+                padding: 1px 8px;
+            }
+            .date-nav .date-label {
+                font-size: 12px;
+                min-width: 60px;
+            }
+            .date-nav .nav-btn {
+                padding: 3px 8px;
+                font-size: 12px;
+            }
+            .task-row .task-tag-select {
+                flex: 0 1 40px;
+                min-width: 30px;
+                font-size: 9px;
+            }
+            .task-row .task-priority-select {
+                flex: 0 0 28px;
+                min-width: 24px;
+                font-size: 12px;
+            }
+            .action-btn {
+                font-size: 11px;
+                padding: 3px 8px;
+                height: 26px;
+            }
+            .granularity-select {
+                font-size: 11px;
+                padding: 3px 8px;
+                height: 26px;
+            }
+            .week-plan-item,
+            .month-plan-item {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+
+        <!-- ===== 顶部栏 ===== -->
+        <div class="header">
+            <div class="header-left">
+                <span class="logo">📋</span>
+                <h1>ToDo<span>List</span></h1>
+                <span class="digital-clock" id="digitalClock">
+                    <span class="date-part" id="clockDate"></span>
+                    <span class="sep"> | </span>
+                    <span class="time-part" id="clockTime"></span>
+                </span>
+            </div>
+
+            <div class="header-center">
+                <div class="nav-controls">
+                    <div class="view-tabs" id="viewTabs">
+                        <button class="view-tab active" data-view="day">📅 日</button>
+                        <button class="view-tab" data-view="week">📆 周</button>
+                        <button class="view-tab" data-view="month">📊 月</button>
+                    </div>
+                    <div class="date-nav">
+                        <button class="nav-btn" id="prevDate">◀</button>
+                        <span class="date-label" id="dateLabel">今天</span>
+                        <button class="nav-btn" id="nextDate">▶</button>
+                        <button class="today-btn" id="todayBtn">今天</button>
+                    </div>
+                    <span class="granularity-wrapper" id="granularityWrapper">
+                        <select class="granularity-select" id="granularitySelect">
+                            <option value="15">15 分钟</option>
+                            <option value="30">30 分钟</option>
+                            <option value="60" selected>1 小时</option>
+                        </select>
+                    </span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <span class="data-status" id="dataStatus">
+                    <span class="dot green" id="statusDot"></span>
+                    <span id="statusText">已自动保存</span>
+                </span>
+                <button class="action-btn" id="saveBtn">📤 导出</button>
+                <button class="action-btn" id="loadBtn">📥 导入</button>
+                <input type="file" id="fileInput" accept=".json" style="display:none" />
+            </div>
+        </div>
+
+        <!-- ===== 主内容 ===== -->
+        <div class="main-content" id="mainContent">
+            <!-- ===== 日视图 ===== -->
+            <div class="day-view active" id="dayView">
+                <div class="day-layout">
+                    <div class="day-timeline-wrapper" id="timelineWrapper">
+                        <div class="timeline" id="timeline"></div>
+                    </div>
+                    <div class="daily-summary-panel" id="dailySummaryPanel">
+                        <div class="summary-title">
+                            📝 每日总结
+                            <span class="summary-date" id="summaryDate"></span>
+                        </div>
+                        <textarea id="dailySummaryText" placeholder="今天做了什么…"></textarea>
+                        <button class="summary-save-btn" id="summarySaveBtn">💾 保存总结</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 周视图 ===== -->
+            <div class="week-view" id="weekView">
+                <div class="week-sub-tabs" id="weekSubTabs">
+                    <button class="week-sub-tab active" data-sub="calendar">📆 周历</button>
+                    <button class="week-sub-tab" data-sub="plan">📋 周计划</button>
+                </div>
+                <div class="week-sub-content active" id="weekCalendarContent">
+                    <div class="week-grid" id="weekGrid"></div>
+                </div>
+                <div class="week-sub-content" id="weekPlanContent">
+                    <div class="week-plan-list" id="weekPlanList"></div>
+                    <button class="week-plan-add" id="addWeekPlanBtn">➕ 添加周计划</button>
+                </div>
+            </div>
+
+            <!-- ===== 月视图 ===== -->
+            <div class="month-view" id="monthView">
+                <div class="month-sub-tabs" id="monthSubTabs">
+                    <button class="month-sub-tab active" data-sub="calendar">📊 月历</button>
+                    <button class="month-sub-tab" data-sub="plan">📋 月计划</button>
+                </div>
+                <div class="month-sub-content active" id="monthCalendarContent">
+                    <div class="month-layout">
+                        <div class="month-calendar-wrapper">
+                            <div class="month-calendar" id="monthCalendar"></div>
+                        </div>
+                        <div class="month-detail-panel" id="monthDetailPanel">
+                            <div class="detail-header">
+                                <span class="detail-date" id="detailDate">2024-01-01</span>
+                                <button class="close-detail" id="closeDetail">✕</button>
+                            </div>
+                            <div class="detail-tasks" id="detailTasks"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="month-sub-content" id="monthPlanContent">
+                    <div class="month-plan-list" id="monthPlanList"></div>
+                    <button class="month-plan-add" id="addMonthPlanBtn">➕ 添加月计划</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== 标签管理模态框 ===== -->
+    <div class="modal-overlay" id="tagModal">
+        <div class="modal">
+            <div class="modal-title">🏷️ 管理标签</div>
+            <div class="tag-list" id="tagList"></div>
+            <div class="add-tag-row">
+                <input id="newTagInput" placeholder="输入新标签名…" />
+                <button id="addTagBtn">添加</button>
+            </div>
+            <button class="modal-close" id="closeTagModal">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 添加周计划模态框 ===== -->
+    <div class="modal-overlay" id="weekPlanModal">
+        <div class="modal">
+            <div class="modal-title">📋 添加周计划</div>
+            <div class="form-group">
+                <label>星期几</label>
+                <select id="weekPlanDay">
+                    <option value="1">周一</option>
+                    <option value="2">周二</option>
+                    <option value="3">周三</option>
+                    <option value="4">周四</option>
+                    <option value="5">周五</option>
+                    <option value="6">周六</option>
+                    <option value="0">周日</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>计划内容</label>
+                <input id="weekPlanText" placeholder="输入计划…" />
+            </div>
+            <div class="form-group">
+                <label>标签</label>
+                <select id="weekPlanTag">
+                    <option value="">无</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>优先级</label>
+                <select id="weekPlanPriority">
+                    <option value="low">🟢 低</option>
+                    <option value="medium" selected>🟡 中</option>
+                    <option value="high">🟠 高</option>
+                    <option value="urgent">🔴 紧急</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="weekPlanModalCancel">取消</button>
+                <button class="btn-save" id="weekPlanModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 添加月计划模态框 ===== -->
+    <div class="modal-overlay" id="monthPlanModal">
+        <div class="modal">
+            <div class="modal-title">📋 添加月计划</div>
+            <div class="form-group">
+                <label>计划内容</label>
+                <input id="monthPlanText" placeholder="输入计划…" />
+            </div>
+            <div class="form-group">
+                <label>标签</label>
+                <select id="monthPlanTag">
+                    <option value="">无</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>优先级</label>
+                <select id="monthPlanPriority">
+                    <option value="low">🟢 低</option>
+                    <option value="medium" selected>🟡 中</option>
+                    <option value="high">🟠 高</option>
+                    <option value="urgent">🔴 紧急</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="monthPlanModalCancel">取消</button>
+                <button class="btn-save" id="monthPlanModalSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            //  数据层
+            // ============================================================
+            const STORAGE_KEY = 'todo_list_data_v6';
+
+            let data = {
+                tasks: [],
+                tags: ['工作', '生活', '个人', '学习'],
+                settings: { granularity: 60 },
+                dailySummaries: {},
+                weekPlans: [],
+                monthPlans: [],
+            };
+
+            // ============================================================
+            //  状态
+            // ============================================================
+            let currentView = 'day';
+            let currentDate = new Date();
+            let detailDateStr = null;
+            let weekSubView = 'calendar';
+            let monthSubView = 'calendar';
+
+            // ============================================================
+            //  DOM 引用
+            // ============================================================
+            const $ = id => document.getElementById(id);
+            const viewTabs = $('viewTabs');
+            const granularitySelect = $('granularitySelect');
+            const granularityWrapper = $('granularityWrapper');
+            const dateLabel = $('dateLabel');
+            const prevDate = $('prevDate');
+            const nextDate = $('nextDate');
+            const todayBtn = $('todayBtn');
+            const dayView = $('dayView');
+            const weekView = $('weekView');
+            const monthView = $('monthView');
+            const timeline = $('timeline');
+            const timelineWrapper = $('timelineWrapper');
+            const weekGrid = $('weekGrid');
+            const weekPlanList = $('weekPlanList');
+            const addWeekPlanBtn = $('addWeekPlanBtn');
+            const weekSubTabs = $('weekSubTabs');
+            const weekCalendarContent = $('weekCalendarContent');
+            const weekPlanContent = $('weekPlanContent');
+            const monthCalendar = $('monthCalendar');
+            const monthPlanList = $('monthPlanList');
+            const addMonthPlanBtn = $('addMonthPlanBtn');
+            const monthSubTabs = $('monthSubTabs');
+            const monthCalendarContent = $('monthCalendarContent');
+            const monthPlanContent = $('monthPlanContent');
+            const monthDetailPanel = $('monthDetailPanel');
+            const detailDate = $('detailDate');
+            const detailTasks = $('detailTasks');
+            const closeDetail = $('closeDetail');
+            const tagManageBtn = $('tagManageBtn');
+            const tagModal = $('tagModal');
+            const tagList = $('tagList');
+            const newTagInput = $('newTagInput');
+            const addTagBtn = $('addTagBtn');
+            const closeTagModal = $('closeTagModal');
+            const saveBtn = $('saveBtn');
+            const loadBtn = $('loadBtn');
+            const fileInput = $('fileInput');
+            const dailySummaryText = $('dailySummaryText');
+            const summaryDate = $('summaryDate');
+            const summarySaveBtn = $('summarySaveBtn');
+            const clockDate = $('clockDate');
+            const clockTime = $('clockTime');
+            const dataStatus = $('dataStatus');
+            const statusText = $('statusText');
+            const statusDot = $('statusDot');
+            // 周计划模态框
+            const weekPlanModal = $('weekPlanModal');
+            const weekPlanDay = $('weekPlanDay');
+            const weekPlanText = $('weekPlanText');
+            const weekPlanTag = $('weekPlanTag');
+            const weekPlanPriority = $('weekPlanPriority');
+            const weekPlanModalCancel = $('weekPlanModalCancel');
+            const weekPlanModalSave = $('weekPlanModalSave');
+            // 月计划模态框
+            const monthPlanModal = $('monthPlanModal');
+            const monthPlanText = $('monthPlanText');
+            const monthPlanTag = $('monthPlanTag');
+            const monthPlanPriority = $('monthPlanPriority');
+            const monthPlanModalCancel = $('monthPlanModalCancel');
+            const monthPlanModalSave = $('monthPlanModalSave');
+
+            // ============================================================
+            //  工具函数
+            // ============================================================
+            function formatDate(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
+
+            function parseDate(str) {
+                const parts = str.split('-').map(Number);
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+
+            function formatTime(h, m) {
+                return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+            }
+
+            function timeToMinutes(timeStr) {
+                const parts = timeStr.split(':').map(Number);
+                return parts[0] * 60 + parts[1];
+            }
+
+            function minutesToTime(min) {
+                const h = Math.floor(min / 60) % 24;
+                const m = min % 60;
+                return formatTime(h, m);
+            }
+
+            function getWeekStart(d) {
+                const date = new Date(d);
+                const day = date.getDay();
+                const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                date.setDate(diff);
+                date.setHours(0, 0, 0, 0);
+                return date;
+            }
+
+            function getWeekEnd(d) {
+                const start = getWeekStart(d);
+                const end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                return end;
+            }
+
+            function getMonthKey(d) {
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            }
+
+            function isSameDay(d1, d2) {
+                return d1.getFullYear() === d2.getFullYear() &&
+                    d1.getMonth() === d2.getMonth() &&
+                    d1.getDate() === d2.getDate();
+            }
+
+            function getTasksForDate(dateStr) {
+                return data.tasks.filter(t => t.date === dateStr);
+            }
+
+            function getTasksForDateRange(startDate, endDate) {
+                const startStr = formatDate(startDate);
+                const endStr = formatDate(endDate);
+                return data.tasks.filter(t => t.date >= startStr && t.date <= endStr);
+            }
+
+            function generateId() {
+                return 'task_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+            }
+
+            function getCurrentTimeMinutes() {
+                const now = new Date();
+                return now.getHours() * 60 + now.getMinutes();
+            }
+
+            function isTaskPast(task) {
+                const taskEnd = timeToMinutes(task.endTime);
+                return taskEnd <= getCurrentTimeMinutes();
+            }
+
+            function isTaskActive(task) {
+                const start = timeToMinutes(task.startTime);
+                const end = timeToMinutes(task.endTime);
+                const now = getCurrentTimeMinutes();
+                return start <= now && now < end;
+            }
+
+            // ============================================================
+            //  数据持久化
+            // ============================================================
+            function saveToLocal() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    updateStatus(true);
+                } catch (e) {
+                    console.warn('保存失败', e);
+                    updateStatus(false);
+                }
+            }
+
+            function loadFromLocal() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        data = parsed;
+                        if (!data.settings) data.settings = { granularity: 60 };
+                        if (!data.tags) data.tags = [];
+                        if (!data.tasks) data.tasks = [];
+                        if (!data.dailySummaries) data.dailySummaries = {};
+                        if (!data.weekPlans) data.weekPlans = [];
+                        if (!data.monthPlans) data.monthPlans = [];
+                        if (![15, 30, 60].includes(data.settings.granularity)) {
+                            data.settings.granularity = 60;
+                        }
+                        return true;
+                    }
+                } catch (e) { /* ignore */ }
+                return false;
+            }
+
+            function updateStatus(hasData) {
+                const hasTasks = data.tasks && data.tasks.length > 0;
+                const hasSummary = data.dailySummaries && Object.keys(data.dailySummaries).length > 0;
+                const hasPlans = (data.weekPlans && data.weekPlans.length > 0) ||
+                    (data.monthPlans && data.monthPlans.length > 0);
+                const exists = hasTasks || hasSummary || hasPlans;
+
+                if (exists) {
+                    statusText.textContent = '✅ 已自动保存';
+                    statusDot.className = 'dot green';
+                    dataStatus.className = 'data-status';
+                } else {
+                    statusText.textContent = '📭 暂无数据';
+                    statusDot.className = 'dot gray';
+                    dataStatus.className = 'data-status empty';
+                }
+            }
+
+            // ============================================================
+            //  标签管理
+            // ============================================================
+            function populateTagSelect(selectElement, currentTag) {
+                if (!selectElement) return;
+                selectElement.innerHTML = '<option value="">无</option>';
+                data.tags.forEach(tag => {
+                    const opt = document.createElement('option');
+                    opt.value = tag;
+                    opt.textContent = tag;
+                    selectElement.appendChild(opt);
+                });
+                const addOpt = document.createElement('option');
+                addOpt.value = '__add__';
+                addOpt.textContent = '➕ ';
+                addOpt.className = 'add-tag-option';
+                selectElement.appendChild(addOpt);
+                if (data.tags.includes(currentTag)) {
+                    selectElement.value = currentTag;
+                } else {
+                    selectElement.value = '';
+                }
+                selectElement.onchange = function() {
+                    if (this.value === '__add__') {
+                        this.value = currentTag || '';
+                        tagModal.classList.add('active');
+                        renderTagManager();
+                        newTagInput.focus();
+                        return;
+                    }
+                };
+            }
+
+            function renderTagManager() {
+                const container = tagList;
+                container.innerHTML = '';
+                data.tags.forEach((tag, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'tag-item';
+                    div.innerHTML = `
+                        <span>${tag}</span>
+                        <button class="tag-del" data-index="${idx}">✕</button>
+                    `;
+                    container.appendChild(div);
+                });
+                container.querySelectorAll('.tag-del').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index);
+                        data.tags.splice(idx, 1);
+                        saveToLocal();
+                        renderTagManager();
+                        refreshAll();
+                    });
+                });
+            }
+
+            // ============================================================
+            //  时钟
+            // ============================================================
+            function updateClock() {
+                const now = new Date();
+                const dateStr = now.getFullYear() + '-' +
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getDate()).padStart(2, '0') + ' ' +
+                    ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
+                clockDate.textContent = dateStr;
+                clockTime.textContent = now.toTimeString().slice(0, 8);
+            }
+
+            function startClock() {
+                updateClock();
+                setInterval(updateClock, 1000);
+                setInterval(() => {
+                    if (currentView === 'day') renderDayView();
+                }, 15 * 60 * 1000);
+            }
+
+            // ============================================================
+            //  每日总结
+            // ============================================================
+            function loadDailySummary() {
+                const dateStr = formatDate(currentDate);
+                summaryDate.textContent = dateStr;
+                dailySummaryText.value = data.dailySummaries[dateStr] || '';
+            }
+
+            function saveDailySummary() {
+                const dateStr = formatDate(currentDate);
+                const text = dailySummaryText.value.trim();
+                if (text) data.dailySummaries[dateStr] = text;
+                else delete data.dailySummaries[dateStr];
+                saveToLocal();
+                const btn = summarySaveBtn;
+                const orig = btn.textContent;
+                btn.textContent = '✅ 已保存';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            }
+
+            // ============================================================
+            //  周计划 & 月计划
+            // ============================================================
+            function renderWeekPlans() {
+                const weekStart = getWeekStart(currentDate);
+                const weekStartStr = formatDate(weekStart);
+                const plans = data.weekPlans.filter(p => p.weekStart === weekStartStr);
+                weekPlanList.innerHTML = '';
+                if (plans.length === 0) {
+                    weekPlanList.innerHTML = '<div class="week-plan-empty">暂无周计划</div>';
+                    return;
+                }
+                const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                plans.sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+                for (const p of plans) {
+                    const div = document.createElement('div');
+                    div.className = 'week-plan-item' + (p.completed ? ' completed' : '');
+                    const priorityColors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                    const dotColor = priorityColors[p.priority] || '#f1c40f';
+                    div.innerHTML = `
+                        <span class="plan-check">${p.completed ? '☑' : '☐'}</span>
+                        <span class="plan-day">${dayNames[p.dayOfWeek]}</span>
+                        <span class="plan-text">${p.text}</span>
+                        ${p.tag ? `<span class="plan-tag">${p.tag}</span>` : ''}
+                        <span class="plan-priority-dot" style="background:${dotColor};"></span>
+                        <button class="plan-del" data-id="${p.id}">✕</button>
+                    `;
+                    div.querySelector('.plan-check').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        p.completed = !p.completed;
+                        saveToLocal();
+                        renderWeekPlans();
+                    });
+                    div.querySelector('.plan-del').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        data.weekPlans = data.weekPlans.filter(item => item.id !== p.id);
+                        saveToLocal();
+                        renderWeekPlans();
+                    });
+                    weekPlanList.appendChild(div);
+                }
+            }
+
+            function renderMonthPlans() {
+                const monthKey = getMonthKey(currentDate);
+                const plans = data.monthPlans.filter(p => p.monthKey === monthKey);
+                monthPlanList.innerHTML = '';
+                if (plans.length === 0) {
+                    monthPlanList.innerHTML = '<div class="month-plan-empty">暂无月计划</div>';
+                    return;
+                }
+                const priorityColors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                for (const p of plans) {
+                    const div = document.createElement('div');
+                    div.className = 'month-plan-item' + (p.completed ? ' completed' : '');
+                    const dotColor = priorityColors[p.priority] || '#f1c40f';
+                    div.innerHTML = `
+                        <span class="plan-check">${p.completed ? '☑' : '☐'}</span>
+                        <span class="plan-text">${p.text}</span>
+                        ${p.tag ? `<span class="plan-tag">${p.tag}</span>` : ''}
+                        <span class="plan-priority-dot" style="background:${dotColor};"></span>
+                        <button class="plan-del" data-id="${p.id}">✕</button>
+                    `;
+                    div.querySelector('.plan-check').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        p.completed = !p.completed;
+                        saveToLocal();
+                        renderMonthPlans();
+                    });
+                    div.querySelector('.plan-del').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        data.monthPlans = data.monthPlans.filter(item => item.id !== p.id);
+                        saveToLocal();
+                        renderMonthPlans();
+                    });
+                    monthPlanList.appendChild(div);
+                }
+            }
+
+            // ============================================================
+            //  日视图
+            // ============================================================
+            function renderDayView() {
+                const dateStr = formatDate(currentDate);
+                const tasks = getTasksForDate(dateStr);
+                const granularity = data.settings.granularity || 60;
+                const slotsPerHour = 60 / granularity;
+                const totalSlots = 24 * slotsPerHour;
+                const nowMinutes = getCurrentTimeMinutes();
+
+                timeline.innerHTML = '';
+                const sortedTasks = [...tasks].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+                for (let slot = 0; slot < totalSlots; slot++) {
+                    const hour = Math.floor(slot / slotsPerHour);
+                    const minute = (slot % slotsPerHour) * granularity;
+                    const slotStart = hour * 60 + minute;
+                    const slotEnd = slotStart + granularity;
+
+                    const hourDiv = document.createElement('div');
+                    hourDiv.className = 'timeline-hour';
+                    hourDiv.dataset.slotStart = slotStart;
+                    hourDiv.dataset.slotEnd = slotEnd;
+
+                    const label = document.createElement('div');
+                    label.className = 'time-label';
+                    label.textContent = formatTime(hour, minute);
+                    hourDiv.appendChild(label);
+
+                    const content = document.createElement('div');
+                    content.className = 'slot-content';
+
+                    const tasksInSlot = sortedTasks.filter(t => {
+                        const tStart = timeToMinutes(t.startTime);
+                        return tStart >= slotStart && tStart < slotEnd;
+                    });
+
+                    if (tasksInSlot.length === 0) {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'empty-slot';
+                        emptyDiv.textContent = '➕ 点击添加任务';
+                        emptyDiv.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            openAddTask(slotStart, slotEnd);
+                        });
+                        content.appendChild(emptyDiv);
+                    } else {
+                        for (const task of tasksInSlot) {
+                            const row = createTaskRow(task);
+                            content.appendChild(row);
+                        }
+                    }
+
+                    hourDiv.appendChild(content);
+                    timeline.appendChild(hourDiv);
+                }
+
+                // 分隔线
+                const allHours = timeline.querySelectorAll('.timeline-hour');
+                let targetIndex = 0;
+                for (let i = 0; i < allHours.length; i++) {
+                    const start = parseInt(allHours[i].dataset.slotStart);
+                    if (start <= nowMinutes) targetIndex = i;
+                }
+                const oldDiv = timeline.querySelector('.timeline-divider');
+                if (oldDiv) oldDiv.remove();
+
+                const newDiv = document.createElement('div');
+                newDiv.className = 'timeline-divider';
+                const dot = document.createElement('span');
+                dot.className = 'divider-dot';
+                newDiv.appendChild(dot);
+
+                const targetEl = allHours[targetIndex];
+                if (targetEl) {
+                    const topPos = targetEl.offsetTop + targetEl.offsetHeight / 2 - 1;
+                    newDiv.style.top = topPos + 'px';
+                    timeline.appendChild(newDiv);
+                } else if (allHours.length > 0) {
+                    const last = allHours[allHours.length - 1];
+                    newDiv.style.top = (last.offsetTop + last.offsetHeight / 2 - 1) + 'px';
+                    timeline.appendChild(newDiv);
+                }
+
+                // 滚动到 9:00
+                const targetSlot = 9 * slotsPerHour;
+                if (targetSlot < totalSlots) {
+                    const targetElement = timeline.children[targetSlot];
+                    if (targetElement) {
+                        setTimeout(() => {
+                            timelineWrapper.scrollTop = targetElement.offsetTop - 20;
+                        }, 30);
+                    }
+                }
+
+                loadDailySummary();
+            }
+
+            // ============================================================
+            //  创建任务行（日视图 - 完成状态可编辑）
+            // ============================================================
+            function createTaskRow(task) {
+                const row = document.createElement('div');
+                row.className = 'task-row';
+                row.dataset.taskId = task.id;
+
+                const isPast = isTaskPast(task) && !task.completed;
+                const isActive = isTaskActive(task) && !task.completed;
+                const isCompleted = task.completed;
+
+                if (isPast) row.classList.add('past-task');
+                if (isActive) row.classList.add('active-task');
+                if (isCompleted) row.classList.add('completed-task');
+
+                const priority = task.priority || 'low';
+                const priorityColors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                row.style.borderLeftColor = priorityColors[priority] || '#4A90D9';
+
+                // 完成状态勾选框 - 日视图中可编辑
+                const check = document.createElement('span');
+                check.className = 'task-check';
+                check.textContent = isCompleted ? '☑' : '☐';
+                check.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    task.completed = !task.completed;
+                    saveToLocal();
+                    renderDayView();
+                });
+                row.appendChild(check);
+
+                const titleInput = document.createElement('input');
+                titleInput.className = 'task-title-input';
+                titleInput.type = 'text';
+                titleInput.value = task.title;
+                titleInput.placeholder = '任务名称…';
+                if (isPast) titleInput.disabled = true;
+                titleInput.addEventListener('change', function() {
+                    const val = this.value.trim();
+                    if (val) {
+                        task.title = val;
+                        saveToLocal();
+                    } else {
+                        this.value = task.title;
+                    }
+                });
+                titleInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') this.blur();
+                });
+                row.appendChild(titleInput);
+
+                const tagSelect = document.createElement('select');
+                tagSelect.className = 'task-tag-select';
+                const currentTag = (task.tags && task.tags.length > 0) ? task.tags[0] : '';
+                populateTagSelect(tagSelect, currentTag);
+                if (isPast) tagSelect.disabled = true;
+                if (data.tags.includes(currentTag)) {
+                    tagSelect.value = currentTag;
+                    tagSelect.classList.add('has-tag');
+                } else {
+                    tagSelect.value = '';
+                }
+                tagSelect.addEventListener('change', function() {
+                    const val = this.value;
+                    if (val) {
+                        task.tags = [val];
+                        this.classList.add('has-tag');
+                    } else {
+                        task.tags = [];
+                        this.classList.remove('has-tag');
+                    }
+                    saveToLocal();
+                });
+                row.appendChild(tagSelect);
+
+                const prioritySelect = document.createElement('select');
+                prioritySelect.className = 'task-priority-select';
+                const prioOptions = [
+                    { value: 'low', label: '🟢' },
+                    { value: 'medium', label: '🟡' },
+                    { value: 'high', label: '🟠' },
+                    { value: 'urgent', label: '🔴' }
+                ];
+                prioOptions.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.value;
+                    opt.textContent = p.label;
+                    prioritySelect.appendChild(opt);
+                });
+                prioritySelect.value = task.priority || 'low';
+                if (isPast) prioritySelect.disabled = true;
+                prioritySelect.addEventListener('change', function() {
+                    task.priority = this.value;
+                    saveToLocal();
+                    const colors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                    row.style.borderLeftColor = colors[this.value] || '#4A90D9';
+                });
+                row.appendChild(prioritySelect);
+
+                const commentInput = document.createElement('input');
+                commentInput.className = 'task-comment-input';
+                commentInput.type = 'text';
+                commentInput.value = task.comment || '';
+                commentInput.placeholder = '备注…';
+                if (isPast) commentInput.disabled = true;
+                commentInput.addEventListener('change', function() {
+                    task.comment = this.value.trim();
+                    saveToLocal();
+                });
+                commentInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') this.blur();
+                });
+                row.appendChild(commentInput);
+
+                const badge = document.createElement('span');
+                badge.className = 'task-status-badge';
+                if (isCompleted) {
+                    badge.classList.add('status-done');
+                    badge.textContent = '✅ 已完成';
+                } else if (isActive) {
+                    badge.classList.add('status-active');
+                    badge.textContent = '▶ 进行中';
+                } else if (isPast) {
+                    badge.classList.add('status-past');
+                    badge.textContent = '⏰ 已过期';
+                } else {
+                    badge.classList.add('status-active');
+                    badge.textContent = '⏳ 待办';
+                }
+                row.appendChild(badge);
+
+                return row;
+            }
+
+            // ============================================================
+            //  添加任务（日视图点击空槽）
+            // ============================================================
+            function openAddTask(startMin, endMin) {
+                const title = prompt('输入任务名称:');
+                if (title === null || title.trim() === '') return;
+                const dateStr = formatDate(currentDate);
+                const task = {
+                    id: generateId(),
+                    title: title.trim(),
+                    date: dateStr,
+                    startTime: minutesToTime(startMin),
+                    endTime: minutesToTime(endMin),
+                    tags: [],
+                    priority: 'low',
+                    comment: '',
+                    completed: false,
+                    createdAt: Date.now()
+                };
+                data.tasks.push(task);
+                saveToLocal();
+                renderDayView();
+            }
+
+            // ============================================================
+            //  周视图（完成状态仅显示，不可编辑）
+            // ============================================================
+            function renderWeekView() {
+                const start = getWeekStart(currentDate);
+                const end = getWeekEnd(currentDate);
+                const days = [];
+                const d = new Date(start);
+                for (let i = 0; i < 7; i++) {
+                    days.push(new Date(d));
+                    d.setDate(d.getDate() + 1);
+                }
+
+                const weekTasks = getTasksForDateRange(start, end);
+                const today = new Date();
+                const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+                weekGrid.innerHTML = '';
+                for (let i = 0; i < 7; i++) {
+                    const day = days[i];
+                    const dateStr = formatDate(day);
+                    const dayTasks = weekTasks.filter(t => t.date === dateStr);
+                    const isToday = isSameDay(day, today);
+
+                    const col = document.createElement('div');
+                    col.className = 'week-day';
+                    if (isToday) col.classList.add('today-highlight');
+
+                    const header = document.createElement('div');
+                    header.className = 'day-header';
+                    const dayNum = day.getDate();
+                    const dayName = dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1];
+                    header.innerHTML =
+                        `<span>${dayName}</span><span class="day-num">${dayNum}</span>`;
+                    col.appendChild(header);
+
+                    const tasksContainer = document.createElement('div');
+                    tasksContainer.className = 'day-tasks';
+                    if (dayTasks.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-tasks';
+                        empty.textContent = '—';
+                        tasksContainer.appendChild(empty);
+                    } else {
+                        const sorted = [...dayTasks].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+                        for (const task of sorted) {
+                            const item = document.createElement('div');
+                            item.className = 'task-item';
+                            if (task.completed) item.classList.add('completed');
+
+                            const check = document.createElement('span');
+                            check.className = 'task-check';
+                            check.textContent = task.completed ? '☑' : '☐';
+
+                            const dot = document.createElement('span');
+                            dot.className = 'priority-dot';
+                            const colors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                            dot.style.background = colors[task.priority || 'low'] || '#2ecc71';
+                            item.appendChild(dot);
+
+                            const timeSpan = document.createElement('span');
+                            timeSpan.className = 'task-time';
+                            timeSpan.textContent = task.startTime;
+                            item.appendChild(timeSpan);
+
+                            item.appendChild(check);
+
+                            const titleSpan = document.createElement('span');
+                            titleSpan.textContent = task.title;
+                            item.appendChild(titleSpan);
+
+                            if (task.tags && task.tags.length > 0) {
+                                const tagSpan = document.createElement('span');
+                                tagSpan.className = 'task-tag';
+                                tagSpan.textContent = task.tags[0];
+                                item.appendChild(tagSpan);
+                            }
+
+                            if (task.comment) {
+                                const cmt = document.createElement('span');
+                                cmt.textContent = '💬';
+                                cmt.style.fontSize = '11px';
+                                cmt.style.opacity = '0.6';
+                                cmt.style.marginLeft = '4px';
+                                item.appendChild(cmt);
+                            }
+
+                            tasksContainer.appendChild(item);
+                        }
+                    }
+
+                    col.appendChild(tasksContainer);
+                    weekGrid.appendChild(col);
+                }
+
+                renderWeekPlans();
+            }
+
+            // ============================================================
+            //  月视图
+            // ============================================================
+            function renderMonthView() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const today = new Date();
+
+                const firstOfMonth = new Date(year, month, 1);
+                const lastOfMonth = new Date(year, month + 1, 0);
+
+                let firstDayOfWeek = firstOfMonth.getDay();
+                const firstDayOffset = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
+
+                const prevMonthLastDate = new Date(year, month, 0);
+                const prevMonthYear = prevMonthLastDate.getFullYear();
+                const prevMonth = prevMonthLastDate.getMonth();
+                const prevMonthDaysCount = prevMonthLastDate.getDate();
+
+                const currentMonthDays = lastOfMonth.getDate();
+
+                const totalCells = Math.ceil((firstDayOffset + currentMonthDays) / 7) * 7;
+                const nextMonthDays = totalCells - firstDayOffset - currentMonthDays;
+
+                const allDays = [];
+
+                for (let i = firstDayOffset - 1; i >= 0; i--) {
+                    const d = prevMonthDaysCount - i;
+                    allDays.push({
+                        date: new Date(prevMonthYear, prevMonth, d),
+                        isCurrentMonth: false
+                    });
+                }
+
+                for (let d = 1; d <= currentMonthDays; d++) {
+                    allDays.push({
+                        date: new Date(year, month, d),
+                        isCurrentMonth: true
+                    });
+                }
+
+                for (let d = 1; d <= nextMonthDays; d++) {
+                    allDays.push({
+                        date: new Date(year, month + 1, d),
+                        isCurrentMonth: false
+                    });
+                }
+
+                const prevMonthStart = new Date(year, month - 1, 1);
+                const nextMonthEnd = new Date(year, month + 2, 0);
+                const allMonthTasks = getTasksForDateRange(prevMonthStart, nextMonthEnd);
+                const taskMap = {};
+                allMonthTasks.forEach(t => {
+                    if (!taskMap[t.date]) taskMap[t.date] = [];
+                    taskMap[t.date].push(t);
+                });
+
+                monthCalendar.innerHTML = '';
+                const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
+                for (const wd of weekDays) {
+                    const head = document.createElement('div');
+                    head.className = 'month-header';
+                    head.textContent = wd;
+                    monthCalendar.appendChild(head);
+                }
+
+                for (const dayData of allDays) {
+                    const d = dayData.date;
+                    const dateStr = formatDate(d);
+                    const isToday = isSameDay(d, today);
+                    const hasTasks = taskMap[dateStr] && taskMap[dateStr].length > 0;
+                    const taskCount = hasTasks ? taskMap[dateStr].length : 0;
+
+                    const cell = document.createElement('div');
+                    cell.className = 'month-day';
+                    if (isToday) cell.classList.add('today-highlight');
+                    if (hasTasks) cell.classList.add('has-tasks');
+                    if (!dayData.isCurrentMonth) {
+                        cell.style.opacity = '0.55';
+                    }
+
+                    const numSpan = document.createElement('span');
+                    numSpan.className = 'day-number';
+                    if (!dayData.isCurrentMonth) {
+                        numSpan.classList.add('other-month');
+                    }
+                    numSpan.textContent = d.getDate();
+                    cell.appendChild(numSpan);
+
+                    if (hasTasks) {
+                        const dots = document.createElement('div');
+                        dots.className = 'day-dots';
+                        const showDots = Math.min(taskCount, 4);
+                        const priorityColors = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' };
+                        for (let i = 0; i < showDots; i++) {
+                            const dot = document.createElement('span');
+                            dot.className = 'dot';
+                            const t = taskMap[dateStr][i] || taskMap[dateStr][0];
+                            const p = t.priority || 'low';
+                            dot.style.background = priorityColors[p] || '#4A90D9';
+                            dots.appendChild(dot);
+                        }
+                        if (taskCount > 4) {
+                            const more = document.createElement('span');
+                            more.style.fontSize = '9px';
+                            more.style.color = '#6b7c93';
+                            more.textContent = `+${taskCount - 4}`;
+                            dots.appendChild(more);
+                        }
+                        cell.appendChild(dots);
+                    }
+
+                    cell.addEventListener('click', function() {
+                        showMonthDayDetail(dateStr);
+                    });
+
+                    monthCalendar.appendChild(cell);
+                }
+
+                // 高亮今天并滚动到顶部
+                const todayCell = monthCalendar.querySelector('.month-day.today-highlight');
+                if (todayCell) {
+                    setTimeout(() => {
+                        todayCell.scrollIntoView({ block: 'center' });
+                    }, 50);
+                }
+
+                if (detailDateStr) {
+                    showMonthDayDetail(detailDateStr);
+                } else {
+                    const todayStr = formatDate(today);
+                    if (taskMap[todayStr] && taskMap[todayStr].length > 0) {
+                        showMonthDayDetail(todayStr);
+                    } else {
+                        monthDetailPanel.classList.remove('active');
+                    }
+                }
+
+                renderMonthPlans();
+            }
+
+            // ============================================================
+            //  月视图详情（完成状态仅显示，不可编辑）
+            // ============================================================
+            function showMonthDayDetail(dateStr) {
+                detailDateStr = dateStr;
+                const tasks = getTasksForDate(dateStr);
+                detailDate.textContent = dateStr;
+                detailTasks.innerHTML = '';
+                if (tasks.length === 0) {
+                    detailTasks.innerHTML = '<div style="padding:10px 0;color:#8a9fb0;">当天没有任务</div>';
+                } else {
+                    const sorted = [...tasks].sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+                    for (const task of sorted) {
+                        const item = document.createElement('div');
+                        item.className = 'task-item';
+                        if (task.completed) {
+                            item.style.opacity = '0.5';
+                            item.style.textDecoration = 'line-through';
+                        } else {
+                            item.style.textDecoration = 'none';
+                        }
+                        const priorityColor = { low: '#2ecc71', medium: '#f1c40f', high: '#e67e22', urgent: '#e74c3c' } [
+                            task.priority || 'low'
+                        ];
+                        item.style.borderLeftColor = priorityColor;
+                        const checkDisplay = task.completed ? '☑' : '☐';
+                        item.innerHTML = `
+                            <span style="font-weight:500;">${task.startTime}-${task.endTime}</span>
+                            <span>${task.title}</span>
+                            ${task.tags && task.tags.length > 0 ? `<span style="background:#e8ecf1;padding:0 8px;border-radius:4px;font-size:12px;margin-left:auto;">${task.tags.join(', ')}</span>` : ''}
+                            <span class="task-check-display">${checkDisplay}</span>
+                        `;
+                        item.addEventListener('click', function(e) {
+                            const dateParts = dateStr.split('-').map(Number);
+                            currentDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                            switchView('day');
+                            monthDetailPanel.classList.remove('active');
+                            detailDateStr = null;
+                        });
+                        detailTasks.appendChild(item);
+                    }
+                }
+                monthDetailPanel.classList.add('active');
+            }
+
+            // ============================================================
+            //  视图切换与刷新
+            // ============================================================
+            function refreshAll() {
+                const dateStr = formatDate(currentDate);
+                if (currentView === 'day') {
+                    dateLabel.textContent = dateStr;
+                    granularityWrapper.classList.remove('hidden');
+                } else if (currentView === 'week') {
+                    const start = getWeekStart(currentDate);
+                    const end = getWeekEnd(currentDate);
+                    dateLabel.textContent = `${formatDate(start)} ~ ${formatDate(end)}`;
+                    granularityWrapper.classList.add('hidden');
+                } else if (currentView === 'month') {
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth() + 1;
+                    dateLabel.textContent = `${year} 年 ${month} 月`;
+                    granularityWrapper.classList.add('hidden');
+                }
+
+                populateTagSelect(weekPlanTag, '');
+                populateTagSelect(monthPlanTag, '');
+
+                if (currentView === 'day') {
+                    renderDayView();
+                } else if (currentView === 'week') {
+                    renderWeekView();
+                    // 子标签激活状态
+                    document.querySelectorAll('.week-sub-tab').forEach(tab => {
+                        tab.classList.toggle('active', tab.dataset.sub === weekSubView);
+                    });
+                    if (weekSubView === 'calendar') {
+                        weekCalendarContent.classList.add('active');
+                        weekPlanContent.classList.remove('active');
+                    } else {
+                        weekCalendarContent.classList.remove('active');
+                        weekPlanContent.classList.add('active');
+                    }
+                    weekCalendarContent.style.display = '';
+                    weekPlanContent.style.display = '';
+                } else if (currentView === 'month') {
+                    renderMonthView();
+                    document.querySelectorAll('.month-sub-tab').forEach(tab => {
+                        tab.classList.toggle('active', tab.dataset.sub === monthSubView);
+                    });
+                    if (monthSubView === 'calendar') {
+                        monthCalendarContent.classList.add('active');
+                        monthPlanContent.classList.remove('active');
+                    } else {
+                        monthCalendarContent.classList.remove('active');
+                        monthPlanContent.classList.add('active');
+                    }
+                    monthCalendarContent.style.display = '';
+                    monthPlanContent.style.display = '';
+                }
+
+                granularitySelect.value = data.settings.granularity;
+                updateStatus(true);
+
+                // 重新绑定子标签事件
+                bindSubTabsReliably();
+
+                // ==========================================================
+                //  ★★★ 核心修复：每次刷新重新绑定「添加周计划」和「添加月计划」按钮 ★★★
+                // ==========================================================
+                bindAddPlanButtons();
+            }
+
+            // ============================================================
+            //  可靠的事件绑定（子标签）
+            // ============================================================
+            function bindSubTabsReliably() {
+                const weekTabs = document.querySelectorAll('#weekSubTabs .week-sub-tab');
+                weekTabs.forEach(tab => {
+                    tab.removeEventListener('click', weekTabHandler);
+                    tab.addEventListener('click', weekTabHandler);
+                    tab.onclick = function(e) {
+                        weekTabHandler(e);
+                    };
+                });
+
+                const monthTabs = document.querySelectorAll('#monthSubTabs .month-sub-tab');
+                monthTabs.forEach(tab => {
+                    tab.removeEventListener('click', monthTabHandler);
+                    tab.addEventListener('click', monthTabHandler);
+                    tab.onclick = function(e) {
+                        monthTabHandler(e);
+                    };
+                });
+            }
+
+            // ============================================================
+            //  ★★★ 新增：专门绑定「添加周计划」和「添加月计划」按钮 ★★★
+            // ============================================================
+            function bindAddPlanButtons() {
+                // 周计划添加按钮
+                if (addWeekPlanBtn) {
+                    // 移除旧监听（防止重复绑定）
+                    addWeekPlanBtn.removeEventListener('click', addWeekPlanBtn._boundHandler);
+                    // 创建新处理函数并保存引用以便移除
+                    const weekHandler = function(e) {
+                        e.preventDefault();
+                        openWeekPlanModal();
+                    };
+                    addWeekPlanBtn._boundHandler = weekHandler;
+                    addWeekPlanBtn.addEventListener('click', weekHandler);
+                    // 同时使用 onclick 作为兜底
+                    addWeekPlanBtn.onclick = function(e) {
+                        e.preventDefault();
+                        openWeekPlanModal();
+                    };
+                }
+
+                // 月计划添加按钮
+                if (addMonthPlanBtn) {
+                    addMonthPlanBtn.removeEventListener('click', addMonthPlanBtn._boundHandler);
+                    const monthHandler = function(e) {
+                        e.preventDefault();
+                        openMonthPlanModal();
+                    };
+                    addMonthPlanBtn._boundHandler = monthHandler;
+                    addMonthPlanBtn.addEventListener('click', monthHandler);
+                    addMonthPlanBtn.onclick = function(e) {
+                        e.preventDefault();
+                        openMonthPlanModal();
+                    };
+                }
+            }
+
+            // ============================================================
+            //  子标签处理函数
+            // ============================================================
+            function weekTabHandler(e) {
+                const tab = e.currentTarget || e.target;
+                const sub = tab.dataset.sub;
+                if (sub && sub !== weekSubView) {
+                    weekSubView = sub;
+                    refreshAll();
+                }
+            }
+
+            function monthTabHandler(e) {
+                const tab = e.currentTarget || e.target;
+                const sub = tab.dataset.sub;
+                if (sub && sub !== monthSubView) {
+                    monthSubView = sub;
+                    refreshAll();
+                }
+            }
+
+            // ============================================================
+            //  视图切换
+            // ============================================================
+            function switchView(view) {
+                currentView = view;
+                dayView.classList.toggle('active', view === 'day');
+                weekView.classList.toggle('active', view === 'week');
+                monthView.classList.toggle('active', view === 'month');
+
+                viewTabs.querySelectorAll('.view-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.view === view);
+                });
+
+                if (view !== 'month') {
+                    monthDetailPanel.classList.remove('active');
+                    detailDateStr = null;
+                }
+                refreshAll();
+            }
+
+            function navigateDate(delta) {
+                if (currentView === 'day') {
+                    currentDate.setDate(currentDate.getDate() + delta);
+                } else if (currentView === 'week') {
+                    currentDate.setDate(currentDate.getDate() + delta * 7);
+                } else if (currentView === 'month') {
+                    currentDate.setMonth(currentDate.getMonth() + delta);
+                }
+                if (currentView === 'month') {
+                    detailDateStr = null;
+                    monthDetailPanel.classList.remove('active');
+                }
+                refreshAll();
+            }
+
+            function goToday() {
+                currentDate = new Date();
+                if (currentView === 'month') {
+                    detailDateStr = null;
+                    monthDetailPanel.classList.remove('active');
+                }
+                refreshAll();
+            }
+
+            // ============================================================
+            //  周计划模态框
+            // ============================================================
+            function openWeekPlanModal() {
+                try {
+                    populateTagSelect(weekPlanTag, '');
+                    weekPlanText.value = '';
+                    weekPlanDay.value = 1;
+                    weekPlanPriority.value = 'medium';
+                    weekPlanModal.classList.add('active');
+                } catch (e) {
+                    console.warn('打开周计划模态框失败:', e);
+                    alert('打开周计划模态框失败，请重试。');
+                }
+            }
+
+            function closeWeekPlanModal() {
+                weekPlanModal.classList.remove('active');
+            }
+
+            function saveWeekPlan() {
+                const day = parseInt(weekPlanDay.value);
+                const text = weekPlanText.value.trim();
+                if (!text) { alert('请输入计划内容'); return; }
+                const tag = weekPlanTag.value || '';
+                const priority = weekPlanPriority.value || 'medium';
+                const weekStart = getWeekStart(currentDate);
+                data.weekPlans.push({
+                    id: generateId(),
+                    text: text,
+                    dayOfWeek: day,
+                    tag: tag,
+                    priority: priority,
+                    completed: false,
+                    weekStart: formatDate(weekStart)
+                });
+                saveToLocal();
+                closeWeekPlanModal();
+                refreshAll();
+            }
+
+            // ============================================================
+            //  月计划模态框
+            // ============================================================
+            function openMonthPlanModal() {
+                try {
+                    populateTagSelect(monthPlanTag, '');
+                    monthPlanText.value = '';
+                    monthPlanPriority.value = 'medium';
+                    monthPlanModal.classList.add('active');
+                } catch (e) {
+                    console.warn('打开月计划模态框失败:', e);
+                    alert('打开月计划模态框失败，请重试。');
+                }
+            }
+
+            function closeMonthPlanModal() {
+                monthPlanModal.classList.remove('active');
+            }
+
+            function saveMonthPlan() {
+                const text = monthPlanText.value.trim();
+                if (!text) { alert('请输入计划内容'); return; }
+                const tag = monthPlanTag.value || '';
+                const priority = monthPlanPriority.value || 'medium';
+                const monthKey = getMonthKey(currentDate);
+                data.monthPlans.push({
+                    id: generateId(),
+                    text: text,
+                    tag: tag,
+                    priority: priority,
+                    completed: false,
+                    monthKey: monthKey
+                });
+                saveToLocal();
+                closeMonthPlanModal();
+                refreshAll();
+            }
+
+            // ============================================================
+            //  导入导出
+            // ============================================================
+            function exportData() {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `todo_${formatDate(new Date())}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                const btn = saveBtn;
+                const orig = btn.textContent;
+                btn.textContent = '✅ 已导出';
+                setTimeout(() => { btn.textContent = '📤 导出'; }, 1500);
+            }
+
+            function importData(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (imported.tasks && Array.isArray(imported.tasks) &&
+                            imported.tags && Array.isArray(imported.tags)) {
+                            data = imported;
+                            if (!data.settings) data.settings = { granularity: 60 };
+                            if (!data.dailySummaries) data.dailySummaries = {};
+                            if (!data.weekPlans) data.weekPlans = [];
+                            if (!data.monthPlans) data.monthPlans = [];
+                            if (![15, 30, 60].includes(data.settings.granularity)) {
+                                data.settings.granularity = 60;
+                            }
+                            saveToLocal();
+                            refreshAll();
+                            alert('✅ 数据加载成功！');
+                        } else {
+                            alert('❌ 无效的数据文件格式。');
+                        }
+                    } catch (err) {
+                        alert('❌ 读取文件失败: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            // ============================================================
+            //  初始化
+            // ============================================================
+            function init() {
+                const hasLocalData = loadFromLocal();
+
+                if (!hasLocalData) {
+                    data.tasks = [];
+                    data.tags = ['工作', '生活', '个人', '学习'];
+                    data.settings = { granularity: 60 };
+                    data.dailySummaries = {};
+                    data.weekPlans = [];
+                    data.monthPlans = [];
+                    saveToLocal();
+                }
+
+                startClock();
+
+                granularitySelect.value = data.settings.granularity;
+                granularitySelect.addEventListener('change', function() {
+                    data.settings.granularity = parseInt(this.value);
+                    saveToLocal();
+                    if (currentView === 'day') renderDayView();
+                });
+
+                viewTabs.querySelectorAll('.view-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        switchView(this.dataset.view);
+                    });
+                });
+
+                prevDate.addEventListener('click', () => navigateDate(-1));
+                nextDate.addEventListener('click', () => navigateDate(1));
+                todayBtn.addEventListener('click', goToday);
+
+                // 标签管理（tagManageBtn 在 HTML 中未定义，但保留以防后续添加）
+                if (tagManageBtn) {
+                    tagManageBtn.addEventListener('click', function() {
+                        renderTagManager();
+                        tagModal.classList.add('active');
+                    });
+                }
+                if (closeTagModal) {
+                    closeTagModal.addEventListener('click', () => tagModal.classList.remove('active'));
+                }
+                if (tagModal) {
+                    tagModal.addEventListener('click', function(e) {
+                        if (e.target === this) tagModal.classList.remove('active');
+                    });
+                }
+                if (addTagBtn) {
+                    addTagBtn.addEventListener('click', function() {
+                        const name = newTagInput.value.trim();
+                        if (!name) return;
+                        if (data.tags.includes(name)) { alert('标签已存在'); return; }
+                        data.tags.push(name);
+                        saveToLocal();
+                        newTagInput.value = '';
+                        renderTagManager();
+                        refreshAll();
+                    });
+                }
+                if (newTagInput) {
+                    newTagInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' && addTagBtn) addTagBtn.click();
+                    });
+                }
+
+                saveBtn.addEventListener('click', exportData);
+                loadBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', function(e) {
+                    if (this.files && this.files[0]) {
+                        importData(this.files[0]);
+                    }
+                    this.value = '';
+                });
+
+                summarySaveBtn.addEventListener('click', saveDailySummary);
+                dailySummaryText.addEventListener('blur', saveDailySummary);
+
+                // 周计划模态框按钮事件（只绑定一次，刷新时由 bindAddPlanButtons 重新绑定）
+                weekPlanModalCancel.addEventListener('click', closeWeekPlanModal);
+                weekPlanModalSave.addEventListener('click', saveWeekPlan);
+                weekPlanModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeWeekPlanModal();
+                });
+
+                // 月计划模态框按钮事件
+                monthPlanModalCancel.addEventListener('click', closeMonthPlanModal);
+                monthPlanModalSave.addEventListener('click', saveMonthPlan);
+                monthPlanModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeMonthPlanModal();
+                });
+
+                // 子标签绑定
+                bindSubTabsReliably();
+
+                // ★★★ 初始化时绑定添加按钮 ★★★
+                bindAddPlanButtons();
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        if (tagModal && tagModal.classList.contains('active')) tagModal.classList.remove(
+                        'active');
+                        if (weekPlanModal.classList.contains('active')) closeWeekPlanModal();
+                        if (monthPlanModal.classList.contains('active')) closeMonthPlanModal();
+                        if (monthDetailPanel.classList.contains('active')) {
+                            monthDetailPanel.classList.remove('active');
+                            detailDateStr = null;
+                        }
+                    }
+                    if (e.ctrlKey && e.key === 's') {
+                        e.preventDefault();
+                        exportData();
+                    }
+                });
+
+                closeDetail.addEventListener('click', function() {
+                    monthDetailPanel.classList.remove('active');
+                    detailDateStr = null;
+                });
+
+                switchView('day');
+                console.log('📋 ToDoList 已启动 (添加计划按钮已修复)');
+                console.log('💡 快捷键: Ctrl+S 导出备份, ESC 关闭弹窗');
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+
+</body>
+</html>
