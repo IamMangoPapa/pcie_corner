@@ -80,6 +80,14 @@
         .btn-recolor:hover {
             background: #ffa726;
         }
+        .btn-whitebg {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-whitebg.active {
+            background: #333;
+            color: white;
+        }
 
         .grid-area {
             background: #ffffff;
@@ -117,7 +125,7 @@
         .bit-cell.field .bit-index { display: none; }
         .bit-cell .field-text {
             text-align: center; line-height: 1.2; word-break: keep-all; white-space: nowrap;
-            padding: 1px; pointer-events: none; font-weight: bold; color: white;
+            padding: 1px; pointer-events: none; font-weight: bold;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
         .bit-index-row .bit-cell {
@@ -160,6 +168,7 @@
         .action-bar {
             display: flex; justify-content: flex-end; margin-top: 12px;
             gap: 8px; flex-wrap: wrap; padding: 0 0;
+            align-items: center;
         }
 
         .status-bar-wrapper {
@@ -247,6 +256,7 @@
 
     <!-- 底部操作栏 -->
     <div class="action-bar">
+        <button class="btn btn-whitebg" id="toggleWhiteBgBtn">白底</button>
         <button class="btn btn-recolor" id="recolorBtn">🎨重新配色</button>
         <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
         <button class="btn btn-success" id="exportSvgBtn">导出SVG</button>
@@ -301,46 +311,17 @@
         let visualToGlobal = {};
         let globalToVisual = {};
         let fieldLibrary = [];
+        let whiteBg = false; // 白底模式开关
 
         // ===== 高饱和度颜色调色板（32种） =====
         const COLORS = [
-            '#F94144', // 鲜红
-            '#F8961E', // 橙红
-            '#F9C74F', // 金黄
-            '#90BE6D', // 嫩绿
-            '#43AA8B', // 翠绿
-            '#4D908E', // 青绿
-            '#577590', // 钢蓝
-            '#277DA1', // 深蓝
-            '#5E4B8C', // 紫罗兰
-            '#9C89B8', // 淡紫
-            '#F4845F', // 珊瑚
-            '#F2A65A', // 杏色
-            '#F2C14E', // 香槟黄
-            '#A7C957', // 草绿
-            '#6A994E', // 橄榄绿
-            '#386641', // 墨绿
-            '#247BA0', // 天蓝
-            '#1B98A0', // 湖蓝
-            '#E8D44D', // 柠檬
-            '#FF6B6B', // 亮粉红
-            '#FF8C42', // 蜜橙
-            '#F9C74F', // 奶油黄
-            '#90BE6D', // 亮绿
-            '#43AA8B', // 薄荷绿
-            '#4D908E', // 蒂芙尼蓝
-            '#577590', // 雾蓝
-            '#277DA1', // 宝蓝
-            '#5E4B8C', // 紫
-            '#9C89B8', // 浅紫
-            '#F4845F', // 三文鱼
-            '#F2A65A', // 橘黄
-            '#F2C14E'  // 金色
+            '#F94144', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590', '#277DA1',
+            '#5E4B8C', '#9C89B8', '#F4845F', '#F2A65A', '#F2C14E', '#A7C957', '#6A994E', '#386641',
+            '#247BA0', '#1B98A0', '#E8D44D', '#FF6B6B', '#FF8C42', '#F9C74F', '#90BE6D', '#43AA8B',
+            '#4D908E', '#577590', '#277DA1', '#5E4B8C', '#9C89B8', '#F4845F', '#F2A65A', '#F2C14E'
         ];
 
-        // 灰色用于保留字段
         const RESERVED_COLOR = '#B0B0B0';
-
         let colorIndex = 0;
 
         // DOM 引用
@@ -361,6 +342,7 @@
         const importTlpBtn = document.getElementById('importTlpBtn');
         const tlpFileInput = document.getElementById('tlpFileInput');
         const recolorBtn = document.getElementById('recolorBtn');
+        const toggleWhiteBgBtn = document.getElementById('toggleWhiteBgBtn');
         const fieldLibSelectWrapper = document.getElementById('fieldLibSelectWrapper');
         const fieldLibSelect = document.getElementById('fieldLibSelect');
 
@@ -428,7 +410,6 @@
                 return;
             }
 
-            // 分离保留字段和非保留字段
             const reservedIndices = [];
             const normalIndices = [];
             for (let i = 0; i < fields.length; i++) {
@@ -439,14 +420,11 @@
                 }
             }
 
-            // 为非保留字段构建邻接图（只考虑非保留字段之间的邻接）
             const n = normalIndices.length;
             const adj = Array.from({ length: n }, () => []);
-            // 映射原始索引 -> 正常索引
             const idxMap = {};
             normalIndices.forEach((orig, idx) => { idxMap[orig] = idx; });
 
-            // 构建非保留字段的视觉索引集合
             const fieldVisSets = normalIndices.map(orig => new Set(fields[orig].visIndices));
 
             for (let i = 0; i < n; i++) {
@@ -467,7 +445,6 @@
                 }
             }
 
-            // 贪心着色
             const assignedColors = new Array(n).fill(null);
             const shuffledColors = [...COLORS];
             for (let i = shuffledColors.length - 1; i > 0; i--) {
@@ -502,7 +479,6 @@
                 assignedColors[i] = chosen;
             }
 
-            // 确保非保留字段颜色唯一（如果数量允许）
             const colorSet = new Set();
             for (let i = 0; i < n; i++) {
                 if (colorSet.has(assignedColors[i])) {
@@ -517,18 +493,15 @@
                 colorSet.add(assignedColors[i]);
             }
 
-            // 应用颜色到字段
             for (let i = 0; i < n; i++) {
                 const origIdx = normalIndices[i];
                 fields[origIdx].color = assignedColors[i];
             }
 
-            // 保留字段设为灰色
             for (let i of reservedIndices) {
                 fields[i].color = RESERVED_COLOR;
             }
 
-            // 刷新显示
             refreshAllFields();
             updateStatus(`重新配色完成 (${fields.length} 个字段，其中 ${reservedIndices.length} 个保留字段为灰色)`);
         }
@@ -541,8 +514,7 @@
         endianToggle.addEventListener('click', function() {
             endianness = endianness === 'little' ? 'big' : 'little';
             updateEndianButton();
-            //updateStatus('端序已切换，请点击“应用”生效');
-            updateStatus(`端序已切换为 -> ${endianToggle.textContent}，请点击“应用”生效`);
+            updateStatus('端序已切换，请点击“应用”生效');
         });
 
         // ===== 渲染网格 =====
@@ -570,7 +542,7 @@
                 byteGroup.className = 'byte-group';
                 const label = document.createElement('span');
                 label.className = 'byte-label';
-                let byteNum = bIdx/*(endianness === 'little') ? bIdx : (3 - bIdx)*/;
+                let byteNum = bIdx;
                 label.textContent = `Byte${byteNum}`;
                 byteGroup.appendChild(label);
                 const phContainer = document.createElement('div');
@@ -703,7 +675,7 @@
             updateStatus('网格已更新');
         }
 
-        // ===== 字段样式（基于视觉索引） =====
+        // ===== 字段样式（根据 whiteBg 决定底色和边框） =====
         function refreshAllFields() {
             for (let idx in bitElements) {
                 const el = bitElements[idx];
@@ -725,6 +697,10 @@
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
                 const color = f.color;
+                // 白底模式：底色白色，边框黑色，文字黑色
+                const fillColor = whiteBg ? '#FFFFFF' : color;
+                const borderColor = whiteBg ? '#000000' : color;
+                const textColor = whiteBg ? '#000000' : '#FFFFFF';
 
                 const segments = [];
                 let start = visIndices[0];
@@ -763,17 +739,17 @@
                         const isLastVis = (visIdx === maxVis);
 
                         el.classList.add('field');
-                        el.style.background = color;
-                        el.style.color = 'white';
-                        el.style.borderTop = `1px solid ${color}`;
-                        el.style.borderBottom = `1px solid ${color}`;
+                        el.style.background = fillColor;
+                        el.style.color = textColor;
+                        el.style.borderTop = `1px solid ${borderColor}`;
+                        el.style.borderBottom = `1px solid ${borderColor}`;
                         if (isFirstOfRow || isFirstVis) {
-                            el.style.borderLeft = `1px solid ${color}`;
+                            el.style.borderLeft = `1px solid ${borderColor}`;
                         } else {
                             el.style.borderLeft = 'none';
                         }
                         if (isLastOfRow || isLastVis) {
-                            el.style.borderRight = `1px solid ${color}`;
+                            el.style.borderRight = `1px solid ${borderColor}`;
                         } else {
                             el.style.borderRight = 'none';
                         }
@@ -806,6 +782,7 @@
                         const text = document.createElement('span');
                         text.className = 'field-text';
                         text.textContent = f.display || f.name;
+                        text.style.color = textColor;
                         const len = text.textContent.length;
                         if (len > 6) text.style.fontSize = '9px';
                         else if (len > 4) text.style.fontSize = '10px';
@@ -1010,7 +987,7 @@
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
         }
 
-        // ===== SVG 导出（绝对居中） =====
+        // ===== SVG 导出（根据 whiteBg 决定填充色和边框色） =====
         function getSvgString() {
             const cellWidth = 34;
             const cellHeight = 34;
@@ -1027,7 +1004,7 @@
             // Byte 标签
             let xOff = leftMargin;
             for (let bIdx of byteOrder) {
-                let byteNum = bIdx;/*(endianness === 'little') ? bIdx : (3 - bIdx)*/;
+                let byteNum = bIdx;
                 const xCenter = xOff + (8 * cellWidth) / 2;
                 svg += `  <line x1="${xOff}" y1="0" x2="${xOff}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
                 svg += `  <line x1="${xOff + 8*cellWidth}" y1="0" x2="${xOff + 8*cellWidth}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
@@ -1052,7 +1029,7 @@
             const dwStartY = 40;
             for (let dw = 0; dw < dwCount; dw++) {
                 const yBase = dwStartY + dw * rowHeight;
-                svg += `  <text x="10" y="${yBase + cellHeight/2 + 5}" font-size="13" fill="#546e7a">DW${dw}</text>\n`;
+                svg += `  <text x="10" y="${yBase + cellHeight/2 + 5}" font-size="12" fill="#546e7a">DW${dw}</text>\n`;
                 for (let col = 0; col < 32; col++) {
                     const x = leftMargin + col * cellWidth;
                     svg += `  <rect x="${x}" y="${yBase}" width="${cellWidth}" height="${cellHeight}" fill="#f5f5f5" stroke="#ccc" stroke-width="0.5"/>\n`;
@@ -1064,6 +1041,10 @@
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
                 const color = f.color;
+                const fillColor = whiteBg ? '#FFFFFF' : color;
+                const borderColor = whiteBg ? '#000000' : color;
+                const textColor = whiteBg ? '#000000' : '#FFFFFF';
+
                 const segments = [];
                 let start = visIndices[0], end = visIndices[0];
                 for (let i = 1; i < visIndices.length; i++) {
@@ -1087,20 +1068,20 @@
                         const x = leftMargin + startCol * cellWidth;
                         const y = dwStartY + startRow * rowHeight;
                         const width = (endCol - startCol + 1) * cellWidth;
-                        svg += `  <rect x="${x}" y="${y}" width="${width}" height="${cellHeight}" fill="${color}" stroke="black" stroke-width="1"/>\n`;
+                        svg += `  <rect x="${x}" y="${y}" width="${width}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
                     } else {
                         const x1 = leftMargin + startCol * cellWidth;
                         const y1 = dwStartY + startRow * rowHeight;
                         const width1 = (32 - startCol) * cellWidth;
-                        svg += `  <rect x="${x1}" y="${y1}" width="${width1}" height="${cellHeight}" fill="${color}" stroke="black" stroke-width="1"/>\n`;
+                        svg += `  <rect x="${x1}" y="${y1}" width="${width1}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
                         for (let r = startRow + 1; r < endRow; r++) {
                             const yMid = dwStartY + r * rowHeight;
-                            svg += `  <rect x="${leftMargin}" y="${yMid}" width="${32 * cellWidth}" height="${cellHeight}" fill="${color}" stroke="black" stroke-width="1"/>\n`;
+                            svg += `  <rect x="${leftMargin}" y="${yMid}" width="${32 * cellWidth}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
                         }
                         const xLast = leftMargin;
                         const yLast = dwStartY + endRow * rowHeight;
                         const widthLast = (endCol + 1) * cellWidth;
-                        svg += `  <rect x="${xLast}" y="${yLast}" width="${widthLast}" height="${cellHeight}" fill="${color}" stroke="black" stroke-width="1"/>\n`;
+                        svg += `  <rect x="${xLast}" y="${yLast}" width="${widthLast}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
                     }
                 }
             }
@@ -1122,6 +1103,7 @@
                 }
                 segments.push({ start, end });
 
+                const textColor = '#000000';
                 for (let seg of segments) {
                     const { start: segStart, end: segEnd } = seg;
                     const avgVis = (segStart + segEnd) / 2;
@@ -1131,7 +1113,7 @@
                     const y = dwStartY + row * rowHeight + cellHeight/2 + 3;
                     const text = f.display || f.name;
                     const fontSize = text.length > 6 ? 10 : 14;
-                    svg += `  <text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="black" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${text}</text>\n`;
+                    svg += `  <text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${text}</text>\n`;
                 }
             }
 
@@ -1139,7 +1121,7 @@
             return svg;
         }
 
-        // ===== 导出 SVG（让用户指定文件名） =====
+        // ===== 导出 SVG =====
         function exportSvgFile() {
             let fileName = prompt('请输入SVG文件名（不含扩展名）:', 'tlp');
             if (fileName === null) fileName = 'tlp';
@@ -1165,7 +1147,7 @@
 
         function closePreview() { previewModal.classList.remove('active'); }
 
-        // ===== 导出 JSON（让用户指定文件名） =====
+        // ===== 导出 JSON =====
         function exportJson() {
             let fileName = prompt('请输入JSON文件名（不含扩展名）:', 'tlp');
             if (fileName === null) fileName = 'tlp';
@@ -1276,6 +1258,16 @@
             }
         });
 
+        // ===== 白底切换按钮 =====
+        function toggleWhiteBg() {
+            whiteBg = !whiteBg;
+            toggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+            toggleWhiteBgBtn.classList.toggle('active', whiteBg);
+            refreshAllFields();
+            updateStatus(whiteBg ? '已切换到白底+黑边框模式' : '已恢复正常配色');
+        }
+        toggleWhiteBgBtn.addEventListener('click', toggleWhiteBg);
+
         // ===== 事件绑定 =====
         applyBtn.addEventListener('click', function() {
             renderGrid();
@@ -1297,7 +1289,6 @@
             if (this.files[0]) { importTlpFromFile(this.files[0]); this.value = ''; }
         });
 
-        // 重新配色按钮
         recolorBtn.addEventListener('click', recolorFields);
 
         // 初始化
