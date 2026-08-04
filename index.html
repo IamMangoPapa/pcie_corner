@@ -205,7 +205,8 @@
             </div>
             <div class="tabs" id="tabContainer" role="tablist" aria-label="页面标签">
                 <div class="tab active" role="tab" aria-selected="true" tabindex="0" data-target="./pages/pcie_frame_format.html" aria-label="Frame Format 页面">📊 Frame</div>
-                <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./pages/tlp_decoder.html" aria-label="TLP Decoder 页面">🔍 Decoder</div>
+                <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./tools/tlp_frame.html" aria-label="Draw TLP 页面">🖼️ Draw TLP</div>
+				<div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./pages/tlp_decoder.html" aria-label="TLP Decoder 页面">🔍 Decoder</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./pages/ltssm.html" aria-label="LTSSM 页面">🔀 LTSSM</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="tools" id="toolsTab" aria-label="工具箱页面">🔧 Tools</div>
                 <div class="tab" role="tab" aria-selected="false" tabindex="0" data-target="./pages/about/personal_page.html" aria-label="联系方式页面">☎️ Contact</div>
@@ -230,6 +231,7 @@
     <nav class="bottom-nav" id="bottomNav" role="navigation" aria-label="移动端底部导航">
         <div class="nav-items">
             <div class="nav-item active" role="tab" aria-selected="true" tabindex="0" data-target="./pages/pcie_frame_format.html" aria-label="Frame Format"><span class="nav-icon" aria-hidden="true">📊</span>Frame</div>
+			<div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="./pages/tlp_format.html" aria-label="Draw TLP"><span class="nav-icon" aria-hidden="true">🖼️</span>Draw TLP</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="./pages/tlp_decoder.html" aria-label="TLP Decoder"><span class="nav-icon" aria-hidden="true">🔍</span>Decoder</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="./pages/ltssm.html" aria-label="LTSSM"><span class="nav-icon" aria-hidden="true">🔀</span>LTSSM</div>
             <div class="nav-item" role="tab" aria-selected="false" tabindex="0" data-target="tools" aria-label="工具箱"><span class="nav-icon" aria-hidden="true">🔧</span>Tools</div>
@@ -385,7 +387,7 @@
                 const btn = document.getElementById('historyBtn');
                 const dropdown = document.getElementById('historyDropdown');
                 const countEl = document.getElementById('historyCount');
-                const tabLabels = { './pages/pcie_frame_format.html': 'Frame Format', './pages/tlp_decoder.html': 'TLP Decoder', './pages/ltssm.html': 'LTSSM', 'tools': '工具箱', './pages/about/personal_page.html': 'Contact' };
+                const tabLabels = { './pages/pcie_frame_format.html': 'Frame Format',  './tools/tlp_frame.html': 'Draw TLP','./pages/tlp_decoder.html': 'TLP Decoder', './pages/ltssm.html': 'LTSSM', 'tools': '工具箱', './pages/about/personal_page.html': 'Contact' };
                 let items = [];
 
                 function add(target) {
@@ -518,8 +520,8 @@
 
                 let currentTarget = '';
                 let touchStartX = 0;
-                const tabOrder = ['./pages/pcie_frame_format.html', './pages/tlp_decoder.html', './pages/ltssm.html', 'tools', './pages/about/personal_page.html'];
-                const tabLabels = { './pages/pcie_frame_format.html': 'Frame Format', './pages/tlp_decoder.html': 'TLP Decoder', './pages/ltssm.html': 'LTSSM', 'tools': '工具箱', './pages/about/personal_page.html': 'Contact' };
+                const tabOrder = ['./pages/pcie_frame_format.html', './tools/tlp_format.html', './pages/tlp_decoder.html', './pages/ltssm.html', 'tools', './pages/about/personal_page.html'];
+                const tabLabels = { './pages/pcie_frame_format.html': 'Frame Format', './tools/tlp_format.html':'Draw TLP', './pages/tlp_decoder.html': 'TLP Decoder', './pages/ltssm.html': 'LTSSM', 'tools': '工具箱', './pages/about/personal_page.html': 'Contact' };
 
                 function updateIndicator(tab) {
                     if (!tab) { indicator.style.opacity = '0'; return; }
