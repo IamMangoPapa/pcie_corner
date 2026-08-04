@@ -541,7 +541,8 @@
         endianToggle.addEventListener('click', function() {
             endianness = endianness === 'little' ? 'big' : 'little';
             updateEndianButton();
-            updateStatus('端序已切换，请点击“应用”生效');
+            //updateStatus('端序已切换，请点击“应用”生效');
+            updateStatus(`端序已切换为 -> ${endianToggle.textContent}，请点击“应用”生效`);
         });
 
         // ===== 渲染网格 =====
@@ -569,7 +570,7 @@
                 byteGroup.className = 'byte-group';
                 const label = document.createElement('span');
                 label.className = 'byte-label';
-                let byteNum = (endianness === 'little') ? bIdx : (3 - bIdx);
+                let byteNum = bIdx/*(endianness === 'little') ? bIdx : (3 - bIdx)*/;
                 label.textContent = `Byte${byteNum}`;
                 byteGroup.appendChild(label);
                 const phContainer = document.createElement('div');
@@ -1026,7 +1027,7 @@
             // Byte 标签
             let xOff = leftMargin;
             for (let bIdx of byteOrder) {
-                let byteNum = (endianness === 'little') ? bIdx : (3 - bIdx);
+                let byteNum = bIdx;/*(endianness === 'little') ? bIdx : (3 - bIdx)*/;
                 const xCenter = xOff + (8 * cellWidth) / 2;
                 svg += `  <line x1="${xOff}" y1="0" x2="${xOff}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
                 svg += `  <line x1="${xOff + 8*cellWidth}" y1="0" x2="${xOff + 8*cellWidth}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
@@ -1210,7 +1211,7 @@
             const endGlobal = visualToGlobal[lastVis];
             const startStr = formatPosition(startGlobal);
             const endStr = formatPosition(endGlobal);
-            modalBitInfo.textContent = `选中 ${visIndices.length} 个格子 (${startStr} → ${endStr})`;
+            modalBitInfo.textContent = `选中 ${visIndices.length} 个视觉格子 (${startStr} → ${endStr})`;
             modalFieldName.value = '';
             modalFieldDisplay.value = '';
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
