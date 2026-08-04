@@ -73,6 +73,13 @@
         .btn-endian.active {
             background: #3f51b5;
         }
+        .btn-recolor {
+            background: #ffb74d;
+            color: #37474f;
+        }
+        .btn-recolor:hover {
+            background: #ffa726;
+        }
 
         .grid-area {
             background: #ffffff;
@@ -238,7 +245,9 @@
         </div>
     </div>
 
+    <!-- 底部操作栏 -->
     <div class="action-bar">
+        <button class="btn btn-recolor" id="recolorBtn">🎨重新配色</button>
         <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
         <button class="btn btn-success" id="exportSvgBtn">导出SVG</button>
         <button class="btn btn-secondary" id="exportJsonBtn">导出JSON</button>
@@ -293,25 +302,44 @@
         let globalToVisual = {};
         let fieldLibrary = [];
 
-        // ===== 柔和颜色调色板 =====
+        // ===== 高饱和度颜色调色板（32种） =====
         const COLORS = [
-            '#F4A0A0', // 淡粉
-            '#A0C4F4', // 淡蓝
-            '#A0E0A0', // 淡绿
-            '#C0A0E0', // 淡紫
-            '#F0E080', // 淡黄
-            '#F0C0A0', // 淡橙
-            '#A0E0E0', // 淡青
-            '#F0A0C0', // 淡玫红
-            '#E0E080', // 柠檬
-            '#A0F0C0', // 薄荷
-            '#C0B0F0', // 薰衣草
-            '#F0A0B0', // 淡玫瑰
-            '#B0D0D0', // 灰蓝
-            '#E0C0A0', // 米色
-            '#D0B0E0', // 淡紫灰
-            '#B0E0C0'  // 淡翠
+            '#F94144', // 鲜红
+            '#F8961E', // 橙红
+            '#F9C74F', // 金黄
+            '#90BE6D', // 嫩绿
+            '#43AA8B', // 翠绿
+            '#4D908E', // 青绿
+            '#577590', // 钢蓝
+            '#277DA1', // 深蓝
+            '#5E4B8C', // 紫罗兰
+            '#9C89B8', // 淡紫
+            '#F4845F', // 珊瑚
+            '#F2A65A', // 杏色
+            '#F2C14E', // 香槟黄
+            '#A7C957', // 草绿
+            '#6A994E', // 橄榄绿
+            '#386641', // 墨绿
+            '#247BA0', // 天蓝
+            '#1B98A0', // 湖蓝
+            '#E8D44D', // 柠檬
+            '#FF6B6B', // 亮粉红
+            '#FF8C42', // 蜜橙
+            '#F9C74F', // 奶油黄
+            '#90BE6D', // 亮绿
+            '#43AA8B', // 薄荷绿
+            '#4D908E', // 蒂芙尼蓝
+            '#577590', // 雾蓝
+            '#277DA1', // 宝蓝
+            '#5E4B8C', // 紫
+            '#9C89B8', // 浅紫
+            '#F4845F', // 三文鱼
+            '#F2A65A', // 橘黄
+            '#F2C14E'  // 金色
         ];
+
+        // 灰色用于保留字段
+        const RESERVED_COLOR = '#B0B0B0';
 
         let colorIndex = 0;
 
@@ -332,6 +360,7 @@
         const fieldFileInput = document.getElementById('fieldFileInput');
         const importTlpBtn = document.getElementById('importTlpBtn');
         const tlpFileInput = document.getElementById('tlpFileInput');
+        const recolorBtn = document.getElementById('recolorBtn');
         const fieldLibSelectWrapper = document.getElementById('fieldLibSelectWrapper');
         const fieldLibSelect = document.getElementById('fieldLibSelect');
 
@@ -347,19 +376,18 @@
         const previewCloseBtn = document.getElementById('previewCloseBtn');
         const previewExportBtn = document.getElementById('previewExportBtn');
 
-        // ===== 端序按钮 =====
-        function updateEndianButton() {
-            endianToggle.textContent = endianness === 'little' ? '小端' : '大端';
-            endianToggle.classList.toggle('active', endianness === 'big');
+        // ===== 判断是否为保留字段 =====
+        function isReservedField(name) {
+            if (!name) return false;
+            const lower = name.toLowerCase();
+            return lower.includes('reserved') || lower.includes('rsvd');
         }
-        endianToggle.addEventListener('click', function() {
-            endianness = endianness === 'little' ? 'big' : 'little';
-            updateEndianButton();
-            updateStatus('端序已切换，请点击“应用”生效');
-        });
 
-        // ===== 辅助函数 =====
+        // ===== 获取颜色（保留字段返回灰色） =====
         function getColorForField(name) {
+            if (isReservedField(name)) {
+                return RESERVED_COLOR;
+            }
             for (let f of fields) if (f.name === name) return f.color;
             const color = COLORS[colorIndex % COLORS.length];
             colorIndex++;
@@ -392,6 +420,129 @@
             });
             return Array.from(visSet).sort((a,b) => a-b);
         }
+
+        // ===== 重新配色函数（保留字段固定灰色） =====
+        function recolorFields() {
+            if (fields.length === 0) {
+                updateStatus('没有字段需要配色');
+                return;
+            }
+
+            // 分离保留字段和非保留字段
+            const reservedIndices = [];
+            const normalIndices = [];
+            for (let i = 0; i < fields.length; i++) {
+                if (isReservedField(fields[i].name)) {
+                    reservedIndices.push(i);
+                } else {
+                    normalIndices.push(i);
+                }
+            }
+
+            // 为非保留字段构建邻接图（只考虑非保留字段之间的邻接）
+            const n = normalIndices.length;
+            const adj = Array.from({ length: n }, () => []);
+            // 映射原始索引 -> 正常索引
+            const idxMap = {};
+            normalIndices.forEach((orig, idx) => { idxMap[orig] = idx; });
+
+            // 构建非保留字段的视觉索引集合
+            const fieldVisSets = normalIndices.map(orig => new Set(fields[orig].visIndices));
+
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    let adjacent = false;
+                    const setA = fieldVisSets[i];
+                    const setB = fieldVisSets[j];
+                    for (let v of setA) {
+                        if (setB.has(v) || setB.has(v - 1) || setB.has(v + 1)) {
+                            adjacent = true;
+                            break;
+                        }
+                    }
+                    if (adjacent) {
+                        adj[i].push(j);
+                        adj[j].push(i);
+                    }
+                }
+            }
+
+            // 贪心着色
+            const assignedColors = new Array(n).fill(null);
+            const shuffledColors = [...COLORS];
+            for (let i = shuffledColors.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
+            }
+
+            for (let i = 0; i < n; i++) {
+                const usedColors = new Set();
+                for (let j of adj[i]) {
+                    if (assignedColors[j] !== null) {
+                        usedColors.add(assignedColors[j]);
+                    }
+                }
+                let chosen = null;
+                for (let c of shuffledColors) {
+                    if (!usedColors.has(c)) {
+                        chosen = c;
+                        break;
+                    }
+                }
+                if (chosen === null) {
+                    const allUsed = new Set(assignedColors.filter(c => c !== null));
+                    for (let c of shuffledColors) {
+                        if (!allUsed.has(c)) {
+                            chosen = c;
+                            break;
+                        }
+                    }
+                }
+                if (chosen === null) chosen = shuffledColors[0];
+                assignedColors[i] = chosen;
+            }
+
+            // 确保非保留字段颜色唯一（如果数量允许）
+            const colorSet = new Set();
+            for (let i = 0; i < n; i++) {
+                if (colorSet.has(assignedColors[i])) {
+                    const allUsed = new Set(assignedColors);
+                    for (let c of shuffledColors) {
+                        if (!allUsed.has(c)) {
+                            assignedColors[i] = c;
+                            break;
+                        }
+                    }
+                }
+                colorSet.add(assignedColors[i]);
+            }
+
+            // 应用颜色到字段
+            for (let i = 0; i < n; i++) {
+                const origIdx = normalIndices[i];
+                fields[origIdx].color = assignedColors[i];
+            }
+
+            // 保留字段设为灰色
+            for (let i of reservedIndices) {
+                fields[i].color = RESERVED_COLOR;
+            }
+
+            // 刷新显示
+            refreshAllFields();
+            updateStatus(`重新配色完成 (${fields.length} 个字段，其中 ${reservedIndices.length} 个保留字段为灰色)`);
+        }
+
+        // ===== 端序按钮 =====
+        function updateEndianButton() {
+            endianToggle.textContent = endianness === 'little' ? '小端' : '大端';
+            endianToggle.classList.toggle('active', endianness === 'big');
+        }
+        endianToggle.addEventListener('click', function() {
+            endianness = endianness === 'little' ? 'big' : 'little';
+            updateEndianButton();
+            updateStatus('端序已切换，请点击“应用”生效');
+        });
 
         // ===== 渲染网格 =====
         function renderGrid() {
@@ -879,7 +1030,7 @@
                 const xCenter = xOff + (8 * cellWidth) / 2;
                 svg += `  <line x1="${xOff}" y1="0" x2="${xOff}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
                 svg += `  <line x1="${xOff + 8*cellWidth}" y1="0" x2="${xOff + 8*cellWidth}" y2="20" stroke="#b0bec5" stroke-width="1"/>\n`;
-                svg += `  <text x="${xCenter}" y="15" text-anchor="middle" font-size="12" font-weight="600" fill="#90a4ae">Byte${byteNum}</text>\n`;
+                svg += `  <text x="${xCenter}" y="15" text-anchor="middle" font-size="12" font-weight="600" fill="#546e7a">Byte${byteNum}</text>\n`;
                 xOff += 8 * cellWidth;
             }
 
@@ -979,7 +1130,7 @@
                     const y = dwStartY + row * rowHeight + cellHeight/2 + 3;
                     const text = f.display || f.name;
                     const fontSize = text.length > 6 ? 10 : 14;
-                    svg += `  <text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="white" text-shadow="0 1px 2px rgba(0,0,0,0.5)">${text}</text>\n`;
+                    svg += `  <text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="black" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${text}</text>\n`;
                 }
             }
 
@@ -1144,6 +1295,9 @@
         tlpFileInput.addEventListener('change', function() {
             if (this.files[0]) { importTlpFromFile(this.files[0]); this.value = ''; }
         });
+
+        // 重新配色按钮
+        recolorBtn.addEventListener('click', recolorFields);
 
         // 初始化
         updateEndianButton();
