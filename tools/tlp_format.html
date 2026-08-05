@@ -365,12 +365,18 @@
             return lower.includes('reserved') || lower.includes('rsvd');
         }
 
-        // ===== 获取颜色（保留字段返回灰色） =====
+        // ===== 获取颜色（保留字段返回灰色，同名字段复用颜色） =====
         function getColorForField(name) {
             if (isReservedField(name)) {
                 return RESERVED_COLOR;
             }
-            for (let f of fields) if (f.name === name) return f.color;
+            // 查找已有同名字段的颜色
+            for (let f of fields) {
+                if (f.name === name && f.color) {
+                    return f.color;
+                }
+            }
+            // 否则分配新颜色
             const color = COLORS[colorIndex % COLORS.length];
             colorIndex++;
             return color;
@@ -403,35 +409,63 @@
             return Array.from(visSet).sort((a,b) => a-b);
         }
 
-        // ===== 重新配色函数（保留字段固定灰色） =====
+        // ===== 重新配色函数（基于字段名称分配颜色，保留字段灰色） =====
         function recolorFields() {
             if (fields.length === 0) {
                 updateStatus('没有字段需要配色');
                 return;
             }
 
-            const reservedIndices = [];
-            const normalIndices = [];
+            // 1. 分离保留字段和非保留字段
+            const reservedFields = [];
+            const normalFields = [];
             for (let i = 0; i < fields.length; i++) {
                 if (isReservedField(fields[i].name)) {
-                    reservedIndices.push(i);
+                    reservedFields.push(i);
                 } else {
-                    normalIndices.push(i);
+                    normalFields.push(i);
                 }
             }
 
-            const n = normalIndices.length;
+            // 如果没有非保留字段，直接返回
+            if (normalFields.length === 0) {
+                updateStatus('所有字段均为保留字段，无需配色');
+                return;
+            }
+
+            // 2. 获取所有非保留字段的唯一名称
+            const nameSet = new Set();
+            for (let idx of normalFields) {
+                nameSet.add(fields[idx].name);
+            }
+            const uniqueNames = Array.from(nameSet);
+            // 建立名称到索引的映射
+            const nameToIdx = {};
+            uniqueNames.forEach((name, idx) => { nameToIdx[name] = idx; });
+
+            // 3. 构建名称之间的邻接关系（基于视觉相邻）
+            const n = uniqueNames.length;
             const adj = Array.from({ length: n }, () => []);
-            const idxMap = {};
-            normalIndices.forEach((orig, idx) => { idxMap[orig] = idx; });
 
-            const fieldVisSets = normalIndices.map(orig => new Set(fields[orig].visIndices));
+            // 为每个名称收集所有字段的视觉索引集合
+            const nameVisSets = uniqueNames.map(name => {
+                const set = new Set();
+                for (let idx of normalFields) {
+                    if (fields[idx].name === name) {
+                        for (let v of fields[idx].visIndices) {
+                            set.add(v);
+                        }
+                    }
+                }
+                return set;
+            });
 
+            // 判断两个名称是否相邻：如果它们对应的任何两个字段的视觉索引相邻（差 ≤ 1）
             for (let i = 0; i < n; i++) {
                 for (let j = i + 1; j < n; j++) {
                     let adjacent = false;
-                    const setA = fieldVisSets[i];
-                    const setB = fieldVisSets[j];
+                    const setA = nameVisSets[i];
+                    const setB = nameVisSets[j];
                     for (let v of setA) {
                         if (setB.has(v) || setB.has(v - 1) || setB.has(v + 1)) {
                             adjacent = true;
@@ -445,7 +479,9 @@
                 }
             }
 
+            // 4. 贪心着色（为每个名称分配颜色）
             const assignedColors = new Array(n).fill(null);
+            // 打乱颜色顺序增加随机性
             const shuffledColors = [...COLORS];
             for (let i = shuffledColors.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -479,6 +515,7 @@
                 assignedColors[i] = chosen;
             }
 
+            // 确保不同名称颜色唯一（如果颜色数量足够）
             const colorSet = new Set();
             for (let i = 0; i < n; i++) {
                 if (colorSet.has(assignedColors[i])) {
@@ -493,17 +530,26 @@
                 colorSet.add(assignedColors[i]);
             }
 
+            // 5. 将颜色应用到所有字段
             for (let i = 0; i < n; i++) {
-                const origIdx = normalIndices[i];
-                fields[origIdx].color = assignedColors[i];
+                const name = uniqueNames[i];
+                const color = assignedColors[i];
+                // 更新所有该名称的字段
+                for (let idx of normalFields) {
+                    if (fields[idx].name === name) {
+                        fields[idx].color = color;
+                    }
+                }
             }
 
-            for (let i of reservedIndices) {
-                fields[i].color = RESERVED_COLOR;
+            // 保留字段保持灰色
+            for (let idx of reservedFields) {
+                fields[idx].color = RESERVED_COLOR;
             }
 
+            // 刷新显示
             refreshAllFields();
-            updateStatus(`重新配色完成 (${fields.length} 个字段，其中 ${reservedIndices.length} 个保留字段为灰色)`);
+            updateStatus(`重新配色完成 (${fields.length} 个字段，${uniqueNames.length} 个唯一名称，${reservedFields.length} 个保留字段为灰色)`);
         }
 
         // ===== 端序按钮 =====
