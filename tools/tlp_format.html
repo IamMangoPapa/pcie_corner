@@ -150,13 +150,12 @@
             padding: 1px;
             pointer-events: none;
             font-weight: bold;
-            font-size: 14px; /* 固定最小14px */
+            font-size: 14px;
         }
         .bit-cell .field-value {
             display: block;
             font-size: 12px;
             font-weight: normal;
-            /* margin-top 由内联控制 */
         }
         .tick-mark {
             position: absolute;
@@ -776,7 +775,7 @@
             updateStatus('网格已更新');
         }
 
-        // ===== 字段样式（UI：强制黑色文字和边框，白底仅控制背景，值底部对齐，字段名微调） =====
+        // ===== 字段样式（UI：强制黑色文字和边框，白底仅控制背景，值底部对齐，字段名垂直居中） =====
         function refreshAllFields() {
             for (let idx in bitElements) {
                 const el = bitElements[idx];
@@ -910,16 +909,13 @@
                         const isMid = (Math.abs(visIdx - midVis) < 0.5);
 
                         if (isMid) {
-                            // 字段名（始终显示）
+                            // 字段名（始终垂直居中）
                             if (displayText) {
                                 const textSpan = document.createElement('span');
                                 textSpan.className = 'field-text';
                                 textSpan.textContent = displayText;
                                 textSpan.style.color = textColor;
-                                // 有值时下移 1px（介于0和2之间）
-                                if (hasValue) {
-                                    textSpan.style.marginTop = '1px';
-                                }
+                                // 不设 margin-top，保持居中
                                 el.appendChild(textSpan);
                             }
                             // 值（贴近底部）
@@ -1159,7 +1155,7 @@
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
         }
 
-        // ===== SVG 导出（强制黑色文字和边框，值字号 12pt，贴近底部，字段名微调） =====
+        // ===== SVG 导出（强制黑色文字和边框，值字号 12pt，贴近底部，字段名垂直居中） =====
         function getSvgString() {
             const cellWidth = 34;
             const cellHeight = 34;
@@ -1294,12 +1290,10 @@
                 const cx = leftMargin + midCol * cellWidth + cellWidth / 2;
                 const cy = dwStartY + midRow * rowHeight + cellHeight / 2 + 3;
 
-                // 字段名字号固定为 14px
+                // 字段名字体大小固定 14px，垂直居中（不偏移）
                 const fontSize = 14;
-                // 有值时下移 1px（介于0和2之间）
-                const nameYOffset = hasValue ? 1 : 0;
                 if (displayText) {
-                    svg += `  <text x="${cx}" y="${cy + nameYOffset}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
+                    svg += `  <text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
                 }
 
                 if (hasValue) {
@@ -1309,7 +1303,7 @@
                         const row = Math.floor(v / 32);
                         const x = leftMargin + col * cellWidth + cellWidth / 2;
                         const y = dwStartY + row * rowHeight + cellHeight / 2 + 3;
-                        const charY = y + 12;
+                        const charY = y + 12; // 贴近底部
                         const char = valueStr[idx] || '';
                         svg += `  <text x="${x}" y="${charY}" text-anchor="middle" font-size="12" font-weight="normal" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${char}</text>\n`;
                     }
