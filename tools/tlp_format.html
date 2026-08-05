@@ -28,15 +28,30 @@
             border-bottom: 2px solid #e8eaf6;
             padding-bottom: 12px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         h1 {
             font-size: 28px;
             color: #1a237e;
+            display: inline-block;
         }
         .version {
             font-size: 16px;
             color: #78909c;
             font-weight: 500;
+            margin-left: auto;
+        }
+        .watermark-notice {
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 18px;
+            margin-left: 16px;
+            background: #ffebee;
+            padding: 2px 12px;
+            border-radius: 4px;
+            border: 1px solid #ef9a9a;
+            display: inline-block;
         }
         .toolbar {
             display: flex;
@@ -50,28 +65,127 @@
         }
         .toolbar-left { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
-        .toolbar label { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .toolbar label {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
         .toolbar select, .toolbar input[type="number"] {
-            padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; background: white;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            height: 36px;
         }
         .btn {
-            background: #3f51b5; color: white; border: none; padding: 8px 16px; border-radius: 4px;
-            font-size: 15px; cursor: pointer; transition: background 0.2s; white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            white-space: nowrap;
+            height: 36px;
+            min-width: 40px;
+            text-align: center;
+            background: #e0e0e0;
+            color: #333;
         }
-        .btn:hover { background: #283593; }
-        .btn-secondary { background: #78909c; }
-        .btn-secondary:hover { background: #546e7a; }
-        .btn-success { background: #43a047; }
-        .btn-success:hover { background: #2e7d32; }
-        .btn-danger { background: #e53935; }
-        .btn-danger:hover { background: #b71c1c; }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        .btn:active {
+            transform: translateY(0px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: #3f51b5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #283593;
+        }
+        .btn-primary:active {
+            background: #1a237e;
+        }
+        .btn-secondary {
+            background: #78909c;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #546e7a;
+        }
+        .btn-secondary:active {
+            background: #455a64;
+        }
+        .btn-success {
+            background: #43a047;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #2e7d32;
+        }
+        .btn-success:active {
+            background: #1b5e20;
+        }
+        .btn-danger {
+            background: #e53935;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+        .btn-danger:active {
+            background: #880e0e;
+        }
+        .btn-warning {
+            background: #ffb74d;
+            color: #37474f;
+        }
+        .btn-warning:hover {
+            background: #ffa726;
+        }
+        .btn-warning:active {
+            background: #fb8c00;
+        }
         .btn-endian {
             background: #90a4ae;
+            color: white;
             min-width: 60px;
-            text-align: center;
+        }
+        .btn-endian:hover {
+            background: #78909c;
         }
         .btn-endian.active {
             background: #3f51b5;
+        }
+        .btn-endian.active:hover {
+            background: #283593;
+        }
+        .btn-whitebg {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-whitebg:hover {
+            background: #bdbdbd;
+        }
+        .btn-whitebg.active {
+            background: #333;
+            color: white;
+        }
+        .btn-whitebg.active:hover {
+            background: #1a1a1a;
         }
         .btn-recolor {
             background: #ffb74d;
@@ -79,14 +193,6 @@
         }
         .btn-recolor:hover {
             background: #ffa726;
-        }
-        .btn-whitebg {
-            background: #e0e0e0;
-            color: #333;
-        }
-        .btn-whitebg.active {
-            background: #333;
-            color: white;
         }
 
         .grid-area {
@@ -97,8 +203,37 @@
             display: flex;
             justify-content: center;
             overflow-x: auto;
+            position: relative;
+            min-height: 100px;
         }
-        .bit-grid { display: flex; flex-direction: column; gap: 0; user-select: none; }
+        .grid-watermark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 5;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            opacity: 0.25;
+        }
+        .grid-watermark span {
+            display: inline-block;
+            font-size: 28px;
+            font-weight: bold;
+            color: #888;
+            transform: rotate(-30deg);
+            margin: 12px 20px;
+            white-space: nowrap;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 6px;
+        }
+
+        .bit-grid { display: flex; flex-direction: column; gap: 0; user-select: none; position: relative; z-index: 1; }
         .dw-row { display: flex; gap: 0; align-items: center; padding: 0; margin: 0; }
         .dw-label {
             font-weight: 600; font-size: 14px; color: #546e7a; width: 48px;
@@ -238,24 +373,99 @@
         .file-input-hidden { display: none !important; }
 
         .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
         .modal-overlay.active { display: flex; }
         .modal-box {
-            background: white; border-radius: 12px; padding: 24px 28px;
-            max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 95vw;
+            height: 95vh;
+            max-width: 95vw;
+            max-height: 95vh;
+            overflow: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
-        .modal-box h2 { font-size: 22px; color: #1a237e; margin-bottom: 12px; }
-        .modal-box label { display: block; font-size: 15px; margin-top: 12px; }
+        .preview-watermark-notice {
+            text-align: center;
+            margin-bottom: 4px;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 16px;
+            background: #ffebee;
+            padding: 2px 12px;
+            border-radius: 4px;
+            border: 1px solid #ef9a9a;
+            flex-shrink: 0;
+        }
+        #previewContainer {
+            flex: 1;
+            position: relative;
+            text-align: center;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+        #previewContainer svg {
+            max-width: 100%;
+            max-height: 100%;
+            height: auto;
+            width: auto;
+            display: block;
+        }
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .modal-box.edit-modal {
+            width: auto;
+            height: auto;
+            max-width: 450px;
+            max-height: 90%;
+            padding: 24px 28px;
+        }
+        .modal-box.edit-modal .modal-actions {
+            justify-content: flex-end;
+        }
+        .modal-box label {
+            display: block;
+            font-size: 15px;
+            margin-top: 12px;
+        }
         .modal-box input, .modal-box select {
-            width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
-            font-size: 15px; margin-top: 4px;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            margin-top: 4px;
         }
-        .modal-box .modal-actions { display: flex; gap: 12px; margin-top: 18px; justify-content: flex-end; }
         .modal-box .info-bit {
-            font-size: 15px; color: #37474f; background: #f5f5f5;
-            padding: 6px 10px; border-radius: 4px; margin-top: 8px;
+            font-size: 15px;
+            color: #37474f;
+            background: #f5f5f5;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-top: 8px;
         }
         @media (max-width: 960px) {
             .bit-cell { width: 28px; height: 28px; font-size: 12px; }
@@ -264,13 +474,22 @@
             .byte-label { height: 8px; font-size: 10px; }
             .toolbar-right { margin-left: 0; width: 100%; justify-content: flex-end; }
             .field-list-container, .action-bar, .status-bar-wrapper { padding: 0 8px; }
+            .btn { padding: 4px 10px; font-size: 12px; height: 32px; }
+            .grid-watermark span { font-size: 18px; margin: 8px 12px; }
+            .modal-box { width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; border-radius: 0; padding: 12px; }
+            .watermark-notice { font-size: 14px; padding: 1px 8px; }
+            .header { flex-wrap: wrap; }
+            .preview-watermark-notice { font-size: 14px; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>PCIe TLP 帧格式编辑器</h1>
+        <div style="display: flex; align-items: baseline; flex-wrap: wrap;">
+            <h1>PCIe TLP 帧格式编辑器</h1>
+            <span class="watermark-notice" id="watermarkNotice">联系MangoPapa去水印, wx: loveic_lovelife</span>
+        </div>
         <span class="version" id="versionDisplay">v1.0</span>
     </div>
 
@@ -287,7 +506,7 @@
                 </select>
             </label>
             <button class="btn btn-endian" id="endianToggle">小端</button>
-            <button class="btn" id="applyBtn">应用</button>
+            <button class="btn btn-primary" id="applyBtn">应用</button>
         </div>
         <div class="toolbar-right">
             <button class="btn btn-secondary" id="clearFieldsBtn">清空</button>
@@ -299,7 +518,8 @@
         </div>
     </div>
 
-    <div class="grid-area">
+    <div class="grid-area" id="gridArea">
+        <div class="grid-watermark" id="gridWatermark" style="display: none;"></div>
         <div id="bitGridContainer"></div>
     </div>
 
@@ -317,6 +537,7 @@
         <button class="btn btn-recolor" id="recolorBtn">🎨重新配色</button>
         <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
         <button class="btn btn-success" id="exportSvgBtn">导出SVG</button>
+        <button class="btn btn-success" id="exportJpgBtn">导出JPG</button>
         <button class="btn btn-secondary" id="exportJsonBtn">导出JSON</button>
     </div>
 
@@ -327,7 +548,7 @@
 
 <!-- 编辑字段模态框 -->
 <div class="modal-overlay" id="fieldModal">
-    <div class="modal-box">
+    <div class="modal-box edit-modal">
         <h2>编辑字段</h2>
         <div class="info-bit" id="modalBitInfo">选中范围: ...</div>
         <div id="fieldLibSelectWrapper" style="display:none;">
@@ -343,12 +564,16 @@
     </div>
 </div>
 
-<!-- SVG预览模态框（无标题） -->
+<!-- SVG预览模态框 -->
 <div class="modal-overlay" id="previewModal">
-    <div class="modal-box" style="max-width: 90%; max-height: 90%; overflow: auto; padding: 12px;">
-        <div id="previewContainer" style="text-align: center;"></div>
-        <div class="modal-actions" style="justify-content: center; margin-top: 12px;">
-            <button class="btn btn-success" id="previewExportBtn">导出 SVG</button>
+    <div class="modal-box">
+        <div class="preview-watermark-notice" id="previewWatermarkNotice" style="display: none;">联系MangoPapa去水印, wx: loveic_lovelife</div>
+        <div id="previewContainer"></div>
+        <div class="preview-actions">
+            <button class="btn btn-whitebg" id="previewToggleWhiteBgBtn">白底</button>
+            <button class="btn btn-recolor" id="previewRecolorBtn">🎨重新配色</button>
+            <button class="btn btn-success" id="previewExportSvgBtn">导出 SVG</button>
+            <button class="btn btn-success" id="previewExportJpgBtn">导出 JPG</button>
             <button class="btn btn-secondary" id="previewCloseBtn">关闭</button>
         </div>
     </div>
@@ -372,6 +597,13 @@
         let whiteBg = false;
         let editingField = null;
 
+        let showWatermark = true;
+        let keyPressCount = 0;
+        let lastKeyTime = 0;
+
+        const watermarkNotice = document.getElementById('watermarkNotice');
+        const previewWatermarkNotice = document.getElementById('previewWatermarkNotice');
+
         // ===== 高饱和度颜色调色板（32种） =====
         const COLORS = [
             '#F94144', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590', '#277DA1',
@@ -385,6 +617,8 @@
 
         // DOM 引用
         const container = document.getElementById('bitGridContainer');
+        const gridArea = document.getElementById('gridArea');
+        const gridWatermark = document.getElementById('gridWatermark');
         const statusBar = document.getElementById('statusBar');
         const fieldListContainer = document.getElementById('fieldListContainer');
         const fieldListItems = document.getElementById('fieldListItems');
@@ -395,6 +629,7 @@
         const editSelectionBtn = document.getElementById('editSelectionBtn');
         const previewSvgBtn = document.getElementById('previewSvgBtn');
         const exportSvgBtn = document.getElementById('exportSvgBtn');
+        const exportJpgBtn = document.getElementById('exportJpgBtn');
         const exportJsonBtn = document.getElementById('exportJsonBtn');
         const importFieldBtn = document.getElementById('importFieldBtn');
         const fieldFileInput = document.getElementById('fieldFileInput');
@@ -404,6 +639,11 @@
         const toggleWhiteBgBtn = document.getElementById('toggleWhiteBgBtn');
         const fieldLibSelectWrapper = document.getElementById('fieldLibSelectWrapper');
         const fieldLibSelect = document.getElementById('fieldLibSelect');
+
+        const previewToggleWhiteBgBtn = document.getElementById('previewToggleWhiteBgBtn');
+        const previewRecolorBtn = document.getElementById('previewRecolorBtn');
+        const previewExportSvgBtn = document.getElementById('previewExportSvgBtn');
+        const previewExportJpgBtn = document.getElementById('previewExportJpgBtn');
 
         const modalOverlay = document.getElementById('fieldModal');
         const modalBitInfo = document.getElementById('modalBitInfo');
@@ -416,7 +656,6 @@
         const previewModal = document.getElementById('previewModal');
         const previewContainer = document.getElementById('previewContainer');
         const previewCloseBtn = document.getElementById('previewCloseBtn');
-        const previewExportBtn = document.getElementById('previewExportBtn');
 
         // ===== 判断是否为保留字段 =====
         function isReservedField(name) {
@@ -467,7 +706,6 @@
             return Array.from(visSet).sort((a,b) => a-b);
         }
 
-        // ===== 查找与给定视觉索引完全匹配的字段 =====
         function findFieldByVisIndices(visIndices) {
             if (visIndices.length === 0) return null;
             const sorted = visIndices.slice().sort((a,b) => a-b);
@@ -480,7 +718,6 @@
             return null;
         }
 
-        // ===== 重新配色函数 =====
         function recolorFields() {
             if (fields.length === 0) {
                 updateStatus('没有字段需要配色');
@@ -604,9 +841,11 @@
 
             refreshAllFields();
             updateStatus(`重新配色完成 (${fields.length} 个字段，${uniqueNames.length} 个唯一名称，${reservedFields.length} 个保留字段为灰色)`);
+            if (previewModal.classList.contains('active')) {
+                refreshPreview();
+            }
         }
 
-        // ===== 端序按钮 =====
         function updateEndianButton() {
             endianToggle.textContent = endianness === 'little' ? '小端' : '大端';
             endianToggle.classList.toggle('active', endianness === 'big');
@@ -616,6 +855,46 @@
             updateEndianButton();
             updateStatus('端序已切换，请点击“应用”生效');
         });
+
+        function generateWatermarkHTML() {
+            const wmText = 'MangoPapa';
+            const count = 50;
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `<span>${wmText}</span>`;
+            }
+            return html;
+        }
+
+        function updateGridWatermark() {
+            if (showWatermark) {
+                gridWatermark.style.display = 'flex';
+                if (gridWatermark.children.length === 0) {
+                    gridWatermark.innerHTML = generateWatermarkHTML();
+                }
+            } else {
+                gridWatermark.style.display = 'none';
+            }
+            watermarkNotice.style.display = showWatermark ? 'inline-block' : 'none';
+            previewWatermarkNotice.style.display = showWatermark ? 'block' : 'none';
+        }
+
+        function refreshPreview() {
+            if (previewModal.classList.contains('active')) {
+                const svgStr = getSvgString(showWatermark);
+                previewContainer.innerHTML = '';
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = svgStr;
+                const svgElem = wrapper.firstElementChild;
+                previewContainer.appendChild(svgElem);
+                updatePreviewButtons();
+            }
+        }
+
+        function updatePreviewButtons() {
+            previewToggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+            previewToggleWhiteBgBtn.classList.toggle('active', whiteBg);
+        }
 
         // ===== 渲染网格 =====
         function renderGrid() {
@@ -628,7 +907,6 @@
             const gridDiv = document.createElement('div');
             gridDiv.className = 'bit-grid';
 
-            // ---- Byte 标签行 ----
             const headerRow = document.createElement('div');
             headerRow.className = 'dw-row';
             const emptyLabel = document.createElement('span');
@@ -662,7 +940,6 @@
             }
             gridDiv.appendChild(headerRow);
 
-            // ---- bit 序号行 ----
             const indexRow = document.createElement('div');
             indexRow.className = 'dw-row bit-index-row';
             const emptyLabel2 = document.createElement('span');
@@ -686,7 +963,6 @@
             }
             gridDiv.appendChild(indexRow);
 
-            // ---- DW 行 ----
             let visualIndex = 0;
             const byteOrderDw = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
             for (let dw = 0; dw < dwCount; dw++) {
@@ -772,10 +1048,11 @@
             container.appendChild(gridDiv);
             refreshAllFields();
             updateFieldList();
+            updateGridWatermark();
             updateStatus('网格已更新');
         }
 
-        // ===== 字段样式（UI：强制黑色文字和边框，白底仅控制背景，值底部对齐，字段名垂直居中） =====
+        // ===== 字段样式（UI） =====
         function refreshAllFields() {
             for (let idx in bitElements) {
                 const el = bitElements[idx];
@@ -805,7 +1082,6 @@
                 const borderColor = '#000000';
                 const textColor = '#000000';
 
-                // 确保 display 有效
                 const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
 
                 const segments = [];
@@ -877,7 +1153,6 @@
                         const idxSpan = el.querySelector('.bit-index');
                         if (idxSpan) idxSpan.style.display = 'none';
 
-                        // ---- 刻度线（黑色，底部） ----
                         const isLastBit = (visIdx === maxVis);
                         if (!isLastBit) {
                             let tick = el.querySelector('.tick-mark');
@@ -891,13 +1166,11 @@
                             if (tick) tick.remove();
                         }
 
-                        // ---- 清除旧文本 ----
                         const oldText = el.querySelector('.field-text');
                         if (oldText) oldText.remove();
                         const oldValue = el.querySelector('.field-value');
                         if (oldValue) oldValue.remove();
 
-                        // ---- 值字符 ----
                         let valueChar = '';
                         if (hasValue) {
                             const pos = offsetInField + index;
@@ -909,16 +1182,13 @@
                         const isMid = (Math.abs(visIdx - midVis) < 0.5);
 
                         if (isMid) {
-                            // 字段名（始终垂直居中）
                             if (displayText) {
                                 const textSpan = document.createElement('span');
                                 textSpan.className = 'field-text';
                                 textSpan.textContent = displayText;
                                 textSpan.style.color = textColor;
-                                // 不设 margin-top，保持居中
                                 el.appendChild(textSpan);
                             }
-                            // 值（贴近底部）
                             if (hasValue && valueChar) {
                                 const valSpan = document.createElement('span');
                                 valSpan.className = 'field-value';
@@ -929,7 +1199,6 @@
                                 el.appendChild(valSpan);
                             }
                         } else {
-                            // 非中间格子：只显示值字符（如果有值）
                             if (hasValue && valueChar) {
                                 const valSpan = document.createElement('span');
                                 valSpan.className = 'field-value';
@@ -947,7 +1216,6 @@
             updateFieldList();
         }
 
-        // ===== 字段列表管理 =====
         function updateFieldList() {
             fieldListItems.innerHTML = '';
             if (fields.length === 0) {
@@ -978,7 +1246,6 @@
             }
         }
 
-        // ===== 字段操作 =====
         function addFieldFromVisIndices(name, display, value, visIndices) {
             if (!name) return false;
             if (visIndices.length === 0) return false;
@@ -1058,7 +1325,6 @@
             updateStatus(`已删除 ${toRemove.length} 个字段`);
         }
 
-        // ===== 导入 =====
         function importFieldLibraryFromFile(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1155,12 +1421,12 @@
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
         }
 
-        // ===== SVG 导出（强制黑色文字和边框，值字号 12pt，贴近底部，字段名垂直居中） =====
-        function getSvgString() {
+        // ===== SVG 导出（修复Byte标签顶部被裁切，整体下移4px） =====
+        function getSvgString(includeWatermark) {
             const cellWidth = 34;
             const cellHeight = 34;
             const leftMargin = 60;
-            const topOffset = 20;
+            const topOffset = 24; // 从20改为24，为Byte标签留出顶部空间
             const rowHeight = cellHeight;
             const totalWidth = leftMargin + 32 * cellWidth + 20;
             const totalHeight = topOffset + dwCount * rowHeight + 10;
@@ -1169,19 +1435,19 @@
 
             const byteOrder = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
 
-            // Byte 标签
+            // Byte 标签（整体下移4px，防止顶部被裁切）
             let xOff = leftMargin;
             for (let bIdx of byteOrder) {
                 let byteNum = bIdx;
                 const xCenter = xOff + (8 * cellWidth) / 2;
-                svg += `  <line x1="${xOff}" y1="0" x2="${xOff}" y2="10" stroke="#b0bec5" stroke-width="1"/>\n`;
-                svg += `  <line x1="${xOff + 8*cellWidth}" y1="0" x2="${xOff + 8*cellWidth}" y2="10" stroke="#b0bec5" stroke-width="1"/>\n`;
-                svg += `  <text x="${xCenter}" y="8" text-anchor="middle" font-size="12" font-weight="600" fill="#546e7a">Byte${byteNum}</text>\n`;
+                svg += `  <line x1="${xOff}" y1="4" x2="${xOff}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
+                svg += `  <line x1="${xOff + 8*cellWidth}" y1="4" x2="${xOff + 8*cellWidth}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
+                svg += `  <text x="${xCenter}" y="12" text-anchor="middle" font-size="12" font-weight="600" fill="#546e7a">Byte${byteNum}</text>\n`;
                 xOff += 8 * cellWidth;
             }
 
-            // bit 序号行
-            const yIndex = 10;
+            // bit 序号行（相应下移）
+            const yIndex = 14;
             xOff = leftMargin;
             for (let bIdx of byteOrder) {
                 for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
@@ -1193,8 +1459,8 @@
                 xOff += 8 * cellWidth;
             }
 
-            // 背景格子
-            const dwStartY = 20;
+            // 背景格子（DW行从 topOffset=24 开始）
+            const dwStartY = topOffset;
             for (let dw = 0; dw < dwCount; dw++) {
                 const yBase = dwStartY + dw * rowHeight;
                 svg += `  <text x="10" y="${yBase + cellHeight/2 + 5}" font-size="12" fill="#546e7a">DW${dw}</text>\n`;
@@ -1207,7 +1473,6 @@
             const textColor = '#000000';
             const borderColor = '#000000';
 
-            // 字段矩形
             for (let f of fields) {
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
@@ -1255,7 +1520,6 @@
                 }
             }
 
-            // 刻度线
             for (let f of fields) {
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
@@ -1272,14 +1536,12 @@
                 }
             }
 
-            // 文字
             for (let f of fields) {
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
                 const valueStr = f.value || '';
                 const totalBits = visIndices.length;
                 const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
-
                 const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
 
                 const minVis = visIndices[0];
@@ -1290,7 +1552,6 @@
                 const cx = leftMargin + midCol * cellWidth + cellWidth / 2;
                 const cy = dwStartY + midRow * rowHeight + cellHeight / 2 + 3;
 
-                // 字段名字体大小固定 14px，垂直居中（不偏移）
                 const fontSize = 14;
                 if (displayText) {
                     svg += `  <text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
@@ -1303,9 +1564,30 @@
                         const row = Math.floor(v / 32);
                         const x = leftMargin + col * cellWidth + cellWidth / 2;
                         const y = dwStartY + row * rowHeight + cellHeight / 2 + 3;
-                        const charY = y + 12; // 贴近底部
+                        const charY = y + 12;
                         const char = valueStr[idx] || '';
                         svg += `  <text x="${x}" y="${charY}" text-anchor="middle" font-size="12" font-weight="normal" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${char}</text>\n`;
+                    }
+                }
+            }
+
+            if (includeWatermark) {
+                const wmText = 'MangoPapa';
+                const wmFontSize = 50;
+                const wmColor = '#888888';
+                const wmOpacity = 0.25;
+                const wmRotate = -30;
+                const spacingX = 140;
+                const spacingY = 110;
+                const startX = -50;
+                const startY = -50;
+                const cols = Math.ceil((totalWidth + 100) / spacingX);
+                const rows = Math.ceil((totalHeight + 100) / spacingY);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const x = startX + c * spacingX;
+                        const y = startY + r * spacingY;
+                        svg += `  <text x="${x}" y="${y}" transform="rotate(${wmRotate}, ${x}, ${y})" font-size="${wmFontSize}" font-weight="bold" fill="${wmColor}" opacity="${wmOpacity}" font-family="Arial, sans-serif" letter-spacing="6">${wmText}</text>\n`;
                     }
                 }
             }
@@ -1319,7 +1601,7 @@
             let fileName = prompt('请输入SVG文件名（不含扩展名）:', 'tlp');
             if (fileName === null) fileName = 'tlp';
             if (fileName.trim() === '') fileName = 'tlp';
-            const svgStr = getSvgString();
+            const svgStr = getSvgString(showWatermark);
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1332,9 +1614,68 @@
             updateStatus('SVG 导出成功');
         }
 
+        // ===== 导出 JPG =====
+        function exportJpgFile() {
+            let fileName = prompt('请输入JPG文件名（不含扩展名）:', 'tlp');
+            if (fileName === null) fileName = 'tlp';
+            if (fileName.trim() === '') fileName = 'tlp';
+
+            const svgStr = getSvgString(showWatermark);
+            const viewBoxMatch = svgStr.match(/viewBox="0 0 (\d+) (\d+)"/);
+            if (!viewBoxMatch) {
+                updateStatus('无法解析SVG尺寸');
+                return;
+            }
+            const width = parseInt(viewBoxMatch[1]);
+            const height = parseInt(viewBoxMatch[2]);
+
+            const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+
+            const img = new Image();
+            img.onload = function() {
+                const scale = 2;
+                const canvas = document.createElement('canvas');
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        updateStatus('JPG导出失败');
+                        return;
+                    }
+                    const jpgUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = jpgUrl;
+                    a.download = fileName + '.jpg';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(jpgUrl);
+                    updateStatus('JPG 导出成功');
+                }, 'image/jpeg', 0.92);
+                URL.revokeObjectURL(url);
+            };
+            img.onerror = function() {
+                updateStatus('加载SVG失败');
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+        }
+
+        // ===== 预览 =====
         function previewSvg() {
-            const svgStr = getSvgString();
-            previewContainer.innerHTML = svgStr;
+            const svgStr = getSvgString(showWatermark);
+            previewContainer.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = svgStr;
+            const svgElem = wrapper.firstElementChild;
+            previewContainer.appendChild(svgElem);
+            updatePreviewButtons();
             previewModal.classList.add('active');
         }
 
@@ -1374,7 +1715,7 @@
             updateStatus('JSON 导出成功');
         }
 
-        // ===== 编辑模态框（预填充） =====
+        // ===== 编辑模态框 =====
         function openEditModal() {
             const visIndices = getSelectedVisIndices();
             if (visIndices.length === 0) {
@@ -1447,7 +1788,8 @@
         modalOverlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
         previewCloseBtn.addEventListener('click', closePreview);
-        previewExportBtn.addEventListener('click', function() { exportSvgFile(); closePreview(); });
+        previewExportSvgBtn.addEventListener('click', function() { exportSvgFile(); });
+        previewExportJpgBtn.addEventListener('click', function() { exportJpgFile(); });
         previewModal.addEventListener('click', function(e) { if (e.target === this) closePreview(); });
 
         document.addEventListener('keydown', function(e) {
@@ -1460,7 +1802,29 @@
             if (previewModal.classList.contains('active') && e.key === 'Escape') closePreview();
         });
 
-        // ===== 点击空白取消选中 =====
+        // ===== 键盘监听：连续按4下数字键1切换水印 =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '1') {
+                const now = Date.now();
+                if (now - lastKeyTime > 500) {
+                    keyPressCount = 0;
+                }
+                keyPressCount++;
+                lastKeyTime = now;
+                if (keyPressCount >= 4) {
+                    showWatermark = !showWatermark;
+                    keyPressCount = 0;
+                    updateStatus(showWatermark ? '水印已显示' : '水印已隐藏');
+                    updateGridWatermark();
+                    if (previewModal.classList.contains('active')) {
+                        refreshPreview();
+                    }
+                }
+            } else {
+                keyPressCount = 0;
+            }
+        });
+
         container.addEventListener('mousedown', function(e) {
             if (e.target === this || e.target === container) {
                 clearSelection();
@@ -1468,17 +1832,25 @@
             }
         });
 
-        // ===== 白底切换按钮 =====
         function toggleWhiteBg() {
             whiteBg = !whiteBg;
             toggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
             toggleWhiteBgBtn.classList.toggle('active', whiteBg);
             refreshAllFields();
             updateStatus(whiteBg ? '已切换到白底+黑边框模式' : '已恢复正常配色');
+            if (previewModal.classList.contains('active')) {
+                refreshPreview();
+            }
         }
         toggleWhiteBgBtn.addEventListener('click', toggleWhiteBg);
 
-        // ===== 事件绑定 =====
+        previewToggleWhiteBgBtn.addEventListener('click', function() {
+            toggleWhiteBg();
+        });
+        previewRecolorBtn.addEventListener('click', function() {
+            recolorFields();
+        });
+
         applyBtn.addEventListener('click', function() {
             renderGrid();
             updateStatus('配置已应用');
@@ -1487,6 +1859,7 @@
         editSelectionBtn.addEventListener('click', openEditModal);
         previewSvgBtn.addEventListener('click', previewSvg);
         exportSvgBtn.addEventListener('click', exportSvgFile);
+        exportJpgBtn.addEventListener('click', exportJpgFile);
         exportJsonBtn.addEventListener('click', exportJson);
 
         importFieldBtn.addEventListener('click', function() { fieldFileInput.click(); });
@@ -1501,7 +1874,6 @@
 
         recolorBtn.addEventListener('click', recolorFields);
 
-        // 初始化
         updateEndianButton();
         renderGrid();
 
