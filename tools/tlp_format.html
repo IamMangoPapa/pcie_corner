@@ -124,8 +124,20 @@
         .bit-cell .bit-index { font-size: 14px; font-weight: 600; color: rgba(0,0,0,0.35); line-height: 1; pointer-events: none; }
         .bit-cell.field .bit-index { display: none; }
         .bit-cell .field-text {
-            text-align: center; line-height: 1.2; word-break: keep-all; white-space: nowrap;
-            padding: 1px; pointer-events: none; font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+            word-break: keep-all;
+            white-space: nowrap;
+            padding: 1px;
+            pointer-events: none;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .bit-cell .field-value {
+            display: block;
+            font-size: 10px;
+            font-weight: normal;
+            margin-top: 1px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
         .bit-index-row .bit-cell {
@@ -278,6 +290,7 @@
         </div>
         <label>字段名 (原始): <input type="text" id="modalFieldName" placeholder="如: Fmt"></label>
         <label>显示文字: <input type="text" id="modalFieldDisplay" placeholder="如: Fmt"></label>
+        <label>值 (可选): <input type="text" id="modalFieldValue" placeholder="每个bit一个字符"></label>
         <div class="modal-actions">
             <button class="btn btn-secondary" id="modalCancelBtn">取消</button>
             <button class="btn btn-success" id="modalConfirmBtn">确认</button>
@@ -311,7 +324,7 @@
         let visualToGlobal = {};
         let globalToVisual = {};
         let fieldLibrary = [];
-        let whiteBg = false; // 白底模式开关
+        let whiteBg = false;
 
         // ===== 高饱和度颜色调色板（32种） =====
         const COLORS = [
@@ -350,6 +363,7 @@
         const modalBitInfo = document.getElementById('modalBitInfo');
         const modalFieldName = document.getElementById('modalFieldName');
         const modalFieldDisplay = document.getElementById('modalFieldDisplay');
+        const modalFieldValue = document.getElementById('modalFieldValue');
         const modalConfirmBtn = document.getElementById('modalConfirmBtn');
         const modalCancelBtn = document.getElementById('modalCancelBtn');
 
@@ -370,13 +384,11 @@
             if (isReservedField(name)) {
                 return RESERVED_COLOR;
             }
-            // 查找已有同名字段的颜色
             for (let f of fields) {
                 if (f.name === name && f.color) {
                     return f.color;
                 }
             }
-            // 否则分配新颜色
             const color = COLORS[colorIndex % COLORS.length];
             colorIndex++;
             return color;
@@ -416,7 +428,6 @@
                 return;
             }
 
-            // 1. 分离保留字段和非保留字段
             const reservedFields = [];
             const normalFields = [];
             for (let i = 0; i < fields.length; i++) {
@@ -427,27 +438,19 @@
                 }
             }
 
-            // 如果没有非保留字段，直接返回
             if (normalFields.length === 0) {
                 updateStatus('所有字段均为保留字段，无需配色');
                 return;
             }
 
-            // 2. 获取所有非保留字段的唯一名称
             const nameSet = new Set();
             for (let idx of normalFields) {
                 nameSet.add(fields[idx].name);
             }
             const uniqueNames = Array.from(nameSet);
-            // 建立名称到索引的映射
-            const nameToIdx = {};
-            uniqueNames.forEach((name, idx) => { nameToIdx[name] = idx; });
-
-            // 3. 构建名称之间的邻接关系（基于视觉相邻）
             const n = uniqueNames.length;
             const adj = Array.from({ length: n }, () => []);
 
-            // 为每个名称收集所有字段的视觉索引集合
             const nameVisSets = uniqueNames.map(name => {
                 const set = new Set();
                 for (let idx of normalFields) {
@@ -460,7 +463,6 @@
                 return set;
             });
 
-            // 判断两个名称是否相邻：如果它们对应的任何两个字段的视觉索引相邻（差 ≤ 1）
             for (let i = 0; i < n; i++) {
                 for (let j = i + 1; j < n; j++) {
                     let adjacent = false;
@@ -479,9 +481,7 @@
                 }
             }
 
-            // 4. 贪心着色（为每个名称分配颜色）
             const assignedColors = new Array(n).fill(null);
-            // 打乱颜色顺序增加随机性
             const shuffledColors = [...COLORS];
             for (let i = shuffledColors.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -515,7 +515,6 @@
                 assignedColors[i] = chosen;
             }
 
-            // 确保不同名称颜色唯一（如果颜色数量足够）
             const colorSet = new Set();
             for (let i = 0; i < n; i++) {
                 if (colorSet.has(assignedColors[i])) {
@@ -530,11 +529,9 @@
                 colorSet.add(assignedColors[i]);
             }
 
-            // 5. 将颜色应用到所有字段
             for (let i = 0; i < n; i++) {
                 const name = uniqueNames[i];
                 const color = assignedColors[i];
-                // 更新所有该名称的字段
                 for (let idx of normalFields) {
                     if (fields[idx].name === name) {
                         fields[idx].color = color;
@@ -542,12 +539,10 @@
                 }
             }
 
-            // 保留字段保持灰色
             for (let idx of reservedFields) {
                 fields[idx].color = RESERVED_COLOR;
             }
 
-            // 刷新显示
             refreshAllFields();
             updateStatus(`重新配色完成 (${fields.length} 个字段，${uniqueNames.length} 个唯一名称，${reservedFields.length} 个保留字段为灰色)`);
         }
@@ -721,7 +716,7 @@
             updateStatus('网格已更新');
         }
 
-        // ===== 字段样式（根据 whiteBg 决定底色和边框） =====
+        // ===== 字段样式（UI，根据 whiteBg 决定底色和边框，支持单行/双行显示） =====
         function refreshAllFields() {
             for (let idx in bitElements) {
                 const el = bitElements[idx];
@@ -735,6 +730,8 @@
                 if (idxSpan) idxSpan.style.display = 'block';
                 const textSpan = el.querySelector('.field-text');
                 if (textSpan) textSpan.remove();
+                const valueSpan = el.querySelector('.field-value');
+                if (valueSpan) valueSpan.remove();
             }
 
             if (fields.length === 0) return;
@@ -743,7 +740,6 @@
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
                 const color = f.color;
-                // 白底模式：底色白色，边框黑色，文字黑色
                 const fillColor = whiteBg ? '#FFFFFF' : color;
                 const borderColor = whiteBg ? '#000000' : color;
                 const textColor = whiteBg ? '#000000' : '#FFFFFF';
@@ -762,6 +758,13 @@
                 }
                 segments.push({ start, end });
 
+                const valueStr = f.value || '';
+                const totalBits = visIndices.length;
+                const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
+
+                // 计算中间视觉索引（用于放置字段名）
+                const midVis = (visIndices[0] + visIndices[visIndices.length-1]) / 2;
+
                 for (let seg of segments) {
                     const { start: segStart, end: segEnd } = seg;
                     const bitList = [];
@@ -775,6 +778,9 @@
 
                     const minVis = segStart;
                     const maxVis = segEnd;
+                    const segmentLength = segEnd - segStart + 1;
+                    const offsetInField = segStart - visIndices[0];
+
                     bitList.forEach((el, index) => {
                         const globalIdx = parseInt(el.dataset.bitIndex);
                         const visIdx = parseInt(el.dataset.visualIndex);
@@ -808,33 +814,57 @@
                         }
                         const idxSpan = el.querySelector('.bit-index');
                         if (idxSpan) idxSpan.style.display = 'none';
-                    });
 
-                    // 在段中间位置显示文字
-                    const midVis = Math.ceil((segStart + segEnd) / 2);
-                    let midGlobal = visualToGlobal[midVis];
-                    if (midGlobal === undefined) {
-                        for (let v = midVis; v <= segEnd; v++) {
-                            if (visualToGlobal[v] !== undefined) { midGlobal = visualToGlobal[v]; break; }
-                        }
-                        if (midGlobal === undefined) {
-                            for (let v = midVis; v >= segStart; v--) {
-                                if (visualToGlobal[v] !== undefined) { midGlobal = visualToGlobal[v]; break; }
+                        // ---- 清除旧文本 ----
+                        const oldText = el.querySelector('.field-text');
+                        if (oldText) oldText.remove();
+                        const oldValue = el.querySelector('.field-value');
+                        if (oldValue) oldValue.remove();
+
+                        // ---- 值字符 ----
+                        let valueChar = '';
+                        if (hasValue) {
+                            const pos = offsetInField + index;
+                            if (pos < valueStr.length) {
+                                valueChar = valueStr[pos];
                             }
                         }
-                    }
-                    if (midGlobal !== undefined && bitElements[midGlobal]) {
-                        const elMid = bitElements[midGlobal];
-                        const text = document.createElement('span');
-                        text.className = 'field-text';
-                        text.textContent = f.display || f.name;
-                        text.style.color = textColor;
-                        const len = text.textContent.length;
-                        if (len > 6) text.style.fontSize = '9px';
-                        else if (len > 4) text.style.fontSize = '10px';
-                        else text.style.fontSize = '12px';
-                        elMid.appendChild(text);
-                    }
+
+                        // 判断是否该格子的视觉索引位于字段范围的中间位置（用于显示字段名）
+                        // 我们采用 midVis 作为中心，如果 visIdx 是最接近 midVis 的整数，则视为中间格子
+                        const isMid = (Math.abs(visIdx - midVis) < 0.5);
+
+                        if (isMid) {
+                            // 中间格子：显示字段名（始终）和值（如果有）
+                            if (f.display || f.name) {
+                                const textSpan = document.createElement('span');
+                                textSpan.className = 'field-text';
+                                textSpan.textContent = f.display || f.name;
+                                textSpan.style.color = textColor;
+                                // 如果有值，文字偏上；否则完全居中
+                                if (hasValue) {
+                                    textSpan.style.marginTop = '-4px';
+                                }
+                                el.appendChild(textSpan);
+                            }
+                            if (hasValue && valueChar) {
+                                const valSpan = document.createElement('span');
+                                valSpan.className = 'field-value';
+                                valSpan.textContent = valueChar;
+                                valSpan.style.color = textColor;
+                                el.appendChild(valSpan);
+                            }
+                        } else {
+                            // 非中间格子：只显示值字符（如果有值）
+                            if (hasValue && valueChar) {
+                                const valSpan = document.createElement('span');
+                                valSpan.className = 'field-value';
+                                valSpan.textContent = valueChar;
+                                valSpan.style.color = textColor;
+                                el.appendChild(valSpan);
+                            }
+                        }
+                    });
                 }
             }
 
@@ -874,10 +904,16 @@
         }
 
         // ===== 字段操作 =====
-        function addFieldFromVisIndices(name, display, visIndices) {
+        function addFieldFromVisIndices(name, display, value, visIndices) {
             if (!name) return false;
             if (visIndices.length === 0) return false;
+            // 校验值长度
+            if (value && value.length > 0 && value.length !== visIndices.length) {
+                updateStatus(`错误：值长度 (${value.length}) 与 bit 数量 (${visIndices.length}) 不一致`);
+                return false;
+            }
             const unique = Array.from(new Set(visIndices)).sort((a,b) => a-b);
+            // 删除重叠字段
             let toRemove = [];
             for (let f of fields) {
                 for (let v of unique) {
@@ -891,7 +927,7 @@
                 fields = fields.filter(f => f.name !== name);
             }
             const color = getColorForField(name);
-            fields.push({ name, display: display || name, visIndices: unique, color });
+            fields.push({ name, display: display || name, value: value || '', visIndices: unique, color });
             refreshAllFields();
             clearSelection();
             updateStatus(`字段 "${name}" 已添加`);
@@ -1002,6 +1038,7 @@
                             fields.push({
                                 name: imp.name,
                                 display: imp.display || imp.name,
+                                value: imp.value || '',
                                 visIndices: visIndices.sort((a,b) => a-b),
                                 color: imp.color || color
                             });
@@ -1033,7 +1070,7 @@
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
         }
 
-        // ===== SVG 导出（根据 whiteBg 决定填充色和边框色） =====
+        // ===== SVG 导出（强制文字黑色，偶数长度居中，值水平对齐） =====
         function getSvgString() {
             const cellWidth = 34;
             const cellHeight = 34;
@@ -1082,14 +1119,16 @@
                 }
             }
 
-            // 字段色块
+            // 强制文字颜色为黑色
+            const textColor = '#000000';
+
+            // 绘制所有字段的矩形
             for (let f of fields) {
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
                 const color = f.color;
                 const fillColor = whiteBg ? '#FFFFFF' : color;
                 const borderColor = '#000000';
-                const textColor = whiteBg ? '#000000' : '#FFFFFF';
 
                 const segments = [];
                 let start = visIndices[0], end = visIndices[0];
@@ -1132,34 +1171,46 @@
                 }
             }
 
-            // 字段文字（绝对居中）
+            // 绘制文字（字段名和值）
             for (let f of fields) {
                 const visIndices = f.visIndices.slice().sort((a,b) => a-b);
                 if (visIndices.length === 0) continue;
-                const segments = [];
-                let start = visIndices[0], end = visIndices[0];
-                for (let i = 1; i < visIndices.length; i++) {
-                    if (visIndices[i] === end + 1) {
-                        end = visIndices[i];
-                    } else {
-                        segments.push({ start, end });
-                        start = visIndices[i];
-                        end = visIndices[i];
-                    }
-                }
-                segments.push({ start, end });
+                const valueStr = f.value || '';
+                const totalBits = visIndices.length;
+                const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
 
-                const textColor = '#000000';
-                for (let seg of segments) {
-                    const { start: segStart, end: segEnd } = seg;
-                    const avgVis = (segStart + segEnd) / 2;
-                    const col = avgVis - Math.floor(avgVis / 32) * 32;
-                    const row = Math.floor(avgVis / 32);
-                    const x = leftMargin + col * cellWidth + cellWidth / 2;
-                    const y = dwStartY + row * rowHeight + cellHeight/2 + 3;
-                    const text = f.display || f.name;
-                    const fontSize = text.length > 6 ? 10 : 14;
-                    svg += `  <text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${text}</text>\n`;
+                // 字段名的绘制：放在范围的中间位置（视觉中心）
+                const minVis = visIndices[0];
+                const maxVis = visIndices[visIndices.length-1];
+                const midVis = (minVis + maxVis) / 2; // 精确中心
+                const midCol = midVis % 32;
+                const midRow = Math.floor(midVis / 32);
+                const cx = leftMargin + midCol * cellWidth + cellWidth / 2;
+                const cy = dwStartY + midRow * rowHeight + cellHeight / 2 + 3;
+
+                // 显示字段名
+                const displayText = f.display || f.name;
+                const fontSize = displayText.length > 6 ? 10 : 14;
+                // 如果无值，字段名完全居中；有值则偏上
+                const nameYOffset = hasValue ? -6 : 0;
+                svg += `  <text x="${cx}" y="${cy + nameYOffset}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
+
+                // 如果有值，为每个格子绘制值字符（水平对齐）
+                if (hasValue) {
+                    // 值字符的 y 坐标：统一在字段名下方
+                    const valueY = cy + 10; // 比字段名低一些
+                    for (let idx = 0; idx < visIndices.length; idx++) {
+                        const v = visIndices[idx];
+                        const col = v % 32;
+                        const row = Math.floor(v / 32);
+                        const x = leftMargin + col * cellWidth + cellWidth / 2;
+                        const y = dwStartY + row * rowHeight + cellHeight / 2 + 3; // 格子垂直中心
+                        // 为了所有值水平对齐，我们使用同一个 y 坐标（valueY），但为了确保值在各自格子内垂直居中，我们仍使用格子的 y 加偏移，但偏移固定，使它们在同一水平线。
+                        // 更稳健：使用格子的 y + 固定偏移
+                        const charY = y + 8; // 统一偏移
+                        const char = valueStr[idx] || '';
+                        svg += `  <text x="${x}" y="${charY}" text-anchor="middle" font-size="10" font-weight="normal" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${char}</text>\n`;
+                    }
                 }
             }
 
@@ -1193,7 +1244,7 @@
 
         function closePreview() { previewModal.classList.remove('active'); }
 
-        // ===== 导出 JSON =====
+        // ===== 导出 JSON（包含 value） =====
         function exportJson() {
             let fileName = prompt('请输入JSON文件名（不含扩展名）:', 'tlp');
             if (fileName === null) fileName = 'tlp';
@@ -1208,6 +1259,7 @@
                 return {
                     name: f.name,
                     display: f.display,
+                    value: f.value || '',
                     positions: positions,
                     color: f.color
                 };
@@ -1242,6 +1294,7 @@
             modalBitInfo.textContent = `选中 ${visIndices.length} 个格子： ${startStr} → ${endStr}`;
             modalFieldName.value = '';
             modalFieldDisplay.value = '';
+            modalFieldValue.value = '';
             fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
             if (fieldLibrary.length > 0) fieldLibSelect.value = '';
             modalOverlay.classList.add('active');
@@ -1270,11 +1323,12 @@
             }
             const name = modalFieldName.value.trim();
             const display = modalFieldDisplay.value.trim() || name;
+            const value = modalFieldValue.value.trim();
             if (!name) {
                 updateStatus('请输入字段名');
                 return;
             }
-            if (addFieldFromVisIndices(name, display, visIndices)) {
+            if (addFieldFromVisIndices(name, display, value, visIndices)) {
                 closeModal();
             }
         });
@@ -1289,7 +1343,7 @@
         document.addEventListener('keydown', function(e) {
             if (modalOverlay.classList.contains('active')) {
                 if (e.key === 'Escape') closeModal();
-                else if (e.key === 'Enter' && (document.activeElement === modalFieldName || document.activeElement === modalFieldDisplay || document.activeElement === fieldLibSelect)) {
+                else if (e.key === 'Enter' && (document.activeElement === modalFieldName || document.activeElement === modalFieldDisplay || document.activeElement === modalFieldValue || document.activeElement === fieldLibSelect)) {
                     modalConfirmBtn.click();
                 }
             }
