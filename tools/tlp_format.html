@@ -6,504 +6,126 @@
     <title>PCIe TLP 帧格式编辑器</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background: #f0f2f5;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            max-width: 1400px;
-            width: 100%;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-            padding: 24px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            border-bottom: 2px solid #e8eaf6;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        h1 {
-            font-size: 28px;
-            color: #1a237e;
-            display: inline-block;
-        }
-        .version {
-            font-size: 16px;
-            color: #78909c;
-            font-weight: 500;
-            margin-left: auto;
-        }
-        .watermark-notice {
-            color: #d32f2f;
-            font-weight: bold;
-            font-size: 18px;
-            margin-left: 16px;
-            background: #ffebee;
-            padding: 2px 12px;
-            border-radius: 4px;
-            border: 1px solid #ef9a9a;
-            display: inline-block;
-        }
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 16px;
-            background: #f5f7fa;
-            padding: 8px 16px;
-            border-radius: 8px;
-        }
-        .toolbar-left { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-        .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
-        .toolbar label {
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .toolbar select, .toolbar input[type="number"] {
-            padding: 6px 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            background: white;
-            height: 36px;
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 6px 14px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 1.5;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            white-space: nowrap;
-            height: 36px;
-            min-width: 40px;
-            text-align: center;
-            background: #e0e0e0;
-            color: #333;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-        }
-        .btn:active {
-            transform: translateY(0px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-        .btn-primary {
-            background: #3f51b5;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #283593;
-        }
-        .btn-primary:active {
-            background: #1a237e;
-        }
-        .btn-secondary {
-            background: #78909c;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #546e7a;
-        }
-        .btn-secondary:active {
-            background: #455a64;
-        }
-        .btn-success {
-            background: #43a047;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #2e7d32;
-        }
-        .btn-success:active {
-            background: #1b5e20;
-        }
-        .btn-danger {
-            background: #e53935;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #b71c1c;
-        }
-        .btn-danger:active {
-            background: #880e0e;
-        }
-        .btn-warning {
-            background: #ffb74d;
-            color: #37474f;
-        }
-        .btn-warning:hover {
-            background: #ffa726;
-        }
-        .btn-warning:active {
-            background: #fb8c00;
-        }
-        .btn-endian {
-            background: #90a4ae;
-            color: white;
-            min-width: 60px;
-        }
-        .btn-endian:hover {
-            background: #78909c;
-        }
-        .btn-endian.active {
-            background: #3f51b5;
-        }
-        .btn-endian.active:hover {
-            background: #283593;
-        }
-        .btn-whitebg {
-            background: #e0e0e0;
-            color: #333;
-        }
-        .btn-whitebg:hover {
-            background: #bdbdbd;
-        }
-        .btn-whitebg.active {
-            background: #333;
-            color: white;
-        }
-        .btn-whitebg.active:hover {
-            background: #1a1a1a;
-        }
-        .btn-recolor {
-            background: #ffb74d;
-            color: #37474f;
-        }
-        .btn-recolor:hover {
-            background: #ffa726;
-        }
-        .btn-undo {
-            font-size: 18px;
-            padding: 6px 12px;
-            min-width: 36px;
-        }
-        .btn-redo {
-            font-size: 18px;
-            padding: 6px 12px;
-            min-width: 36px;
-        }
+        body { background: #f0f2f5; font-family: 'Segoe UI','Microsoft YaHei',sans-serif; padding:20px; display:flex; justify-content:center; }
+        .container { max-width:1400px; width:100%; background:white; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.1); padding:24px; }
+        .header { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #e8eaf6; padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+        h1 { font-size:28px; color:#1a237e; display:inline-block; }
+        .version { font-size:16px; color:#78909c; font-weight:500; margin-left:auto; }
+        .watermark-notice { color:#d32f2f; font-weight:bold; font-size:18px; margin-left:16px; background:#ffebee; padding:2px 12px; border-radius:4px; border:1px solid #ef9a9a; display:inline-block; }
+        .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px; background:#f5f7fa; padding:8px 16px; border-radius:8px; }
+        .toolbar-left { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+        .toolbar-right { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-left:auto; }
+        .toolbar label { font-weight:600; font-size:14px; display:flex; align-items:center; gap:6px; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 14px; border:none; border-radius:6px; font-size:14px; font-weight:500; line-height:1.5; cursor:pointer; transition:all .2s; box-shadow:0 1px 3px rgba(0,0,0,0.08); white-space:nowrap; height:36px; min-width:40px; text-align:center; background:#e0e0e0; color:#333; }
+        .btn:hover { transform:translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,0.12); }
+        .btn:active { transform:translateY(0); box-shadow:0 1px 2px rgba(0,0,0,0.1); }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+        .btn-primary { background:#3f51b5; color:white; }
+        .btn-primary:hover { background:#283593; }
+        .btn-secondary { background:#78909c; color:white; }
+        .btn-secondary:hover { background:#546e7a; }
+        .btn-success { background:#43a047; color:white; }
+        .btn-success:hover { background:#2e7d32; }
+        .btn-danger { background:#e53935; color:white; }
+        .btn-danger:hover { background:#b71c1c; }
+        .btn-warning { background:#ffb74d; color:#37474f; }
+        .btn-warning:hover { background:#ffa726; }
+        .btn-endian { background:#90a4ae; color:white; min-width:60px; }
+        .btn-endian:hover { background:#78909c; }
+        .btn-endian.active { background:#3f51b5; }
+        .btn-endian.active:hover { background:#283593; }
+        .btn-whitebg { background:#e0e0e0; color:#333; }
+        .btn-whitebg:hover { background:#bdbdbd; }
+        .btn-whitebg.active { background:#333; color:white; }
+        .btn-whitebg.active:hover { background:#1a1a1a; }
+        .btn-recolor { background:#ffb74d; color:#37474f; }
+        .btn-recolor:hover { background:#ffa726; }
+        .btn-undo { font-size:18px; padding:6px 12px; min-width:36px; }
+        .btn-redo { font-size:18px; padding:6px 12px; min-width:36px; }
 
-        .grid-area {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px 0;
-            display: flex;
-            justify-content: center;
-            overflow-x: auto;
-            position: relative;
-            min-height: 100px;
-        }
-        .grid-watermark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 5;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: center;
-            justify-content: center;
-            opacity: 0.25;
-        }
-        .grid-watermark span {
-            display: inline-block;
-            font-size: 28px;
-            font-weight: bold;
-            color: #888;
-            transform: rotate(-30deg);
-            margin: 12px 20px;
-            white-space: nowrap;
-            font-family: 'Arial', sans-serif;
-            letter-spacing: 6px;
-        }
+        .dropdown { position:relative; display:inline-block; }
+        .dropdown .dropdown-menu { display:none; position:absolute; top:100%; left:0; z-index:9999; background:white; border:1px solid #ccc; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:180px; padding:4px 0; margin-top:4px; max-height:200px; overflow-y:auto; }
+        .dropdown.open .dropdown-menu { display:block; }
+        .dropdown .dropdown-item { display:block; padding:6px 16px; color:#333; text-decoration:none; cursor:pointer; font-size:14px; }
+        .dropdown .dropdown-item:hover { background:#f0f0f0; }
+        .dropdown .dropdown-item.divider { border-top:1px solid #e0e0e0; margin:4px 0; }
 
-        .bit-grid { display: flex; flex-direction: column; gap: 0; user-select: none; position: relative; z-index: 1; }
-        .dw-row { display: flex; gap: 0; align-items: center; padding: 0; margin: 0; }
-        .dw-label {
-            font-weight: 600; font-size: 14px; color: #546e7a; width: 48px;
-            text-align: right; padding-right: 10px; flex-shrink: 0;
-        }
-        .byte-group { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0; margin: 0; flex: 0 0 auto; }
-        .byte-label {
-            font-size: 12px; font-weight: 600; color: #37474f; text-align: center;
-            padding: 0 4px;
-            width: 100%;
-            border-left: 1px solid #b0bec5;
-            border-right: 1px solid #b0bec5;
-            border-top: none;
-            border-bottom: none;
-            background: transparent;
-            margin: 0;
-            line-height: 1;
-            height: 10px;
-        }
-        .bit-container { display: flex; gap: 0; margin: 0; padding: 0; }
-        .bit-cell {
-            width: 34px; height: 34px;
-            background: #eceff1;
-            border: 1px solid #b0bec5;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.05s;
-            position: relative;
-            color: #263238;
-            box-sizing: border-box;
-            margin: 0;
-            flex-shrink: 0;
-        }
-        .bit-cell:hover { border-color: #3f51b5; z-index: 1; }
-        .bit-cell.selected { border: 3px solid #ff5722 !important; background: #ffe0b2 !important; z-index: 2; }
-        .bit-cell.field { color: white; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-        .bit-cell .bit-index { font-size: 14px; font-weight: 600; color: rgba(0,0,0,0.35); line-height: 1; pointer-events: none; }
-        .bit-cell.field .bit-index { display: none; }
-        .bit-cell .field-text {
-            text-align: center;
-            line-height: 1.2;
-            word-break: keep-all;
-            white-space: nowrap;
-            padding: 1px;
-            pointer-events: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .bit-cell .field-value {
-            display: block;
-            font-size: 12px;
-            font-weight: normal;
-        }
-        .tick-mark {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 0.5px;
-            height: 25%;
-            background: #000000;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .bit-cell .field-text,
-        .bit-cell .field-value {
-            position: relative;
-            z-index: 1;
-        }
-        .bit-index-row .bit-cell {
-            background: transparent;
-            border: none;
-            height: 10px;
-            font-size: 10px;
-            color: #90a4ae;
-            cursor: default;
-            font-weight: 400;
-            border-left: 1px solid #b0bec5;
-            border-right: 1px solid #b0bec5;
-            border-top: none;
-            border-bottom: none;
-            width: 34px;
-            flex-shrink: 0;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .bit-index-row .bit-cell:hover { border-color: #b0bec5; z-index: auto; }
+        .grid-area { background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:12px 0; display:flex; justify-content:center; overflow-x:auto; position:relative; min-height:100px; }
+        .grid-watermark { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden; z-index:5; display:flex; flex-wrap:wrap; align-content:center; justify-content:center; opacity:0.25; }
+        .grid-watermark span { display:inline-block; font-size:28px; font-weight:bold; color:#888; transform:rotate(-30deg); margin:12px 20px; white-space:nowrap; font-family:Arial,sans-serif; letter-spacing:6px; }
 
-        .field-list-container {
-            margin-top: 12px; padding: 0 0;
-            display: none;
-            width: 100%;
-        }
-        .field-list-container.visible { display: block; }
-        .field-list-inner {
-            background: #fafafa;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 8px 12px;
-            min-height: 40px;
-            max-height: 120px;
-            overflow-y: auto;
-            margin: 0 0;
-        }
-        .field-list-title { font-size: 14px; font-weight: 600; color: #37474f; margin-bottom: 4px; text-align: left; }
-        .field-list-items { display: flex; flex-wrap: wrap; gap: 6px; }
-        .field-tag {
-            display: inline-flex; align-items: center; background: #e8eaf6; border-radius: 12px;
-            padding: 2px 8px 2px 10px; font-size: 13px; color: #1a237e; gap: 4px;
-        }
-        .field-tag .color-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-        .field-tag .del-btn {
-            background: none; border: none; color: #e53935; cursor: pointer;
-            font-size: 16px; line-height: 1; padding: 0 2px;
-        }
-        .field-tag .del-btn:hover { color: #b71c1c; }
+        .bit-grid { display:flex; flex-direction:column; gap:0; user-select:none; position:relative; z-index:1; }
+        .dw-row { display:flex; gap:0; align-items:center; padding:0; margin:0; }
+        .dw-label { font-weight:600; font-size:14px; color:#546e7a; width:48px; text-align:right; padding-right:10px; flex-shrink:0; }
+        .byte-group { display:flex; flex-direction:column; align-items:center; gap:0; padding:0; margin:0; flex:0 0 auto; }
+        .byte-label { font-size:12px; font-weight:600; color:#37474f; text-align:center; padding:0 4px; width:100%; border-left:1px solid #b0bec5; border-right:1px solid #b0bec5; border-top:none; border-bottom:none; background:transparent; margin:0; line-height:1; height:10px; }
+        .bit-container { display:flex; gap:0; margin:0; padding:0; }
+        .bit-cell { background:#eceff1; border:1px solid #b0bec5; border-radius:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:700; cursor:pointer; transition:all .05s; position:relative; color:#263238; box-sizing:border-box; margin:0; flex-shrink:0; }
+        .bit-cell:hover { border-color:#3f51b5; z-index:1; }
+        .bit-cell.selected { border:3px solid #ff5722 !important; background:#ffe0b2 !important; z-index:2; }
+        .bit-cell.field { color:white; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,0.3); }
+        .bit-cell .bit-index { font-weight:600; color:rgba(0,0,0,0.35); line-height:1; pointer-events:none; }
+        .bit-cell.field .bit-index { display:none; }
+        .bit-cell .field-value { display:block; font-weight:normal; font-size:12px; line-height:1; margin-top:auto; }
+        .tick-mark { position:absolute; right:0; bottom:0; width:0.5px; height:25%; background:#000; pointer-events:none; z-index:0; }
+        .bit-cell .field-text, .bit-cell .field-value { position:relative; z-index:1; }
+        .bit-index-row .bit-cell { background:transparent; border:none; height:10px; font-size:10px; color:#90a4ae; cursor:default; font-weight:400; border-left:1px solid #b0bec5; border-right:1px solid #b0bec5; border-top:none; border-bottom:none; flex-shrink:0; line-height:1; display:flex; align-items:center; justify-content:center; }
+        .bit-index-row .bit-cell:hover { border-color:#b0bec5; z-index:auto; }
 
-        .action-bar {
-            display: flex; justify-content: flex-end; margin-top: 12px;
-            gap: 8px; flex-wrap: wrap; padding: 0 0;
-            align-items: center;
-        }
+        .field-list-container { margin-top:12px; padding:0; display:none; width:100%; }
+        .field-list-container.visible { display:block; }
+        .field-list-inner { background:#fafafa; border:1px solid #e0e0e0; border-radius:6px; padding:8px 12px; min-height:40px; max-height:120px; overflow-y:auto; margin:0; }
+        .field-list-title { font-size:14px; font-weight:600; color:#37474f; margin-bottom:4px; text-align:left; }
+        .field-list-items { display:flex; flex-wrap:wrap; gap:6px; }
+        .field-tag { display:inline-flex; align-items:center; background:#e8eaf6; border-radius:12px; padding:2px 8px 2px 10px; font-size:13px; color:#1a237e; gap:4px; }
+        .field-tag .color-dot { width:10px; height:10px; border-radius:2px; display:inline-block; }
+        .field-tag .del-btn { background:none; border:none; color:#e53935; cursor:pointer; font-size:16px; line-height:1; padding:0 2px; }
+        .field-tag .del-btn:hover { color:#b71c1c; }
 
-        .status-bar-wrapper {
-            margin-top: 10px; padding: 0 0; box-sizing: border-box;
-        }
-        .status-bar {
-            font-size: 14px; color: #455a64; padding: 6px 12px; background: #e8eaf6;
-            border-radius: 4px; text-align: left; width: 100%; box-sizing: border-box;
-        }
-        .file-input-hidden { display: none !important; }
+        .action-bar { display:flex; justify-content:flex-end; margin-top:12px; gap:8px; flex-wrap:wrap; padding:0; align-items:center; }
+        .zoom-control { display:inline-flex; align-items:center; gap:4px; margin-left:8px; }
+        .zoom-control .btn { height:32px; min-width:32px; padding:0 8px; font-size:18px; font-weight:bold; }
+        .zoom-label { font-size:14px; font-weight:500; color:#37474f; min-width:45px; text-align:center; }
 
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-box {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            width: 95vw;
-            height: 95vh;
-            max-width: 95vw;
-            max-height: 95vh;
-            overflow: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        .preview-watermark-notice {
-            text-align: center;
-            margin-bottom: 4px;
-            color: #d32f2f;
-            font-weight: bold;
-            font-size: 16px;
-            background: #ffebee;
-            padding: 2px 12px;
-            border-radius: 4px;
-            border: 1px solid #ef9a9a;
-            flex-shrink: 0;
-        }
-        #previewContainer {
-            flex: 1;
-            position: relative;
-            text-align: center;
-            overflow: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 0;
-        }
-        #previewContainer svg {
-            max-width: 100%;
-            max-height: 100%;
-            height: auto;
-            width: auto;
-            display: block;
-        }
-        .preview-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 4px;
-            flex-wrap: wrap;
-        }
-        .modal-box.edit-modal {
-            width: auto;
-            height: auto;
-            max-width: 450px;
-            max-height: 90%;
-            padding: 24px 28px;
-        }
-        .modal-box.edit-modal .modal-actions {
-            justify-content: flex-end;
-        }
-        .modal-box label {
-            display: block;
-            font-size: 15px;
-            margin-top: 12px;
-        }
-        .modal-box input, .modal-box select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 15px;
-            margin-top: 4px;
-        }
-        .modal-box .info-bit {
-            font-size: 15px;
-            color: #37474f;
-            background: #f5f5f5;
-            padding: 6px 10px;
-            border-radius: 4px;
-            margin-top: 8px;
-        }
-        @media (max-width: 960px) {
-            .bit-cell { width: 28px; height: 28px; font-size: 12px; }
-            .bit-cell .bit-index { font-size: 12px; }
-            .bit-index-row .bit-cell { height: 8px; font-size: 8px; width: 28px; }
-            .byte-label { height: 8px; font-size: 10px; }
-            .toolbar-right { margin-left: 0; width: 100%; justify-content: flex-end; }
-            .field-list-container, .action-bar, .status-bar-wrapper { padding: 0 8px; }
-            .btn { padding: 4px 10px; font-size: 12px; height: 32px; }
-            .btn-undo, .btn-redo { font-size: 16px; padding: 4px 8px; min-width: 30px; }
-            .grid-watermark span { font-size: 18px; margin: 8px 12px; }
-            .modal-box { width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; border-radius: 0; padding: 12px; }
-            .watermark-notice { font-size: 14px; padding: 1px 8px; }
-            .header { flex-wrap: wrap; }
-            .preview-watermark-notice { font-size: 14px; }
+        .status-bar-wrapper { margin-top:10px; padding:0; box-sizing:border-box; }
+        .status-bar { font-size:14px; color:#455a64; padding:6px 12px; background:#e8eaf6; border-radius:4px; text-align:left; width:100%; box-sizing:border-box; }
+        .file-input-hidden { display:none !important; }
+
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal-box { background:white; border-radius:12px; padding:20px; width:95vw; max-width:95vw; max-height:95vh; overflow:visible; box-shadow:0 10px 40px rgba(0,0,0,0.3); position:relative; display:flex; flex-direction:column; }
+        .preview-watermark-notice { text-align:center; margin-bottom:4px; color:#d32f2f; font-weight:bold; font-size:16px; background:#ffebee; padding:2px 12px; border-radius:4px; border:1px solid #ef9a9a; flex-shrink:0; }
+        #previewContainer { flex:none; position:relative; text-align:center; overflow:auto; display:flex; align-items:center; justify-content:center; min-height:0; max-height:80vh; }
+        #previewContainer svg { max-width:100%; max-height:100%; height:auto; width:auto; display:block; }
+        .preview-actions { display:flex; gap:8px; justify-content:center; flex-shrink:0; margin-top:4px; flex-wrap:wrap; align-items:center;  overflow: visible; position: relative;}
+        .modal-box.edit-modal { width:auto; height:auto; max-width:450px; max-height:90%; padding:24px 28px; }
+        .modal-box.edit-modal .modal-actions { justify-content:flex-end; }
+        .modal-box label { display:block; font-size:15px; margin-top:12px; }
+        .modal-box input, .modal-box select { width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:15px; margin-top:4px; }
+        .modal-box .info-bit { font-size:15px; color:#37474f; background:#f5f5f5; padding:6px 10px; border-radius:4px; margin-top:8px; }
+
+        @media (max-width:960px) {
+            .bit-cell { width:28px; height:28px; font-size:12px; }
+            .bit-cell .bit-index { font-size:12px; }
+            .bit-index-row .bit-cell { height:8px; font-size:8px; width:28px; }
+            .byte-label { height:8px; font-size:10px; }
+            .toolbar-right { margin-left:0; width:100%; justify-content:flex-end; }
+            .field-list-container, .action-bar, .status-bar-wrapper { padding:0 8px; }
+            .btn { padding:4px 10px; font-size:12px; height:32px; }
+            .btn-undo, .btn-redo { font-size:16px; padding:4px 8px; min-width:30px; }
+            .grid-watermark span { font-size:18px; margin:8px 12px; }
+            .modal-box { width:100vw; height:100vh; max-width:100vw; max-height:100vh; border-radius:0; padding:12px; }
+            .watermark-notice { font-size:14px; padding:1px 8px; }
+            .header { flex-wrap:wrap; }
+            .preview-watermark-notice { font-size:14px; }
+            .zoom-control .btn { height:28px; min-width:28px; font-size:16px; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <div style="display: flex; align-items: baseline; flex-wrap: wrap;">
+        <div style="display:flex; align-items:baseline; flex-wrap:wrap;">
             <h1>PCIe TLP 帧格式编辑器</h1>
             <span class="watermark-notice" id="watermarkNotice">联系MangoPapa去水印, wx: loveic_lovelife</span>
         </div>
@@ -512,34 +134,53 @@
 
     <div class="toolbar">
         <div class="toolbar-left">
-            <label>DW数量:
-                <select id="dwCountSelect">
-                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                    <option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
-                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                    <option value="10">10</option><option value="11">11</option><option value="12">12</option>
-                    <option value="13">13</option><option value="14">14</option><option value="15">15</option>
-                    <option value="16">16</option>
-                </select>
-            </label>
+            <!-- DW数量下拉菜单 -->
+            <div class="dropdown" id="dwDropdown">
+                <button class="btn btn-secondary" id="dwCountBtn">DW: 4</button>
+                <div class="dropdown-menu" id="dwDropdownMenu">
+                    <!-- 动态生成 1~16 -->
+                </div>
+            </div>
             <button class="btn btn-endian" id="endianToggle">小端</button>
-            <button class="btn btn-primary" id="applyBtn">应用</button>
         </div>
         <div class="toolbar-right">
             <button class="btn btn-secondary" id="clearFieldsBtn">清空</button>
             <button class="btn btn-success" id="editSelectionBtn">编辑</button>
-            <!-- 撤销/恢复按钮（仅图标） -->
             <button class="btn btn-secondary btn-undo" id="undoBtn" title="撤销 (Ctrl+Z)" disabled>↩</button>
             <button class="btn btn-secondary btn-redo" id="redoBtn" title="恢复 (Ctrl+Y)" disabled>↪</button>
-            <button class="btn btn-secondary" id="importFieldBtn">导入字段</button>
-            <input type="file" id="fieldFileInput" class="file-input-hidden" accept=".json">
-            <button class="btn btn-secondary" id="importTlpBtn">导入TLP</button>
+
+            <!-- 导入TLP下拉菜单 -->
+            <div class="dropdown" id="tlpDropdown">
+                <button class="btn btn-secondary" id="importTlpBtn">导入 ▾</button>
+                <div class="dropdown-menu" id="tlpDropdownMenu">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
             <input type="file" id="tlpFileInput" class="file-input-hidden" accept=".json">
+            <input type="file" id="listFileInput" class="file-input-hidden" accept=".json">
+
+            <!-- 移过来的控制按钮 -->
+            <span class="zoom-control">
+                <button class="btn btn-secondary" id="zoomOutBtn" title="缩小">−</button>
+                <span class="zoom-label" id="zoomLabel">100%</span>
+                <button class="btn btn-secondary" id="zoomInBtn" title="放大">+</button>
+            </span>
+            <button class="btn btn-whitebg" id="toggleWhiteBgBtn">白底</button>
+            <button class="btn btn-recolor" id="recolorBtn">重新配色</button>
+            <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
+            <div class="dropdown" id="exportDropdown">
+                <button class="btn btn-success" id="exportBtn">导出 ▾</button>
+                <div class="dropdown-menu" id="exportDropdownMenu">
+                    <div class="dropdown-item" data-export="svg">导出 SVG</div>
+                    <div class="dropdown-item" data-export="jpg">导出 JPG</div>
+                    <div class="dropdown-item" data-export="json">导出 JSON</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="grid-area" id="gridArea">
-        <div class="grid-watermark" id="gridWatermark" style="display: none;"></div>
+        <div class="grid-watermark" id="gridWatermark" style="display:none;"></div>
         <div id="bitGridContainer"></div>
     </div>
 
@@ -552,14 +193,7 @@
         </div>
     </div>
 
-    <div class="action-bar">
-        <button class="btn btn-whitebg" id="toggleWhiteBgBtn">白底</button>
-        <button class="btn btn-recolor" id="recolorBtn">🎨重新配色</button>
-        <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
-        <button class="btn btn-success" id="exportSvgBtn">导出SVG</button>
-        <button class="btn btn-success" id="exportJpgBtn">导出JPG</button>
-        <button class="btn btn-secondary" id="exportJsonBtn">导出JSON</button>
-    </div>
+    <!-- 原 action-bar 已移除，不再需要 -->
 
     <div class="status-bar-wrapper">
         <div class="status-bar" id="statusBar">当前操作：就绪</div>
@@ -587,1215 +221,688 @@
 <!-- SVG预览模态框 -->
 <div class="modal-overlay" id="previewModal">
     <div class="modal-box">
-        <div class="preview-watermark-notice" id="previewWatermarkNotice" style="display: none;">联系MangoPapa去水印, wx: loveic_lovelife</div>
+        <div class="preview-watermark-notice" id="previewWatermarkNotice" style="display:none;">联系MangoPapa去水印, wx: loveic_lovelife</div>
         <div id="previewContainer"></div>
         <div class="preview-actions">
+            <span class="zoom-control">
+                <button class="btn btn-secondary" id="previewZoomOutBtn" title="缩小">−</button>
+                <span class="zoom-label" id="previewZoomLabel">100%</span>
+                <button class="btn btn-secondary" id="previewZoomInBtn" title="放大">+</button>
+            </span>
             <button class="btn btn-whitebg" id="previewToggleWhiteBgBtn">白底</button>
-            <button class="btn btn-recolor" id="previewRecolorBtn">🎨重新配色</button>
-            <button class="btn btn-success" id="previewExportSvgBtn">导出 SVG</button>
-            <button class="btn btn-success" id="previewExportJpgBtn">导出 JPG</button>
+            <button class="btn btn-recolor" id="previewRecolorBtn">重新配色</button>
+
+            <!-- 预览导出下拉菜单（合并） -->
+            <div class="dropdown" id="previewExportDropdown">
+                <button class="btn btn-success" id="previewExportBtn">导出 ▾</button>
+                <div class="dropdown-menu" id="previewExportDropdownMenu">
+                    <div class="dropdown-item" data-export="svg">导出 SVG</div>
+                    <div class="dropdown-item" data-export="jpg">导出 JPG</div>
+                    <div class="dropdown-item" data-export="json">导出 JSON</div>
+                </div>
+            </div>
             <button class="btn btn-secondary" id="previewCloseBtn">关闭</button>
         </div>
     </div>
 </div>
 
 <script>
-    (function() {
-        // ===== 静态版本号 =====
-        const version = 1.0;
-        document.getElementById('versionDisplay').textContent = 'v' + version.toFixed(1);
+(function() {
+    const version = 1.0;
+    document.getElementById('versionDisplay').textContent = 'v' + version.toFixed(1);
 
-        // ===== 全局状态 =====
-        let dwCount = 4;
-        let endianness = 'little';
-        let fields = [];
-        let selectedBits = [];
-        let bitElements = {};
-        let visualToGlobal = {};
-        let globalToVisual = {};
-        let fieldLibrary = [];
-        let whiteBg = false;
-        let editingField = null;
+    let dwCount = 4;
+    let endianness = 'little';
+    let fields = [];
+    let selectedBits = [];
+    let bitElements = {};
+    let visualToGlobal = {};
+    let globalToVisual = {};
+    let fieldLibrary = [];
+    let whiteBg = false;
+    let editingField = null;
+    let showWatermark = true;
+    let keyPressCount = 0, lastKeyTime = 0;
 
-        let showWatermark = true;
-        let keyPressCount = 0;
-        let lastKeyTime = 0;
+    const ZOOM_LEVELS = [0.50, 0.625, 0.75, 0.875, 1.0];
+    let currentZoomIndex = 4;
 
-        // ===== 撤销/恢复历史 (最大20步) =====
-        let history = [];
-        let historyIndex = -1;
-        const MAX_HISTORY = 20;   // 从10改为20
+    let history = [], historyIndex = -1;
+    const MAX_HISTORY = 20;
 
-        const watermarkNotice = document.getElementById('watermarkNotice');
-        const previewWatermarkNotice = document.getElementById('previewWatermarkNotice');
+    const watermarkNotice = document.getElementById('watermarkNotice');
+    const previewWatermarkNotice = document.getElementById('previewWatermarkNotice');
 
-        // ===== 高饱和度颜色调色板（32种） =====
-        const COLORS = [
-            '#F94144', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B', '#4D908E', '#577590', '#277DA1',
-            '#5E4B8C', '#9C89B8', '#F4845F', '#F2A65A', '#F2C14E', '#A7C957', '#6A994E', '#386641',
-            '#247BA0', '#1B98A0', '#E8D44D', '#FF6B6B', '#FF8C42', '#F9C74F', '#90BE6D', '#43AA8B',
-            '#4D908E', '#577590', '#277DA1', '#5E4B8C', '#9C89B8', '#F4845F', '#F2A65A', '#F2C14E'
-        ];
+    const COLORS = [
+        '#F94144','#F8961E','#F9C74F','#90BE6D','#43AA8B','#4D908E','#577590','#277DA1',
+        '#5E4B8C','#9C89B8','#F4845F','#F2A65A','#F2C14E','#A7C957','#6A994E','#386641',
+        '#247BA0','#1B98A0','#E8D44D','#FF6B6B','#FF8C42','#F9C74F','#90BE6D','#43AA8B',
+        '#4D908E','#577590','#277DA1','#5E4B8C','#9C89B8','#F4845F','#F2A65A','#F2C14E'
+    ];
+    const RESERVED_COLOR = '#B0B0B0';
+    let colorIndex = 0;
 
-        const RESERVED_COLOR = '#B0B0B0';
-        let colorIndex = 0;
+    // DOM 引用
+    const container = document.getElementById('bitGridContainer');
+    const statusBar = document.getElementById('statusBar');
+    const fieldListItems = document.getElementById('fieldListItems');
+    const fieldListContainer = document.getElementById('fieldListContainer');
+    const endianToggle = document.getElementById('endianToggle');
+    const clearFieldsBtn = document.getElementById('clearFieldsBtn');
+    const editSelectionBtn = document.getElementById('editSelectionBtn');
+    const previewSvgBtn = document.getElementById('previewSvgBtn');
+    const recolorBtn = document.getElementById('recolorBtn');
+    const toggleWhiteBgBtn = document.getElementById('toggleWhiteBgBtn');
+    const fieldLibSelectWrapper = document.getElementById('fieldLibSelectWrapper');
+    const fieldLibSelect = document.getElementById('fieldLibSelect');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const previewToggleWhiteBgBtn = document.getElementById('previewToggleWhiteBgBtn');
+    const previewRecolorBtn = document.getElementById('previewRecolorBtn');
+    const previewCloseBtn = document.getElementById('previewCloseBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomLabel = document.getElementById('zoomLabel');
+    const previewZoomOutBtn = document.getElementById('previewZoomOutBtn');
+    const previewZoomInBtn = document.getElementById('previewZoomInBtn');
+    const previewZoomLabel = document.getElementById('previewZoomLabel');
+    const modalOverlay = document.getElementById('fieldModal');
+    const modalBitInfo = document.getElementById('modalBitInfo');
+    const modalFieldName = document.getElementById('modalFieldName');
+    const modalFieldDisplay = document.getElementById('modalFieldDisplay');
+    const modalFieldValue = document.getElementById('modalFieldValue');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const previewModal = document.getElementById('previewModal');
+    const previewContainer = document.getElementById('previewContainer');
+    const importTlpBtn = document.getElementById('importTlpBtn');
+    const tlpFileInput = document.getElementById('tlpFileInput');
+    const listFileInput = document.getElementById('listFileInput');
+    const tlpDropdown = document.getElementById('tlpDropdown');
+    const tlpDropdownMenu = document.getElementById('tlpDropdownMenu');
+    const dwDropdown = document.getElementById('dwDropdown');
+    const dwDropdownMenu = document.getElementById('dwDropdownMenu');
+    const dwCountBtn = document.getElementById('dwCountBtn');
+    const exportDropdown = document.getElementById('exportDropdown');
+    const exportDropdownMenu = document.getElementById('exportDropdownMenu');
+    const exportBtn = document.getElementById('exportBtn');
+    const previewExportDropdown = document.getElementById('previewExportDropdown');
+    const previewExportDropdownMenu = document.getElementById('previewExportDropdownMenu');
+    const previewExportBtn = document.getElementById('previewExportBtn');
 
-        // DOM 引用
-        const container = document.getElementById('bitGridContainer');
-        const gridArea = document.getElementById('gridArea');
-        const gridWatermark = document.getElementById('gridWatermark');
-        const statusBar = document.getElementById('statusBar');
-        const fieldListContainer = document.getElementById('fieldListContainer');
-        const fieldListItems = document.getElementById('fieldListItems');
-        const dwCountSelect = document.getElementById('dwCountSelect');
-        const endianToggle = document.getElementById('endianToggle');
-        const applyBtn = document.getElementById('applyBtn');
-        const clearFieldsBtn = document.getElementById('clearFieldsBtn');
-        const editSelectionBtn = document.getElementById('editSelectionBtn');
-        const previewSvgBtn = document.getElementById('previewSvgBtn');
-        const exportSvgBtn = document.getElementById('exportSvgBtn');
-        const exportJpgBtn = document.getElementById('exportJpgBtn');
-        const exportJsonBtn = document.getElementById('exportJsonBtn');
-        const importFieldBtn = document.getElementById('importFieldBtn');
-        const fieldFileInput = document.getElementById('fieldFileInput');
-        const importTlpBtn = document.getElementById('importTlpBtn');
-        const tlpFileInput = document.getElementById('tlpFileInput');
-        const recolorBtn = document.getElementById('recolorBtn');
-        const toggleWhiteBgBtn = document.getElementById('toggleWhiteBgBtn');
-        const fieldLibSelectWrapper = document.getElementById('fieldLibSelectWrapper');
-        const fieldLibSelect = document.getElementById('fieldLibSelect');
-        const undoBtn = document.getElementById('undoBtn');
-        const redoBtn = document.getElementById('redoBtn');
-
-        const previewToggleWhiteBgBtn = document.getElementById('previewToggleWhiteBgBtn');
-        const previewRecolorBtn = document.getElementById('previewRecolorBtn');
-        const previewExportSvgBtn = document.getElementById('previewExportSvgBtn');
-        const previewExportJpgBtn = document.getElementById('previewExportJpgBtn');
-
-        const modalOverlay = document.getElementById('fieldModal');
-        const modalBitInfo = document.getElementById('modalBitInfo');
-        const modalFieldName = document.getElementById('modalFieldName');
-        const modalFieldDisplay = document.getElementById('modalFieldDisplay');
-        const modalFieldValue = document.getElementById('modalFieldValue');
-        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
-        const modalCancelBtn = document.getElementById('modalCancelBtn');
-
-        const previewModal = document.getElementById('previewModal');
-        const previewContainer = document.getElementById('previewContainer');
-        const previewCloseBtn = document.getElementById('previewCloseBtn');
-
-        // ===== 判断是否为保留字段 =====
-        function isReservedField(name) {
-            if (!name) return false;
-            const lower = name.toLowerCase();
-            return lower.includes('reserved') || lower.includes('rsvd');
+    // ===== DW数量下拉菜单 =====
+    function renderDwDropdown() {
+        let html = '';
+        for (let i = 1; i <= 16; i++) {
+            html += `<div class="dropdown-item" data-dw="${i}">${i}</div>`;
         }
-
-        // ===== 获取颜色（保留字段返回灰色，同名字段复用颜色） =====
-        function getColorForField(name) {
-            if (isReservedField(name)) {
-                return RESERVED_COLOR;
-            }
-            for (let f of fields) {
-                if (f.name === name && f.color) {
-                    return f.color;
-                }
-            }
-            const color = COLORS[colorIndex % COLORS.length];
-            colorIndex++;
-            return color;
-        }
-
-        function updateStatus(msg) { statusBar.textContent = '当前操作：' + msg; }
-
-        function clearSelection() {
-            selectedBits.forEach(idx => { const el = bitElements[idx]; if (el) el.classList.remove('selected'); });
-            selectedBits = [];
-        }
-
-        function globalToPosition(globalBit) {
-            const dw = Math.floor(globalBit / 32);
-            const offset = globalBit % 32;
-            return { dw, byte: Math.floor(offset / 8), bit: offset % 8 };
-        }
-
-        function formatPosition(globalBit) {
-            const p = globalToPosition(globalBit);
-            return `DW${p.dw} Byte${p.byte} bit${p.bit}`;
-        }
-
-        function getSelectedVisIndices() {
-            const visSet = new Set();
-            selectedBits.forEach(g => {
-                const v = globalToVisual[g];
-                if (v !== undefined) visSet.add(v);
+        dwDropdownMenu.innerHTML = html;
+        dwDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const val = parseInt(this.dataset.dw);
+                dwCount = val;
+                dwCountBtn.textContent = 'DW: ' + val;
+                renderGrid();
+                closeDropdown(dwDropdown);
             });
-            return Array.from(visSet).sort((a,b) => a-b);
-        }
+        });
+    }
 
-        function findFieldByVisIndices(visIndices) {
-            if (visIndices.length === 0) return null;
-            const sorted = visIndices.slice().sort((a,b) => a-b);
-            for (let f of fields) {
-                const fVis = f.visIndices.slice().sort((a,b) => a-b);
-                if (fVis.length === sorted.length && fVis.every((v, i) => v === sorted[i])) {
-                    return f;
-                }
-            }
-            return null;
-        }
+    function toggleDropdown(dropdown) {
+        dropdown.classList.toggle('open');
+    }
 
-        // ===== 历史管理 =====
-        function pushHistory() {
-            // 如果当前索引不是最后一个，截断后面的
-            if (historyIndex < history.length - 1) {
-                history = history.slice(0, historyIndex + 1);
-            }
-            const snapshot = JSON.parse(JSON.stringify(fields));
-            history.push(snapshot);
-            if (history.length > MAX_HISTORY) {
-                history.shift();
-            }
-            historyIndex = history.length - 1;
-            updateUndoRedoButtons();
-        }
+    function closeDropdown(dropdown) {
+        dropdown.classList.remove('open');
+    }
 
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                fields = JSON.parse(JSON.stringify(history[historyIndex]));
-                // 需要重新渲染网格和字段列表
-                refreshAllFields();
-                updateFieldList();
-                clearSelection(); // 清除选中状态
-                updateUndoRedoButtons();
-                updateStatus('撤销成功');
-            } else {
-                updateStatus('没有可撤销的操作');
-            }
-        }
+    // 点击按钮切换下拉
+    dwCountBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleDropdown(dwDropdown);
+    });
 
-        function redo() {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                fields = JSON.parse(JSON.stringify(history[historyIndex]));
-                refreshAllFields();
-                updateFieldList();
-                clearSelection();
-                updateUndoRedoButtons();
-                updateStatus('恢复成功');
-            } else {
-                updateStatus('没有可恢复的操作');
-            }
-        }
+    // ===== 导出下拉菜单（主界面） =====
+    exportBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleDropdown(exportDropdown);
+    });
 
-        function updateUndoRedoButtons() {
-            undoBtn.disabled = historyIndex <= 0;
-            redoBtn.disabled = historyIndex >= history.length - 1;
-        }
+    exportDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const type = this.dataset.export;
+            if (type === 'svg') exportSvgFile();
+            else if (type === 'jpg') exportJpgFile();
+            else if (type === 'json') exportJson();
+            closeDropdown(exportDropdown);
+        });
+    });
 
-        // 保存文件（使用 showSaveFilePicker 或 fallback）
-        async function saveFile(blob, defaultName, mimeType, extension) {
-            if (window.showSaveFilePicker) {
-                try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: defaultName + '.' + extension,
-                        types: [{ description: mimeType, accept: { [mimeType]: ['.' + extension] } }]
-                    });
-                    const writable = await handle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                    updateStatus('文件保存成功');
-                    return true;
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        updateStatus('用户取消保存');
-                        return false;
-                    }
-                    // 其他错误 fallback
-                    console.warn('showSaveFilePicker fallback due to:', err);
-                }
-            }
-            // fallback: 使用原有下载方式（prompt + a.download）
-            let fileName = prompt('请输入文件名（不含扩展名）:', defaultName);
-            if (fileName === null) return false;
-            if (fileName.trim() === '') fileName = defaultName;
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName + '.' + extension;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            updateStatus('文件导出成功');
-            return true;
-        }
+    // ===== 预览导出下拉菜单 =====
+    previewExportBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleDropdown(previewExportDropdown);
+    });
 
-        // ===== recolorFields =====
-        function recolorFields() {
-            if (fields.length === 0) {
-                updateStatus('没有字段需要配色');
-                return;
-            }
+    previewExportDropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const type = this.dataset.export;
+            if (type === 'svg') exportSvgFile();
+            else if (type === 'jpg') exportJpgFile();
+            else if (type === 'json') exportJson();
+            closeDropdown(previewExportDropdown);
+        });
+    });
 
-            // 保存当前状态到历史（在修改后推新状态）
-            const reservedFields = [];
-            const normalFields = [];
-            for (let i = 0; i < fields.length; i++) {
-                if (isReservedField(fields[i].name)) {
-                    reservedFields.push(i);
-                } else {
-                    normalFields.push(i);
-                }
-            }
+    // ===== 点击页面其他区域关闭所有下拉 =====
+    document.addEventListener('click', function(e) {
+        if (!dwDropdown.contains(e.target)) closeDropdown(dwDropdown);
+        if (!exportDropdown.contains(e.target)) closeDropdown(exportDropdown);
+        if (!previewExportDropdown.contains(e.target)) closeDropdown(previewExportDropdown);
+        if (!tlpDropdown.contains(e.target)) closeDropdown(tlpDropdown);
+    });
 
-            if (normalFields.length === 0) {
-                updateStatus('所有字段均为保留字段，无需配色');
-                return;
-            }
+    // ===== 导入TLP下拉（保留之前逻辑） =====
+    let fileList = [];
 
-            const nameSet = new Set();
-            for (let idx of normalFields) {
-                nameSet.add(fields[idx].name);
-            }
-            const uniqueNames = Array.from(nameSet);
-            const n = uniqueNames.length;
-            const adj = Array.from({ length: n }, () => []);
-
-            const nameVisSets = uniqueNames.map(name => {
-                const set = new Set();
-                for (let idx of normalFields) {
-                    if (fields[idx].name === name) {
-                        for (let v of fields[idx].visIndices) {
-                            set.add(v);
-                        }
-                    }
-                }
-                return set;
+    function renderTlpDropdown() {
+        let html = '';
+        if (fileList.length === 0) {
+            html += `<div class="dropdown-item" style="color:#999; font-style:italic;">暂无预设文件</div>`;
+        } else {
+            fileList.forEach(name => {
+                html += `<div class="dropdown-item" data-file="${name}">${name}</div>`;
             });
-
-            for (let i = 0; i < n; i++) {
-                for (let j = i + 1; j < n; j++) {
-                    let adjacent = false;
-                    const setA = nameVisSets[i];
-                    const setB = nameVisSets[j];
-                    for (let v of setA) {
-                        if (setB.has(v) || setB.has(v - 1) || setB.has(v + 1)) {
-                            adjacent = true;
-                            break;
-                        }
-                    }
-                    if (adjacent) {
-                        adj[i].push(j);
-                        adj[j].push(i);
-                    }
-                }
-            }
-
-            const assignedColors = new Array(n).fill(null);
-            const shuffledColors = [...COLORS];
-            for (let i = shuffledColors.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
-            }
-
-            for (let i = 0; i < n; i++) {
-                const usedColors = new Set();
-                for (let j of adj[i]) {
-                    if (assignedColors[j] !== null) {
-                        usedColors.add(assignedColors[j]);
-                    }
-                }
-                let chosen = null;
-                for (let c of shuffledColors) {
-                    if (!usedColors.has(c)) {
-                        chosen = c;
-                        break;
-                    }
-                }
-                if (chosen === null) {
-                    const allUsed = new Set(assignedColors.filter(c => c !== null));
-                    for (let c of shuffledColors) {
-                        if (!allUsed.has(c)) {
-                            chosen = c;
-                            break;
-                        }
-                    }
-                }
-                if (chosen === null) chosen = shuffledColors[0];
-                assignedColors[i] = chosen;
-            }
-
-            const colorSet = new Set();
-            for (let i = 0; i < n; i++) {
-                if (colorSet.has(assignedColors[i])) {
-                    const allUsed = new Set(assignedColors);
-                    for (let c of shuffledColors) {
-                        if (!allUsed.has(c)) {
-                            assignedColors[i] = c;
-                            break;
-                        }
-                    }
-                }
-                colorSet.add(assignedColors[i]);
-            }
-
-            for (let i = 0; i < n; i++) {
-                const name = uniqueNames[i];
-                const color = assignedColors[i];
-                for (let idx of normalFields) {
-                    if (fields[idx].name === name) {
-                        fields[idx].color = color;
-                    }
-                }
-            }
-
-            for (let idx of reservedFields) {
-                fields[idx].color = RESERVED_COLOR;
-            }
-
-            refreshAllFields();
-            updateStatus(`重新配色完成 (${fields.length} 个字段，${uniqueNames.length} 个唯一名称，${reservedFields.length} 个保留字段为灰色)`);
-            pushHistory(); // 记录配色变更
-            if (previewModal.classList.contains('active')) {
-                refreshPreview();
-            }
         }
-
-        function updateEndianButton() {
-            endianToggle.textContent = endianness === 'little' ? '小端' : '大端';
-            endianToggle.classList.toggle('active', endianness === 'big');
+        html += `<div class="dropdown-item divider"></div>`;
+        html += `<div class="dropdown-item" id="dropdownChooseFile">📁 选择文件...</div>`;
+        if (fileList.length === 0) {
+            html += `<div class="dropdown-item" id="dropdownImportList">📂 导入预设列表 ...</div>`;
         }
-        endianToggle.addEventListener('click', function() {
-            endianness = endianness === 'little' ? 'big' : 'little';
-            updateEndianButton();
-            updateStatus('端序已切换，请点击“应用”生效');
+        tlpDropdownMenu.innerHTML = html;
+
+        tlpDropdownMenu.querySelectorAll('.dropdown-item[data-file]').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const name = this.dataset.file;
+                loadTlpFromServer(name);
+                closeDropdown(tlpDropdown);
+            });
         });
 
-        function generateWatermarkHTML() {
-            const wmText = 'MangoPapa';
-            const count = 50;
-            let html = '';
-            for (let i = 0; i < count; i++) {
-                html += `<span>${wmText}</span>`;
-            }
-            return html;
+        const chooseFileItem = document.getElementById('dropdownChooseFile');
+        if (chooseFileItem) {
+            chooseFileItem.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tlpFileInput.click();
+                closeDropdown(tlpDropdown);
+            });
         }
 
-        function updateGridWatermark() {
-            if (showWatermark) {
-                gridWatermark.style.display = 'flex';
-                if (gridWatermark.children.length === 0) {
-                    gridWatermark.innerHTML = generateWatermarkHTML();
-                }
-            } else {
-                gridWatermark.style.display = 'none';
-            }
-            watermarkNotice.style.display = showWatermark ? 'inline-block' : 'none';
-            previewWatermarkNotice.style.display = showWatermark ? 'block' : 'none';
+        const importListItem = document.getElementById('dropdownImportList');
+        if (importListItem) {
+            importListItem.addEventListener('click', function(e) {
+                e.stopPropagation();
+                listFileInput.click();
+                closeDropdown(tlpDropdown);
+            });
         }
+    }
 
-        function refreshPreview() {
-            if (previewModal.classList.contains('active')) {
-                const svgStr = getSvgString(showWatermark);
-                previewContainer.innerHTML = '';
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = svgStr;
-                const svgElem = wrapper.firstElementChild;
-                previewContainer.appendChild(svgElem);
-                updatePreviewButtons();
-            }
-        }
+    importTlpBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleDropdown(tlpDropdown);
+    });
 
-        function updatePreviewButtons() {
-            previewToggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
-            previewToggleWhiteBgBtn.classList.toggle('active', whiteBg);
-        }
-
-        // ===== 渲染网格 =====
-        function renderGrid() {
-            dwCount = parseInt(dwCountSelect.value);
-            container.innerHTML = '';
-            bitElements = {};
-            visualToGlobal = {};
-            globalToVisual = {};
-
-            const gridDiv = document.createElement('div');
-            gridDiv.className = 'bit-grid';
-
-            const headerRow = document.createElement('div');
-            headerRow.className = 'dw-row';
-            const emptyLabel = document.createElement('span');
-            emptyLabel.className = 'dw-label';
-            emptyLabel.textContent = '';
-            headerRow.appendChild(emptyLabel);
-
-            const byteOrder = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
-            for (let bIdx of byteOrder) {
-                const byteGroup = document.createElement('div');
-                byteGroup.className = 'byte-group';
-                const label = document.createElement('span');
-                label.className = 'byte-label';
-                let byteNum = bIdx;
-                label.textContent = `Byte${byteNum}`;
-                byteGroup.appendChild(label);
-                const phContainer = document.createElement('div');
-                phContainer.className = 'bit-container';
-                phContainer.style.height = '0';
-                phContainer.style.overflow = 'hidden';
-                for (let i = 0; i < 8; i++) {
-                    const ph = document.createElement('span');
-                    ph.style.width = '34px';
-                    ph.style.height = '34px';
-                    ph.style.display = 'inline-block';
-                    ph.style.flexShrink = '0';
-                    phContainer.appendChild(ph);
+    function fetchFileList() {
+        tlpDropdownMenu.innerHTML = `<div class="dropdown-item" style="color:#999; font-style:italic;">加载列表中...</div>`;
+        fetch('./tlp/list.json')
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    fileList = data.filter(name => typeof name === 'string' && name.trim() !== '');
+                    updateStatus(`预设列表加载成功，共 ${fileList.length} 个文件`);
+                } else {
+                    fileList = [];
+                    updateStatus('警告: list.json 格式不是数组');
                 }
-                byteGroup.appendChild(phContainer);
-                headerRow.appendChild(byteGroup);
-            }
-            gridDiv.appendChild(headerRow);
-
-            const indexRow = document.createElement('div');
-            indexRow.className = 'dw-row bit-index-row';
-            const emptyLabel2 = document.createElement('span');
-            emptyLabel2.className = 'dw-label';
-            emptyLabel2.textContent = '';
-            indexRow.appendChild(emptyLabel2);
-
-            for (let bIdx of byteOrder) {
-                const byteGroup = document.createElement('div');
-                byteGroup.className = 'byte-group';
-                const bitContainer = document.createElement('div');
-                bitContainer.className = 'bit-container';
-                for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
-                    const cell = document.createElement('div');
-                    cell.className = 'bit-cell';
-                    cell.textContent = bitInByte;
-                    bitContainer.appendChild(cell);
-                }
-                byteGroup.appendChild(bitContainer);
-                indexRow.appendChild(byteGroup);
-            }
-            gridDiv.appendChild(indexRow);
-
-            let visualIndex = 0;
-            const byteOrderDw = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
-            for (let dw = 0; dw < dwCount; dw++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'dw-row';
-                const label = document.createElement('span');
-                label.className = 'dw-label';
-                label.textContent = `DW${dw}`;
-                rowDiv.appendChild(label);
-
-                for (let bIdx of byteOrderDw) {
-                    const byteGroup = document.createElement('div');
-                    byteGroup.className = 'byte-group';
-                    const bitContainer = document.createElement('div');
-                    bitContainer.className = 'bit-container';
-                    for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
-                        let absBit;
-                        if (endianness === 'little') {
-                            absBit = dw * 32 + bIdx * 8 + bitInByte;
-                        } else {
-                            absBit = dw * 32 + (3 - bIdx) * 8 + bitInByte;
-                        }
-                        const cell = document.createElement('div');
-                        cell.className = 'bit-cell';
-                        cell.dataset.bitIndex = absBit;
-                        cell.dataset.visualIndex = visualIndex;
-                        const idxSpan = document.createElement('span');
-                        idxSpan.className = 'bit-index';
-                        idxSpan.textContent = bitInByte;
-                        cell.appendChild(idxSpan);
-                        bitElements[absBit] = cell;
-                        visualToGlobal[visualIndex] = absBit;
-                        globalToVisual[absBit] = visualIndex;
-                        visualIndex++;
-                        bitContainer.appendChild(cell);
-
-                        cell.addEventListener('mousedown', function(e) {
-                            e.preventDefault();
-                            const idx = parseInt(this.dataset.bitIndex);
-                            const visIdx = parseInt(this.dataset.visualIndex);
-
-                            if (e.ctrlKey || e.metaKey) {
-                                if (selectedBits.includes(idx)) {
-                                    selectedBits = selectedBits.filter(i => i !== idx);
-                                    this.classList.remove('selected');
-                                } else {
-                                    selectedBits.push(idx);
-                                    this.classList.add('selected');
-                                }
-                                updateStatus(`选中 ${selectedBits.length} 个bit`);
-                                return;
-                            }
-
-                            if (e.shiftKey && selectedBits.length > 0) {
-                                const firstVis = globalToVisual[selectedBits[0]];
-                                const startVis = Math.min(firstVis, visIdx);
-                                const endVis = Math.max(firstVis, visIdx);
-                                selectedBits.forEach(i => { const el = bitElements[i]; if (el) el.classList.remove('selected'); });
-                                selectedBits = [];
-                                for (let v = startVis; v <= endVis; v++) {
-                                    const gIdx = visualToGlobal[v];
-                                    selectedBits.push(gIdx);
-                                    const el = bitElements[gIdx];
-                                    if (el) el.classList.add('selected');
-                                }
-                            } else {
-                                clearSelection();
-                                selectedBits = [idx];
-                                this.classList.add('selected');
-                            }
-                            updateStatus(`选中 ${selectedBits.length} 个bit`);
-                        });
-                        cell.addEventListener('dblclick', function(e) {
-                            e.preventDefault();
-                            openEditModal();
-                        });
-                    }
-                    byteGroup.appendChild(bitContainer);
-                    rowDiv.appendChild(byteGroup);
-                }
-                gridDiv.appendChild(rowDiv);
-            }
-            container.appendChild(gridDiv);
-            refreshAllFields();
-            updateFieldList();
-            updateGridWatermark();
-            updateStatus('网格已更新');
-        }
-
-        // ===== 字段样式（UI） =====
-        function refreshAllFields() {
-            for (let idx in bitElements) {
-                const el = bitElements[idx];
-                el.classList.remove('field');
-                el.style.background = '';
-                el.style.borderColor = '';
-                el.style.color = '';
-                el.style.border = '1px solid #b0bec5';
-                el.style.borderRadius = '0';
-                const idxSpan = el.querySelector('.bit-index');
-                if (idxSpan) idxSpan.style.display = 'block';
-                const textSpan = el.querySelector('.field-text');
-                if (textSpan) textSpan.remove();
-                const valueSpan = el.querySelector('.field-value');
-                if (valueSpan) valueSpan.remove();
-                const tick = el.querySelector('.tick-mark');
-                if (tick) tick.remove();
-            }
-
-            if (fields.length === 0) return;
-
-            for (let f of fields) {
-                const visIndices = f.visIndices.slice().sort((a,b) => a-b);
-                if (visIndices.length === 0) continue;
-                const color = f.color;
-                const fillColor = whiteBg ? '#FFFFFF' : color;
-                const borderColor = '#000000';
-                const textColor = '#000000';
-
-                const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
-
-                const segments = [];
-                let start = visIndices[0];
-                let end = visIndices[0];
-                for (let i = 1; i < visIndices.length; i++) {
-                    if (visIndices[i] === end + 1) {
-                        end = visIndices[i];
-                    } else {
-                        segments.push({ start, end });
-                        start = visIndices[i];
-                        end = visIndices[i];
-                    }
-                }
-                segments.push({ start, end });
-
-                const valueStr = f.value || '';
-                const totalBits = visIndices.length;
-                const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
-                const midVis = (visIndices[0] + visIndices[visIndices.length-1]) / 2;
-
-                for (let seg of segments) {
-                    const { start: segStart, end: segEnd } = seg;
-                    const bitList = [];
-                    for (let v = segStart; v <= segEnd; v++) {
-                        const g = visualToGlobal[v];
-                        if (g !== undefined && bitElements[g]) {
-                            bitList.push(bitElements[g]);
-                        }
-                    }
-                    if (bitList.length === 0) continue;
-
-                    const minVis = segStart;
-                    const maxVis = segEnd;
-                    const segmentLength = segEnd - segStart + 1;
-                    const offsetInField = segStart - visIndices[0];
-
-                    bitList.forEach((el, index) => {
-                        const globalIdx = parseInt(el.dataset.bitIndex);
-                        const visIdx = parseInt(el.dataset.visualIndex);
-                        const col = visIdx % 32;
-                        const isFirstOfRow = (col === 0);
-                        const isLastOfRow = (col === 31);
-                        const isFirstVis = (visIdx === minVis);
-                        const isLastVis = (visIdx === maxVis);
-
-                        el.classList.add('field');
-                        el.style.background = fillColor;
-                        el.style.color = textColor;
-                        el.style.borderTop = `1px solid ${borderColor}`;
-                        el.style.borderBottom = `1px solid ${borderColor}`;
-                        if (isFirstOfRow || isFirstVis) {
-                            el.style.borderLeft = `1px solid ${borderColor}`;
-                        } else {
-                            el.style.borderLeft = 'none';
-                        }
-                        if (isLastOfRow || isLastVis) {
-                            el.style.borderRight = `1px solid ${borderColor}`;
-                        } else {
-                            el.style.borderRight = 'none';
-                        }
-                        if (isFirstVis && isFirstOfRow) {
-                            el.style.borderRadius = '2px 0 0 2px';
-                        } else if (isLastVis && isLastOfRow) {
-                            el.style.borderRadius = '0 2px 2px 0';
-                        } else {
-                            el.style.borderRadius = '0';
-                        }
-                        const idxSpan = el.querySelector('.bit-index');
-                        if (idxSpan) idxSpan.style.display = 'none';
-
-                        const isLastBit = (visIdx === maxVis);
-                        if (!isLastBit) {
-                            let tick = el.querySelector('.tick-mark');
-                            if (!tick) {
-                                tick = document.createElement('div');
-                                tick.className = 'tick-mark';
-                                el.appendChild(tick);
-                            }
-                        } else {
-                            const tick = el.querySelector('.tick-mark');
-                            if (tick) tick.remove();
-                        }
-
-                        const oldText = el.querySelector('.field-text');
-                        if (oldText) oldText.remove();
-                        const oldValue = el.querySelector('.field-value');
-                        if (oldValue) oldValue.remove();
-
-                        let valueChar = '';
-                        if (hasValue) {
-                            const pos = offsetInField + index;
-                            if (pos < valueStr.length) {
-                                valueChar = valueStr[pos];
-                            }
-                        }
-
-                        const isMid = (Math.abs(visIdx - midVis) < 0.5);
-
-                        if (isMid) {
-                            if (displayText) {
-                                const textSpan = document.createElement('span');
-                                textSpan.className = 'field-text';
-                                textSpan.textContent = displayText;
-                                textSpan.style.color = textColor;
-                                el.appendChild(textSpan);
-                            }
-                            if (hasValue && valueChar) {
-                                const valSpan = document.createElement('span');
-                                valSpan.className = 'field-value';
-                                valSpan.textContent = valueChar;
-                                valSpan.style.color = textColor;
-                                valSpan.style.fontSize = '12px';
-                                valSpan.style.marginTop = '6px';
-                                el.appendChild(valSpan);
-                            }
-                        } else {
-                            if (hasValue && valueChar) {
-                                const valSpan = document.createElement('span');
-                                valSpan.className = 'field-value';
-                                valSpan.textContent = valueChar;
-                                valSpan.style.color = textColor;
-                                valSpan.style.fontSize = '12px';
-                                el.appendChild(valSpan);
-                            }
-                        }
-                    });
-                }
-            }
-
-            selectedBits.forEach(idx => { const el = bitElements[idx]; if (el) el.classList.add('selected'); });
-            updateFieldList();
-        }
-
-        // ===== 更新字段列表（按名称字母顺序排列） =====
-        function updateFieldList() {
-            fieldListItems.innerHTML = '';
-            if (fields.length === 0) {
-                fieldListContainer.classList.remove('visible');
-                fieldListItems.innerHTML = '<span style="color:#999; font-size:13px;">暂无字段</span>';
-            } else {
-                fieldListContainer.classList.add('visible');
-                // 按字段名称字母顺序排序
-                const sortedFields = [...fields].sort((a, b) => a.name.localeCompare(b.name));
-                for (let f of sortedFields) {
-                    const tag = document.createElement('span');
-                    tag.className = 'field-tag';
-                    const dot = document.createElement('span');
-                    dot.className = 'color-dot';
-                    dot.style.background = f.color;
-                    tag.appendChild(dot);
-                    const text = document.createTextNode(f.name);
-                    tag.appendChild(text);
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'del-btn';
-                    delBtn.textContent = '×';
-                    delBtn.title = '删除此字段';
-                    delBtn.addEventListener('click', function(e) {
+                renderTlpDropdown();
+            })
+            .catch(err => {
+                fileList = [];
+                updateStatus(`加载预设列表失败: ${err.message}`);
+                tlpDropdownMenu.innerHTML = `
+                    <div class="dropdown-item" style="color:#d32f2f;">⚠️ 无法加载预设列表</div>
+                    <div class="dropdown-item" style="color:#999; font-size:12px; padding-top:0;">${err.message}</div>
+                    <div class="dropdown-item divider"></div>
+                    <div class="dropdown-item" id="dropdownChooseFile">📁 选择文件...</div>
+                    <div class="dropdown-item" id="dropdownImportList">📂 导入预设列表 ...</div>
+                `;
+                const chooseFileItem = document.getElementById('dropdownChooseFile');
+                if (chooseFileItem) {
+                    chooseFileItem.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        deleteField(f.name);
+                        tlpFileInput.click();
+                        closeDropdown(tlpDropdown);
                     });
-                    tag.appendChild(delBtn);
-                    fieldListItems.appendChild(tag);
                 }
-            }
-        }
+                const importListItem = document.getElementById('dropdownImportList');
+                if (importListItem) {
+                    importListItem.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        listFileInput.click();
+                        closeDropdown(tlpDropdown);
+                    });
+                }
+            });
+    }
 
-        function addFieldFromVisIndices(name, display, value, visIndices) {
-            if (!name) return false;
-            if (visIndices.length === 0) return false;
-            if (value && value.length > 0 && value.length !== visIndices.length) {
-                updateStatus(`错误：值长度 (${value.length}) 与 bit 数量 (${visIndices.length}) 不一致`);
-                return false;
-            }
-            const sortedVis = visIndices.slice().sort((a,b) => a-b);
-            const existing = findFieldByVisIndices(sortedVis);
-            if (existing) {
-                existing.name = name;
-                existing.display = display || name;
-                existing.value = value || '';
-                refreshAllFields();
-                clearSelection();
-                updateStatus(`字段 "${name}" 已更新`);
-                pushHistory();
-                return true;
-            } else {
-                let toRemove = [];
-                for (let f of fields) {
-                    for (let v of sortedVis) {
-                        if (f.visIndices.includes(v)) {
-                            toRemove.push(f.name);
-                            break;
-                        }
+    listFileInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                        fileList = data.filter(name => typeof name === 'string' && name.trim() !== '');
+                        updateStatus(`预设列表导入成功，共 ${fileList.length} 个文件`);
+                        renderTlpDropdown();
+                    } else {
+                        updateStatus('导入的 list.json 格式不是数组');
                     }
+                } catch (err) {
+                    updateStatus('解析 list.json 失败: ' + err.message);
                 }
-                for (let name of toRemove) {
-                    fields = fields.filter(f => f.name !== name);
-                }
-                const color = getColorForField(name);
-                fields.push({ name, display: display || name, value: value || '', visIndices: sortedVis, color });
-                refreshAllFields();
-                clearSelection();
-                updateStatus(`字段 "${name}" 已添加`);
-                pushHistory();
-                return true;
+            };
+            reader.readAsText(this.files[0]);
+            this.value = '';
+        }
+    });
+
+    function loadTlpFromServer(name) {
+        const url = `./tlp/${name}.json`;
+        updateStatus(`正在加载 ${name}...`);
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                loadTlpData(data);
+                updateStatus(`已加载 TLP: ${name}`);
+            })
+            .catch(err => {
+                updateStatus(`加载失败: ${err.message}`);
+            });
+    }
+
+    tlpFileInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            importTlpFromFile(this.files[0]);
+            this.value = '';
+        }
+    });
+
+    function importTlpFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                loadTlpData(data);
+                updateStatus(`从本地导入成功: ${file.name}`);
+            } catch (err) {
+                updateStatus('解析 JSON 失败: ' + err.message);
             }
-        }
+        };
+        reader.readAsText(file);
+    }
 
-        function deleteField(name) {
-            fields = fields.filter(f => f.name !== name);
-            refreshAllFields();
-            updateStatus(`字段 "${name}" 已删除`);
-            pushHistory();
-        }
-
-        function clearAllFields() {
+    // ===== 核心数据加载 =====
+    function loadTlpData(data) {
+        if (data.dwCount !== undefined && data.endianness !== undefined && data.fields) {
+            dwCount = data.dwCount;
+            dwCountBtn.textContent = 'DW: ' + dwCount;
+            endianness = data.endianness;
+            updateEndianButton();
+            renderGrid();
             fields = [];
             colorIndex = 0;
+            const libMap = new Map();
+
+            for (let imp of data.fields) {
+                let visIndices = [];
+                let globalBits = [];
+
+                if (imp.visIndices) {
+                    visIndices = imp.visIndices;
+                    globalBits = visIndices.map(v => visualToGlobal[v]).filter(g => g !== undefined);
+                } else if (imp.startBit !== undefined && imp.endBit !== undefined) {
+                    for (let g = imp.startBit; g <= imp.endBit; g++) {
+                        globalBits.push(g);
+                        const v = globalToVisual[g];
+                        if (v !== undefined) visIndices.push(v);
+                    }
+                } else if (imp.start && imp.end) {
+                    const startGlobal = imp.start.dw * 32 + imp.start.byte * 8 + imp.start.bit;
+                    const endGlobal = imp.end.dw * 32 + imp.end.byte * 8 + imp.end.bit;
+                    for (let g = startGlobal; g <= endGlobal; g++) {
+                        globalBits.push(g);
+                        const v = globalToVisual[g];
+                        if (v !== undefined) visIndices.push(v);
+                    }
+                } else if (imp.positions && Array.isArray(imp.positions)) {
+                    for (let pos of imp.positions) {
+                        const g = pos.dw * 32 + pos.byte * 8 + pos.bit;
+                        globalBits.push(g);
+                        const v = globalToVisual[g];
+                        if (v !== undefined) visIndices.push(v);
+                    }
+                }
+
+                if (visIndices.length === 0) continue;
+
+                const originalVisIndices = visIndices.slice();
+                const valueStr = imp.value || '';
+                let finalValue = valueStr;
+
+                if (valueStr.length === originalVisIndices.length) {
+                    const charMap = {};
+                    for (let i = 0; i < originalVisIndices.length; i++) {
+                        charMap[originalVisIndices[i]] = valueStr[i];
+                    }
+                    visIndices.sort((a, b) => a - b);
+                    finalValue = visIndices.map(v => charMap[v] || '').join('');
+                    globalBits = visIndices.map(v => visualToGlobal[v]).filter(g => g !== undefined);
+                } else {
+                    visIndices.sort((a, b) => a - b);
+                    globalBits = visIndices.map(v => visualToGlobal[v]).filter(g => g !== undefined);
+                }
+
+                const color = getColorForField(imp.name);
+                const display = (imp.display && imp.display.trim() !== '') ? imp.display : (imp.name || '');
+
+                fields.push({
+                    name: imp.name,
+                    display,
+                    value: finalValue,
+                    visIndices: visIndices,
+                    globalBits: globalBits,
+                    color: imp.color || color
+                });
+                libMap.set(imp.name, { name: imp.name, display });
+            }
+
+            fieldLibrary = Array.from(libMap.values());
+            updateFieldLibSelect();
             refreshAllFields();
-            updateStatus('所有字段已清空');
+            updateFieldList();
             pushHistory();
+            updateStatus(`导入 TLP 成功 (${fields.length} 个字段)`);
+        } else {
+            updateStatus('无效的 TLP JSON 格式');
         }
+    }
 
-        function handleClear() {
-            if (selectedBits.length === 0) {
-                clearAllFields();
-                return;
+    // ===== 缩放控制 =====
+    function setZoom(index) {
+        if (index < 0) index = 0;
+        if (index >= ZOOM_LEVELS.length) index = ZOOM_LEVELS.length - 1;
+        currentZoomIndex = index;
+        const zoom = ZOOM_LEVELS[currentZoomIndex];
+        const percent = Math.round(zoom * 100) + '%';
+        zoomLabel.textContent = percent;
+        previewZoomLabel.textContent = percent;
+        renderGrid();
+        if (previewModal.classList.contains('active')) {
+            refreshPreview();
+        }
+    }
+
+    function zoomIn() {
+        if (currentZoomIndex < ZOOM_LEVELS.length - 1) setZoom(currentZoomIndex + 1);
+    }
+
+    function zoomOut() {
+        if (currentZoomIndex > 0) setZoom(currentZoomIndex - 1);
+    }
+
+    zoomOutBtn.addEventListener('click', zoomOut);
+    zoomInBtn.addEventListener('click', zoomIn);
+    previewZoomOutBtn.addEventListener('click', zoomOut);
+    previewZoomInBtn.addEventListener('click', zoomIn);
+
+    // ===== 核心函数 =====
+    function isReservedField(name) {
+        if (!name) return false;
+        const lower = name.toLowerCase();
+        return lower.includes('reserved') || lower.includes('rsvd');
+    }
+
+    function getColorForField(name) {
+        if (isReservedField(name)) return RESERVED_COLOR;
+        for (let f of fields) if (f.name === name && f.color) return f.color;
+        const color = COLORS[colorIndex % COLORS.length];
+        colorIndex++;
+        return color;
+    }
+
+    function updateStatus(msg) { statusBar.textContent = '当前操作：' + msg; }
+
+    function clearSelection() {
+        selectedBits.forEach(idx => { const el = bitElements[idx]; if (el) el.classList.remove('selected'); });
+        selectedBits = [];
+    }
+
+    function globalToPosition(globalBit) {
+        const dw = Math.floor(globalBit / 32);
+        const offset = globalBit % 32;
+        return { dw, byte: Math.floor(offset / 8), bit: offset % 8 };
+    }
+
+    function formatPosition(globalBit) {
+        const p = globalToPosition(globalBit);
+        return `DW${p.dw} Byte${p.byte} bit${p.bit}`;
+    }
+
+    function getSelectedVisIndices() {
+        const visSet = new Set();
+        selectedBits.forEach(g => {
+            const v = globalToVisual[g];
+            if (v !== undefined) visSet.add(v);
+        });
+        return Array.from(visSet).sort((a,b) => a-b);
+    }
+
+    function findFieldByVisIndices(visIndices) {
+        if (visIndices.length === 0) return null;
+        const sorted = visIndices.slice().sort((a,b) => a-b);
+        for (let f of fields) {
+            const fVis = f.visIndices.slice().sort((a,b) => a-b);
+            if (fVis.length === sorted.length && fVis.every((v, i) => v === sorted[i])) {
+                return f;
             }
-            const visIndices = getSelectedVisIndices();
-            if (visIndices.length === 0) return;
-            let toRemove = [];
-            for (let f of fields) {
-                for (let v of visIndices) {
-                    if (f.visIndices.includes(v)) {
-                        toRemove.push(f.name);
-                        break;
-                    }
-                }
-            }
-            if (toRemove.length === 0) {
-                updateStatus('未找到与选中范围重叠的字段');
-                return;
-            }
-            for (let name of toRemove) {
-                deleteField(name);
-            }
+        }
+        return null;
+    }
+
+    function pushHistory() {
+        if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
+        const snapshot = JSON.parse(JSON.stringify(fields));
+        history.push(snapshot);
+        if (history.length > MAX_HISTORY) history.shift();
+        historyIndex = history.length - 1;
+        updateUndoRedoButtons();
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            fields = JSON.parse(JSON.stringify(history[historyIndex]));
+            refreshAllFields();
+            updateFieldList();
             clearSelection();
-            updateStatus(`已删除 ${toRemove.length} 个字段`);
+            updateUndoRedoButtons();
+            updateStatus('撤销成功');
+        } else {
+            updateStatus('没有可撤销的操作');
         }
+    }
 
-        function importFieldLibraryFromFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.fields && Array.isArray(data.fields)) {
-                        const libMap = new Map();
-                        for (let imp of data.fields) {
-                            libMap.set(imp.name, { name: imp.name, display: imp.display || imp.name });
-                        }
-                        fieldLibrary = Array.from(libMap.values());
-                        updateFieldLibSelect();
-                        updateStatus(`导入字段库成功 (${fieldLibrary.length} 个字段名称)`);
-                    } else {
-                        updateStatus('无效的字段库 JSON 格式');
-                    }
-                } catch (err) {
-                    updateStatus('解析 JSON 失败: ' + err.message);
-                }
-            };
-            reader.readAsText(file);
+    function redo() {
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            fields = JSON.parse(JSON.stringify(history[historyIndex]));
+            refreshAllFields();
+            updateFieldList();
+            clearSelection();
+            updateUndoRedoButtons();
+            updateStatus('恢复成功');
+        } else {
+            updateStatus('没有可恢复的操作');
         }
+    }
 
-        function importTlpFromFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.dwCount !== undefined && data.endianness !== undefined && data.fields) {
-                        dwCountSelect.value = data.dwCount;
-                        endianness = data.endianness;
-                        updateEndianButton();
-                        fields = [];
-                        colorIndex = 0;
-                        const libMap = new Map();
-                        for (let imp of data.fields) {
-                            let visIndices = [];
-                            if (imp.visIndices) {
-                                visIndices = imp.visIndices;
-                            } else if (imp.startBit !== undefined && imp.endBit !== undefined) {
-                                for (let g = imp.startBit; g <= imp.endBit; g++) {
-                                    const v = globalToVisual[g];
-                                    if (v !== undefined) visIndices.push(v);
-                                }
-                            } else if (imp.start && imp.end) {
-                                const startGlobal = imp.start.dw * 32 + imp.start.byte * 8 + imp.start.bit;
-                                const endGlobal = imp.end.dw * 32 + imp.end.byte * 8 + imp.end.bit;
-                                for (let g = startGlobal; g <= endGlobal; g++) {
-                                    const v = globalToVisual[g];
-                                    if (v !== undefined) visIndices.push(v);
-                                }
-                            } else if (imp.positions && Array.isArray(imp.positions)) {
-                                for (let pos of imp.positions) {
-                                    const g = pos.dw * 32 + pos.byte * 8 + pos.bit;
-                                    const v = globalToVisual[g];
-                                    if (v !== undefined) visIndices.push(v);
-                                }
-                            }
-                            if (visIndices.length === 0) continue;
-                            const color = getColorForField(imp.name);
-                            const display = (imp.display && imp.display.trim() !== '') ? imp.display : (imp.name || '');
-                            fields.push({
-                                name: imp.name,
-                                display: display,
-                                value: imp.value || '',
-                                visIndices: visIndices.sort((a,b) => a-b),
-                                color: imp.color || color
-                            });
-                            libMap.set(imp.name, { name: imp.name, display: display });
-                        }
-                        fieldLibrary = Array.from(libMap.values());
-                        updateFieldLibSelect();
-                        renderGrid();
-                        pushHistory(); // 导入后记录历史
-                        updateStatus(`导入 TLP 成功 (${fields.length} 个字段)`);
-                    } else {
-                        updateStatus('无效的 TLP JSON 格式');
-                    }
-                } catch (err) {
-                    updateStatus('解析 JSON 失败: ' + err.message);
+    function updateUndoRedoButtons() {
+        undoBtn.disabled = historyIndex <= 0;
+        redoBtn.disabled = historyIndex >= history.length - 1;
+    }
+
+    async function saveFile(blob, defaultName, mimeType, extension) {
+        if (window.showSaveFilePicker) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: defaultName + '.' + extension,
+                    types: [{ description: mimeType, accept: { [mimeType]: ['.' + extension] } }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                updateStatus('文件保存成功');
+                return true;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    updateStatus('用户取消保存');
+                    return false;
                 }
-            };
-            reader.readAsText(file);
+                console.warn('showSaveFilePicker fallback due to:', err);
+            }
         }
+        let fileName = prompt('请输入文件名（不含扩展名）:', defaultName);
+        if (fileName === null) return false;
+        if (fileName.trim() === '') fileName = defaultName;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName + '.' + extension;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        updateStatus('文件导出成功');
+        return true;
+    }
 
-        function updateFieldLibSelect() {
-            const select = fieldLibSelect;
-            select.innerHTML = '<option value="">— 选择 —</option>';
-            fieldLibrary.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.name;
-                opt.textContent = `${f.name} (${f.display})`;
-                select.appendChild(opt);
-            });
-            fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
+    function recolorFields() {
+        if (fields.length === 0) { updateStatus('没有字段需要配色'); return; }
+        const reservedFields = [], normalFields = [];
+        for (let i = 0; i < fields.length; i++) {
+            if (isReservedField(fields[i].name)) reservedFields.push(i);
+            else normalFields.push(i);
         }
+        if (normalFields.length === 0) { updateStatus('所有字段均为保留字段，无需配色'); return; }
 
-        // ===== SVG 导出 =====
-        function getSvgString(includeWatermark) {
-            const cellWidth = 34;
-            const cellHeight = 34;
-            const leftMargin = 60;
-            const topOffset = 24;
-            const rowHeight = cellHeight;
-            const totalWidth = leftMargin + 32 * cellWidth + 20;
-            const totalHeight = topOffset + dwCount * rowHeight + 10;
-
-            let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalHeight}" font-family="'Microsoft YaHei', Arial, sans-serif">\n`;
-
-            const byteOrder = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
-
-            let xOff = leftMargin;
-            for (let bIdx of byteOrder) {
-                let byteNum = bIdx;
-                const xCenter = xOff + (8 * cellWidth) / 2;
-                svg += `  <line x1="${xOff}" y1="4" x2="${xOff}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
-                svg += `  <line x1="${xOff + 8*cellWidth}" y1="4" x2="${xOff + 8*cellWidth}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
-                svg += `  <text x="${xCenter}" y="12" text-anchor="middle" font-size="12" font-weight="600" fill="#546e7a">Byte${byteNum}</text>\n`;
-                xOff += 8 * cellWidth;
+        const nameSet = new Set();
+        for (let idx of normalFields) nameSet.add(fields[idx].name);
+        const uniqueNames = Array.from(nameSet);
+        const n = uniqueNames.length;
+        const adj = Array.from({ length: n }, () => []);
+        const nameVisSets = uniqueNames.map(name => {
+            const set = new Set();
+            for (let idx of normalFields) if (fields[idx].name === name) {
+                for (let v of fields[idx].visIndices) set.add(v);
             }
-
-            const yIndex = 14;
-            xOff = leftMargin;
-            for (let bIdx of byteOrder) {
-                for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
-                    const x = xOff + (7 - bitInByte) * cellWidth;
-                    svg += `  <line x1="${x}" y1="${yIndex}" x2="${x}" y2="${yIndex + 10}" stroke="#b0bec5" stroke-width="1"/>\n`;
-                    svg += `  <line x1="${x + cellWidth}" y1="${yIndex}" x2="${x + cellWidth}" y2="${yIndex + 10}" stroke="#b0bec5" stroke-width="1"/>\n`;
-                    svg += `  <text x="${x + cellWidth/2}" y="${yIndex + 8}" text-anchor="middle" font-size="10" fill="#90a4ae">${bitInByte}</text>\n`;
+            return set;
+        });
+        for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+                let adjacent = false;
+                const setA = nameVisSets[i], setB = nameVisSets[j];
+                for (let v of setA) {
+                    if (setB.has(v) || setB.has(v - 1) || setB.has(v + 1)) { adjacent = true; break; }
                 }
-                xOff += 8 * cellWidth;
+                if (adjacent) { adj[i].push(j); adj[j].push(i); }
             }
-
-            const dwStartY = topOffset;
-            for (let dw = 0; dw < dwCount; dw++) {
-                const yBase = dwStartY + dw * rowHeight;
-                svg += `  <text x="10" y="${yBase + cellHeight/2 + 5}" font-size="12" fill="#546e7a">DW${dw}</text>\n`;
-                for (let col = 0; col < 32; col++) {
-                    const x = leftMargin + col * cellWidth;
-                    svg += `  <rect x="${x}" y="${yBase}" width="${cellWidth}" height="${cellHeight}" fill="#f5f5f5" stroke="#ccc" stroke-width="0.5"/>\n`;
-                }
-            }
-
-            const textColor = '#000000';
-            const borderColor = '#000000';
-
-            for (let f of fields) {
-                const visIndices = f.visIndices.slice().sort((a,b) => a-b);
-                if (visIndices.length === 0) continue;
-                const color = f.color;
-                const fillColor = whiteBg ? '#FFFFFF' : color;
-
-                const segments = [];
-                let start = visIndices[0], end = visIndices[0];
-                for (let i = 1; i < visIndices.length; i++) {
-                    if (visIndices[i] === end + 1) {
-                        end = visIndices[i];
-                    } else {
-                        segments.push({ start, end });
-                        start = visIndices[i];
-                        end = visIndices[i];
-                    }
-                }
-                segments.push({ start, end });
-
-                for (let seg of segments) {
-                    const { start: segStart, end: segEnd } = seg;
-                    const startRow = Math.floor(segStart / 32);
-                    const endRow = Math.floor(segEnd / 32);
-                    const startCol = segStart % 32;
-                    const endCol = segEnd % 32;
-                    if (startRow === endRow) {
-                        const x = leftMargin + startCol * cellWidth;
-                        const y = dwStartY + startRow * rowHeight;
-                        const width = (endCol - startCol + 1) * cellWidth;
-                        svg += `  <rect x="${x}" y="${y}" width="${width}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
-                    } else {
-                        const x1 = leftMargin + startCol * cellWidth;
-                        const y1 = dwStartY + startRow * rowHeight;
-                        const width1 = (32 - startCol) * cellWidth;
-                        svg += `  <rect x="${x1}" y="${y1}" width="${width1}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
-                        for (let r = startRow + 1; r < endRow; r++) {
-                            const yMid = dwStartY + r * rowHeight;
-                            svg += `  <rect x="${leftMargin}" y="${yMid}" width="${32 * cellWidth}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
-                        }
-                        const xLast = leftMargin;
-                        const yLast = dwStartY + endRow * rowHeight;
-                        const widthLast = (endCol + 1) * cellWidth;
-                        svg += `  <rect x="${xLast}" y="${yLast}" width="${widthLast}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
-                    }
-                }
-            }
-
-            for (let f of fields) {
-                const visIndices = f.visIndices.slice().sort((a,b) => a-b);
-                if (visIndices.length === 0) continue;
-                for (let i = 0; i < visIndices.length; i++) {
-                    const v = visIndices[i];
-                    if (i < visIndices.length - 1) {
-                        const col = v % 32;
-                        const row = Math.floor(v / 32);
-                        const x = leftMargin + (col + 1) * cellWidth;
-                        const yBase = dwStartY + row * rowHeight;
-                        const tickHeight = cellHeight * 0.25;
-                        svg += `  <line x1="${x}" y1="${yBase + cellHeight}" x2="${x}" y2="${yBase + cellHeight - tickHeight}" stroke="#000000" stroke-width="0.5"/>\n`;
-                    }
-                }
-            }
-
-            for (let f of fields) {
-                const visIndices = f.visIndices.slice().sort((a,b) => a-b);
-                if (visIndices.length === 0) continue;
-                const valueStr = f.value || '';
-                const totalBits = visIndices.length;
-                const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
-                const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
-
-                const minVis = visIndices[0];
-                const maxVis = visIndices[visIndices.length-1];
-                const midVis = (minVis + maxVis) / 2;
-                const midCol = midVis % 32;
-                const midRow = Math.floor(midVis / 32);
-                const cx = leftMargin + midCol * cellWidth + cellWidth / 2;
-                const cy = dwStartY + midRow * rowHeight + cellHeight / 2 + 3;
-
-                const fontSize = 14;
-                if (displayText) {
-                    svg += `  <text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
-                }
-
-                if (hasValue) {
-                    for (let idx = 0; idx < visIndices.length; idx++) {
-                        const v = visIndices[idx];
-                        const col = v % 32;
-                        const row = Math.floor(v / 32);
-                        const x = leftMargin + col * cellWidth + cellWidth / 2;
-                        const y = dwStartY + row * rowHeight + cellHeight / 2 + 3;
-                        const charY = y + 12;
-                        const char = valueStr[idx] || '';
-                        svg += `  <text x="${x}" y="${charY}" text-anchor="middle" font-size="12" font-weight="normal" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${char}</text>\n`;
-                    }
-                }
-            }
-
-            if (includeWatermark) {
-                const wmText = 'MangoPapa';
-                const wmFontSize = 50;
-                const wmColor = '#888888';
-                const wmOpacity = 0.25;
-                const wmRotate = -30;
-                const spacingX = 140;
-                const spacingY = 110;
-                const startX = -50;
-                const startY = -50;
-                const cols = Math.ceil((totalWidth + 100) / spacingX);
-                const rows = Math.ceil((totalHeight + 100) / spacingY);
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        const x = startX + c * spacingX;
-                        const y = startY + r * spacingY;
-                        svg += `  <text x="${x}" y="${y}" transform="rotate(${wmRotate}, ${x}, ${y})" font-size="${wmFontSize}" font-weight="bold" fill="${wmColor}" opacity="${wmOpacity}" font-family="Arial, sans-serif" letter-spacing="6">${wmText}</text>\n`;
-                    }
-                }
-            }
-
-            svg += '</svg>';
-            return svg;
         }
-
-        // ===== 导出 SVG =====
-        async function exportSvgFile() {
-            const svgStr = getSvgString(showWatermark);
-            const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-            await saveFile(blob, 'tlp', 'image/svg+xml', 'svg');
+        const assignedColors = new Array(n).fill(null);
+        const shuffledColors = [...COLORS];
+        for (let i = shuffledColors.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
         }
-
-        // ===== 导出 JPG =====
-        async function exportJpgFile() {
-            const svgStr = getSvgString(showWatermark);
-            const viewBoxMatch = svgStr.match(/viewBox="0 0 (\d+) (\d+)"/);
-            if (!viewBoxMatch) {
-                updateStatus('无法解析SVG尺寸');
-                return;
+        for (let i = 0; i < n; i++) {
+            const usedColors = new Set();
+            for (let j of adj[i]) if (assignedColors[j] !== null) usedColors.add(assignedColors[j]);
+            let chosen = null;
+            for (let c of shuffledColors) if (!usedColors.has(c)) { chosen = c; break; }
+            if (chosen === null) {
+                const allUsed = new Set(assignedColors.filter(c => c !== null));
+                for (let c of shuffledColors) if (!allUsed.has(c)) { chosen = c; break; }
             }
-            const width = parseInt(viewBoxMatch[1]);
-            const height = parseInt(viewBoxMatch[2]);
-
-            const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(svgBlob);
-
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = async function() {
-                    const scale = 2;
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width * scale;
-                    canvas.height = height * scale;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    canvas.toBlob(async function(blob) {
-                        if (!blob) {
-                            updateStatus('JPG导出失败');
-                            resolve();
-                            return;
-                        }
-                        await saveFile(blob, 'tlp', 'image/jpeg', 'jpg');
-                        resolve();
-                    }, 'image/jpeg', 0.92);
-                    URL.revokeObjectURL(url);
-                };
-                img.onerror = function() {
-                    updateStatus('加载SVG失败');
-                    URL.revokeObjectURL(url);
-                    resolve();
-                };
-                img.src = url;
-            });
+            if (chosen === null) chosen = shuffledColors[0];
+            assignedColors[i] = chosen;
         }
-
-        // ===== 导出 JSON =====
-        async function exportJson() {
-            const exportFields = fields.map(f => {
-                const positions = f.visIndices.map(v => {
-                    const g = visualToGlobal[v];
-                    if (g === undefined) return null;
-                    const p = globalToPosition(g);
-                    return { dw: p.dw, byte: p.byte, bit: p.bit };
-                }).filter(p => p !== null);
-                return {
-                    name: f.name,
-                    display: f.display,
-                    value: f.value || '',
-                    positions: positions,
-                    color: f.color
-                };
-            });
-            const data = { dwCount, endianness, fields: exportFields };
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            await saveFile(blob, 'tlp', 'application/json', 'json');
+        const colorSet = new Set();
+        for (let i = 0; i < n; i++) {
+            if (colorSet.has(assignedColors[i])) {
+                const allUsed = new Set(assignedColors);
+                for (let c of shuffledColors) if (!allUsed.has(c)) { assignedColors[i] = c; break; }
+            }
+            colorSet.add(assignedColors[i]);
         }
+        for (let i = 0; i < n; i++) {
+            const name = uniqueNames[i], color = assignedColors[i];
+            for (let idx of normalFields) if (fields[idx].name === name) fields[idx].color = color;
+        }
+        for (let idx of reservedFields) fields[idx].color = RESERVED_COLOR;
+        refreshAllFields();
+        updateStatus(`重新配色完成 (${fields.length} 个字段，${uniqueNames.length} 个唯一名称，${reservedFields.length} 个保留字段为灰色)`);
+        pushHistory();
+        if (previewModal.classList.contains('active')) refreshPreview();
+    }
 
-        // ===== 预览 =====
-        function previewSvg() {
+    function updateEndianButton() {
+        endianToggle.textContent = endianness === 'little' ? '切为大端' : '切为小端';
+        endianToggle.classList.toggle('active', endianness === 'big');
+    }
+
+    function generateWatermarkHTML() {
+        const wmText = 'MangoPapa';
+        let html = '';
+        for (let i = 0; i < 50; i++) html += `<span>${wmText}</span>`;
+        return html;
+    }
+
+    function updateGridWatermark() {
+        const gw = document.getElementById('gridWatermark');
+        if (showWatermark) {
+            gw.style.display = 'flex';
+            if (gw.children.length === 0) gw.innerHTML = generateWatermarkHTML();
+        } else {
+            gw.style.display = 'none';
+        }
+        watermarkNotice.style.display = showWatermark ? 'inline-block' : 'none';
+        previewWatermarkNotice.style.display = showWatermark ? 'block' : 'none';
+    }
+
+    function refreshPreview() {
+        if (previewModal.classList.contains('active')) {
+            recalcFieldVisIndices();
             const svgStr = getSvgString(showWatermark);
             previewContainer.innerHTML = '';
             const wrapper = document.createElement('div');
@@ -1803,203 +910,891 @@
             const svgElem = wrapper.firstElementChild;
             previewContainer.appendChild(svgElem);
             updatePreviewButtons();
-            previewModal.classList.add('active');
+        }
+    }
+
+    function updatePreviewButtons() {
+        previewToggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+        previewToggleWhiteBgBtn.classList.toggle('active', whiteBg);
+    }
+
+    function recalcFieldVisIndices() {
+        for (let f of fields) {
+            if (f.globalBits && f.globalBits.length > 0) {
+                const newVis = f.globalBits
+                    .map(g => globalToVisual[g])
+                    .filter(v => v !== undefined)
+                    .sort((a, b) => a - b);
+                if (newVis.length > 0) {
+                    f.visIndices = newVis;
+                }
+            }
+        }
+    }
+
+    let fieldNameOverlay = null;
+
+    function renderGrid() {
+        container.innerHTML = '';
+        bitElements = {};
+        visualToGlobal = {};
+        globalToVisual = {};
+
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'bit-grid';
+        gridDiv.style.position = 'relative';
+
+        const overlay = document.createElement('div');
+        overlay.style.position = 'absolute';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.pointerEvents = 'none';
+        overlay.style.zIndex = '10';
+        overlay.style.overflow = 'hidden';
+        gridDiv.appendChild(overlay);
+        fieldNameOverlay = overlay;
+
+        const zoom = ZOOM_LEVELS[currentZoomIndex];
+        const cellWidth = 34 * zoom;
+        const cellHeight = 34;
+        const fontSize = 14 * zoom;
+        const valueFont = 12;
+        const bitIndexFont = 10;
+        const bitIndexFont2 = 15;
+
+        const byteOrder = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'dw-row';
+        const emptyLabel = document.createElement('span');
+        emptyLabel.className = 'dw-label';
+        emptyLabel.textContent = '';
+        headerRow.appendChild(emptyLabel);
+        for (let bIdx of byteOrder) {
+            const byteGroup = document.createElement('div');
+            byteGroup.className = 'byte-group';
+            const label = document.createElement('span');
+            label.className = 'byte-label';
+            label.textContent = `Byte${bIdx}`;
+            label.style.width = (cellWidth * 8) + 'px';
+            byteGroup.appendChild(label);
+            const phContainer = document.createElement('div');
+            phContainer.className = 'bit-container';
+            phContainer.style.height = '0';
+            phContainer.style.overflow = 'hidden';
+            for (let i = 0; i < 8; i++) {
+                const ph = document.createElement('span');
+                ph.style.width = cellWidth + 'px';
+                ph.style.height = cellHeight + 'px';
+                ph.style.display = 'inline-block';
+                ph.style.flexShrink = '0';
+                phContainer.appendChild(ph);
+            }
+            byteGroup.appendChild(phContainer);
+            headerRow.appendChild(byteGroup);
+        }
+        gridDiv.appendChild(headerRow);
+
+        const indexRow = document.createElement('div');
+        indexRow.className = 'dw-row bit-index-row';
+        const emptyLabel2 = document.createElement('span');
+        emptyLabel2.className = 'dw-label';
+        emptyLabel2.textContent = '';
+        indexRow.appendChild(emptyLabel2);
+        for (let bIdx of byteOrder) {
+            const byteGroup = document.createElement('div');
+            byteGroup.className = 'byte-group';
+            const bitContainer = document.createElement('div');
+            bitContainer.className = 'bit-container';
+            for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
+                const cell = document.createElement('div');
+                cell.className = 'bit-cell';
+                cell.textContent = bitInByte;
+                cell.style.width = cellWidth + 'px';
+                cell.style.height = '10px';
+                cell.style.fontSize = bitIndexFont + 'px';
+                bitContainer.appendChild(cell);
+            }
+            byteGroup.appendChild(bitContainer);
+            indexRow.appendChild(byteGroup);
+        }
+        gridDiv.appendChild(indexRow);
+
+        let visualIndex = 0;
+        for (let dw = 0; dw < dwCount; dw++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'dw-row';
+            const label = document.createElement('span');
+            label.className = 'dw-label';
+            label.textContent = `DW${dw}`;
+            rowDiv.appendChild(label);
+
+            for (let bIdx of byteOrder) {
+                const byteGroup = document.createElement('div');
+                byteGroup.className = 'byte-group';
+                const bitContainer = document.createElement('div');
+                bitContainer.className = 'bit-container';
+                for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
+                    const absBit = dw * 32 + bIdx * 8 + bitInByte;
+                    const cell = document.createElement('div');
+                    cell.className = 'bit-cell';
+                    cell.dataset.bitIndex = absBit;
+                    cell.dataset.visualIndex = visualIndex;
+                    cell.style.width = cellWidth + 'px';
+                    cell.style.height = cellHeight + 'px';
+                    cell.style.fontSize = fontSize + 'px';
+                    const idxSpan = document.createElement('span');
+                    idxSpan.className = 'bit-index';
+                    idxSpan.textContent = bitInByte;
+                    idxSpan.style.fontSize = bitIndexFont2 + 'px';
+                    cell.appendChild(idxSpan);
+                    bitElements[absBit] = cell;
+                    visualToGlobal[visualIndex] = absBit;
+                    globalToVisual[absBit] = visualIndex;
+                    visualIndex++;
+                    bitContainer.appendChild(cell);
+
+                    cell.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        const idx = parseInt(this.dataset.bitIndex);
+                        const visIdx = parseInt(this.dataset.visualIndex);
+                        if (e.ctrlKey || e.metaKey) {
+                            if (selectedBits.includes(idx)) {
+                                selectedBits = selectedBits.filter(i => i !== idx);
+                                this.classList.remove('selected');
+                            } else {
+                                selectedBits.push(idx);
+                                this.classList.add('selected');
+                            }
+                            updateStatus(`选中 ${selectedBits.length} 个bit`);
+                            return;
+                        }
+                        if (e.shiftKey && selectedBits.length > 0) {
+                            const firstVis = globalToVisual[selectedBits[0]];
+                            const startVis = Math.min(firstVis, visIdx);
+                            const endVis = Math.max(firstVis, visIdx);
+                            selectedBits.forEach(i => { const el = bitElements[i]; if (el) el.classList.remove('selected'); });
+                            selectedBits = [];
+                            for (let v = startVis; v <= endVis; v++) {
+                                const gIdx = visualToGlobal[v];
+                                selectedBits.push(gIdx);
+                                const el = bitElements[gIdx];
+                                if (el) el.classList.add('selected');
+                            }
+                        } else {
+                            clearSelection();
+                            selectedBits = [idx];
+                            this.classList.add('selected');
+                        }
+                        updateStatus(`选中 ${selectedBits.length} 个bit`);
+                    });
+                    cell.addEventListener('dblclick', function(e) {
+                        e.preventDefault();
+                        openEditModal();
+                    });
+                }
+                byteGroup.appendChild(bitContainer);
+                rowDiv.appendChild(byteGroup);
+            }
+            gridDiv.appendChild(rowDiv);
+        }
+        container.appendChild(gridDiv);
+
+        recalcFieldVisIndices();
+        refreshAllFields();
+        updateFieldList();
+        updateGridWatermark();
+        updateStatus('网格已更新');
+    }
+
+    function refreshAllFields() {
+        for (let idx in bitElements) {
+            const el = bitElements[idx];
+            el.classList.remove('field');
+            el.style.background = '';
+            el.style.borderColor = '';
+            el.style.color = '';
+            el.style.border = '1px solid #b0bec5';
+            el.style.borderRadius = '0';
+            const idxSpan = el.querySelector('.bit-index');
+            if (idxSpan) idxSpan.style.display = 'block';
+            const textSpan = el.querySelector('.field-text');
+            if (textSpan) textSpan.remove();
+            const valueSpan = el.querySelector('.field-value');
+            if (valueSpan) valueSpan.remove();
+            const tick = el.querySelector('.tick-mark');
+            if (tick) tick.remove();
         }
 
-        function closePreview() { previewModal.classList.remove('active'); }
-
-        // ===== 编辑模态框 =====
-        function openEditModal() {
-            const visIndices = getSelectedVisIndices();
-            if (visIndices.length === 0) {
-                updateStatus('请先选中至少一个bit');
-                return;
-            }
-            const firstVis = visIndices[0];
-            const lastVis = visIndices[visIndices.length-1];
-            const startGlobal = visualToGlobal[firstVis];
-            const endGlobal = visualToGlobal[lastVis];
-            const startStr = formatPosition(startGlobal);
-            const endStr = formatPosition(endGlobal);
-            modalBitInfo.textContent = `选中 ${visIndices.length} 个格子： ${startStr} → ${endStr}`;
-
-            const matchedField = findFieldByVisIndices(visIndices);
-            if (matchedField) {
-                modalFieldName.value = matchedField.name;
-                modalFieldDisplay.value = matchedField.display || matchedField.name;
-                modalFieldValue.value = matchedField.value || '';
-                editingField = matchedField;
-                updateStatus(`正在编辑字段 "${matchedField.name}"`);
-            } else {
-                modalFieldName.value = '';
-                modalFieldDisplay.value = '';
-                modalFieldValue.value = '';
-                editingField = null;
-                updateStatus('新建字段');
-            }
-
-            fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
-            if (fieldLibrary.length > 0) fieldLibSelect.value = '';
-            modalOverlay.classList.add('active');
-            setTimeout(() => modalFieldName.focus(), 100);
+        if (fieldNameOverlay) {
+            fieldNameOverlay.innerHTML = '';
         }
 
-        function closeModal() { modalOverlay.classList.remove('active'); }
+        if (fields.length === 0) return;
 
-        fieldLibSelect.addEventListener('change', function() {
-            const selected = this.value;
-            if (selected) {
-                const found = fieldLibrary.find(f => f.name === selected);
-                if (found) {
-                    modalFieldName.value = found.name;
-                    modalFieldDisplay.value = found.display || found.name;
+        const zoom = ZOOM_LEVELS[currentZoomIndex];
+        const valueFont = 12;
+
+        for (let f of fields) {
+            const visIndices = f.visIndices.slice().sort((a,b) => a-b);
+            if (visIndices.length === 0) continue;
+            const color = f.color;
+            const fillColor = whiteBg ? '#FFFFFF' : color;
+            const borderColor = '#000000';
+            const textColor = '#000000';
+            const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
+
+            const segments = [];
+            let start = visIndices[0], end = visIndices[0];
+            for (let i = 1; i < visIndices.length; i++) {
+                if (visIndices[i] === end + 1) {
+                    end = visIndices[i];
+                } else {
+                    segments.push({ start, end });
+                    start = visIndices[i];
+                    end = visIndices[i];
                 }
             }
-        });
+            segments.push({ start, end });
 
-        modalConfirmBtn.addEventListener('click', function() {
-            const visIndices = getSelectedVisIndices();
-            if (visIndices.length === 0) {
-                updateStatus('请先选中bit');
-                closeModal();
-                return;
-            }
-            const name = modalFieldName.value.trim();
-            const display = modalFieldDisplay.value.trim() || name;
-            const value = modalFieldValue.value.trim();
-            if (!name) {
-                updateStatus('请输入字段名');
-                return;
-            }
-            if (addFieldFromVisIndices(name, display, value, visIndices)) {
-                closeModal();
-                editingField = null;
-            }
-        });
+            const valueStr = f.value || '';
+            const totalBits = visIndices.length;
+            const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
 
-        modalCancelBtn.addEventListener('click', closeModal);
-        modalOverlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-
-        previewCloseBtn.addEventListener('click', closePreview);
-        previewExportSvgBtn.addEventListener('click', exportSvgFile);
-        previewExportJpgBtn.addEventListener('click', exportJpgFile);
-        previewModal.addEventListener('click', function(e) { if (e.target === this) closePreview(); });
-
-        document.addEventListener('keydown', function(e) {
-            if (modalOverlay.classList.contains('active')) {
-                if (e.key === 'Escape') closeModal();
-                else if (e.key === 'Enter' && (document.activeElement === modalFieldName || document.activeElement === modalFieldDisplay || document.activeElement === modalFieldValue || document.activeElement === fieldLibSelect)) {
-                    modalConfirmBtn.click();
+            const bitToIndex = {};
+            if (hasValue) {
+                for (let i = 0; i < f.globalBits.length; i++) {
+                    bitToIndex[f.globalBits[i]] = i;
                 }
             }
-            if (previewModal.classList.contains('active') && e.key === 'Escape') closePreview();
-        });
 
-        // ===== 键盘监听：连续按4下数字键1切换水印 =====
-        document.addEventListener('keydown', function(e) {
-            if (e.key === '1') {
-                const now = Date.now();
-                if (now - lastKeyTime > 500) {
-                    keyPressCount = 0;
+            for (let seg of segments) {
+                const { start: segStart, end: segEnd } = seg;
+                const bitList = [];
+                for (let v = segStart; v <= segEnd; v++) {
+                    const g = visualToGlobal[v];
+                    if (g !== undefined && bitElements[g]) bitList.push(bitElements[g]);
                 }
-                keyPressCount++;
-                lastKeyTime = now;
-                if (keyPressCount >= 4) {
-                    showWatermark = !showWatermark;
-                    keyPressCount = 0;
-                    updateStatus(showWatermark ? '水印已显示' : '水印已隐藏');
-                    updateGridWatermark();
-                    if (previewModal.classList.contains('active')) {
-                        refreshPreview();
+                if (bitList.length === 0) continue;
+
+                for (let el of bitList) {
+                    const visIdx = parseInt(el.dataset.visualIndex);
+                    const globalBit = parseInt(el.dataset.bitIndex);
+                    const col = visIdx % 32;
+                    const isFirstOfRow = (col === 0);
+                    const isLastOfRow = (col === 31);
+                    const isFirstVis = (visIdx === segStart);
+                    const isLastVis = (visIdx === segEnd);
+
+                    el.classList.add('field');
+                    el.style.background = fillColor;
+                    el.style.color = textColor;
+                    el.style.borderTop = `1px solid ${borderColor}`;
+                    el.style.borderBottom = `1px solid ${borderColor}`;
+                    if (isFirstOfRow || isFirstVis) {
+                        el.style.borderLeft = `1px solid ${borderColor}`;
+                    } else {
+                        el.style.borderLeft = 'none';
+                    }
+                    if (isLastOfRow || isLastVis) {
+                        el.style.borderRight = `1px solid ${borderColor}`;
+                    } else {
+                        el.style.borderRight = 'none';
+                    }
+                    if (isFirstVis && isFirstOfRow) {
+                        el.style.borderRadius = '2px 0 0 2px';
+                    } else if (isLastVis && isLastOfRow) {
+                        el.style.borderRadius = '0 2px 2px 0';
+                    } else {
+                        el.style.borderRadius = '0';
+                    }
+                    const idxSpan = el.querySelector('.bit-index');
+                    if (idxSpan) idxSpan.style.display = 'none';
+
+                    const isLastBit = (visIdx === segEnd);
+                    if (!isLastBit) {
+                        let tick = el.querySelector('.tick-mark');
+                        if (!tick) {
+                            tick = document.createElement('div');
+                            tick.className = 'tick-mark';
+                            el.appendChild(tick);
+                        }
+                    } else {
+                        const tick = el.querySelector('.tick-mark');
+                        if (tick) tick.remove();
+                    }
+
+                    const oldValue = el.querySelector('.field-value');
+                    if (oldValue) oldValue.remove();
+
+                    if (hasValue) {
+                        const idx = bitToIndex[globalBit];
+                        if (idx !== undefined && idx < valueStr.length) {
+                            const valChar = valueStr[idx];
+                            const valSpan = document.createElement('span');
+                            valSpan.className = 'field-value';
+                            valSpan.textContent = valChar;
+                            valSpan.style.color = textColor;
+                            valSpan.style.fontSize = valueFont + 'px';
+                            valSpan.style.lineHeight = '1';
+                            valSpan.style.marginTop = 'auto';
+                            el.appendChild(valSpan);
+                        }
                     }
                 }
-            } else {
-                keyPressCount = 0;
-            }
-        });
 
-        // ===== 点击空白区域取消选中 =====
-        container.addEventListener('click', function(e) {
-            const isBitCell = e.target.closest('.bit-cell');
-            if (!isBitCell) {
-                clearSelection();
-                updateStatus('已取消选中');
-            }
-        });
+                const firstEl = bitList[0];
+                const lastEl = bitList[bitList.length - 1];
+                const gridRect = fieldNameOverlay.parentElement.getBoundingClientRect();
+                const firstRect = firstEl.getBoundingClientRect();
+                const lastRect = lastEl.getBoundingClientRect();
+                const left = firstRect.left - gridRect.left;
+                const right = lastRect.right - gridRect.left;
+                const centerX = (left + right) / 2;
+                const top = firstRect.top - gridRect.top;
+                const height = firstRect.height;
 
-        // ===== 撤销/恢复快捷键 =====
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                e.preventDefault();
-                undo();
+                const nameDiv = document.createElement('div');
+                nameDiv.textContent = displayText;
+                nameDiv.style.position = 'absolute';
+                nameDiv.style.left = centerX + 'px';
+                nameDiv.style.top = (top + height/2 - 12) + 'px';
+                nameDiv.style.transform = 'translateX(-50%)';
+                nameDiv.style.pointerEvents = 'none';
+                nameDiv.style.fontSize = '14px';
+                nameDiv.style.fontWeight = 'bold';
+                nameDiv.style.color = textColor;
+                nameDiv.style.textShadow = '0 1px 2px rgba(255,255,255,0.3)';
+                nameDiv.style.whiteSpace = 'nowrap';
+                nameDiv.style.textAlign = 'center';
+                nameDiv.style.zIndex = '20';
+                fieldNameOverlay.appendChild(nameDiv);
             }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-                e.preventDefault();
-                redo();
-            }
-        });
-
-        // ===== 白底切换 =====
-        function toggleWhiteBg() {
-            whiteBg = !whiteBg;
-            toggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
-            toggleWhiteBgBtn.classList.toggle('active', whiteBg);
-            refreshAllFields();
-            updateStatus(whiteBg ? '已切换到白底+黑边框模式' : '已恢复正常配色');
-            if (previewModal.classList.contains('active')) {
-                refreshPreview();
-            }
-            // 白底切换是视觉配置，不记录历史。
         }
-        toggleWhiteBgBtn.addEventListener('click', toggleWhiteBg);
 
-        previewToggleWhiteBgBtn.addEventListener('click', function() {
-            toggleWhiteBg();
+        selectedBits.forEach(idx => { const el = bitElements[idx]; if (el) el.classList.add('selected'); });
+        updateFieldList();
+    }
+
+    function updateFieldList() {
+        fieldListItems.innerHTML = '';
+        if (fields.length === 0) {
+            fieldListContainer.classList.remove('visible');
+            fieldListItems.innerHTML = '<span style="color:#999; font-size:13px;">暂无字段</span>';
+        } else {
+            fieldListContainer.classList.add('visible');
+            const sortedFields = [...fields].sort((a, b) => a.name.localeCompare(b.name));
+            for (let f of sortedFields) {
+                const tag = document.createElement('span');
+                tag.className = 'field-tag';
+                const dot = document.createElement('span');
+                dot.className = 'color-dot';
+                dot.style.background = f.color;
+                tag.appendChild(dot);
+                const text = document.createTextNode(f.name);
+                tag.appendChild(text);
+                const delBtn = document.createElement('button');
+                delBtn.className = 'del-btn';
+                delBtn.textContent = '×';
+                delBtn.title = '删除此字段';
+                delBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteField(f.name);
+                });
+                tag.appendChild(delBtn);
+                fieldListItems.appendChild(tag);
+            }
+        }
+    }
+
+    function addFieldFromVisIndices(name, display, value, visIndices) {
+        if (!name) return false;
+        if (visIndices.length === 0) return false;
+        if (value && value.length > 0 && value.length !== visIndices.length) {
+            updateStatus(`错误：值长度 (${value.length}) 与 bit 数量 (${visIndices.length}) 不一致`);
+            return false;
+        }
+        const sortedVis = visIndices.slice().sort((a,b) => a-b);
+        const globalBits = sortedVis.map(v => visualToGlobal[v]).filter(g => g !== undefined);
+        if (globalBits.length === 0) return false;
+
+        const existing = findFieldByVisIndices(sortedVis);
+        if (existing) {
+            existing.name = name;
+            existing.display = display || name;
+            existing.value = value || '';
+            existing.globalBits = globalBits;
+            refreshAllFields();
+            clearSelection();
+            updateStatus(`字段 "${name}" 已更新`);
+            pushHistory();
+            return true;
+        } else {
+            let toRemove = [];
+            for (let f of fields) {
+                for (let v of sortedVis) {
+                    if (f.visIndices.includes(v)) { toRemove.push(f.name); break; }
+                }
+            }
+            for (let n of toRemove) fields = fields.filter(f => f.name !== n);
+            const color = getColorForField(name);
+            globalBits.sort((a, b) => a - b);
+            fields.push({
+                name,
+                display: display || name,
+                value: value || '',
+                visIndices: sortedVis,
+                globalBits,
+                color
+            });
+            refreshAllFields();
+            clearSelection();
+            updateStatus(`字段 "${name}" 已添加`);
+            pushHistory();
+            return true;
+        }
+    }
+
+    function deleteField(name) {
+        fields = fields.filter(f => f.name !== name);
+        refreshAllFields();
+        updateStatus(`字段 "${name}" 已删除`);
+        pushHistory();
+    }
+
+    function clearAllFields() {
+        fields = [];
+        colorIndex = 0;
+        refreshAllFields();
+        updateStatus('所有字段已清空');
+        pushHistory();
+    }
+
+    function handleClear() {
+        if (selectedBits.length === 0) { clearAllFields(); return; }
+        const visIndices = getSelectedVisIndices();
+        if (visIndices.length === 0) return;
+        let toRemove = [];
+        for (let f of fields) {
+            for (let v of visIndices) {
+                if (f.visIndices.includes(v)) { toRemove.push(f.name); break; }
+            }
+        }
+        if (toRemove.length === 0) { updateStatus('未找到与选中范围重叠的字段'); return; }
+        for (let name of toRemove) deleteField(name);
+        clearSelection();
+        updateStatus(`已删除 ${toRemove.length} 个字段`);
+    }
+
+    function updateFieldLibSelect() {
+        const select = fieldLibSelect;
+        select.innerHTML = '<option value="">— 选择 —</option>';
+        fieldLibrary.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.name;
+            opt.textContent = `${f.name} (${f.display})`;
+            select.appendChild(opt);
         });
-        previewRecolorBtn.addEventListener('click', function() {
-            recolorFields();
+        fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
+    }
+
+    // ===== SVG 导出 =====
+    function getSvgString(includeWatermark) {
+        const zoom = ZOOM_LEVELS[currentZoomIndex];
+        const cellWidth = 34 * zoom;
+        const cellHeight = 34;
+        const fontSize = 14;
+        const valueFont = 12;
+        const bitIndexFont = 10;
+        const leftMargin = 60;
+        const topOffset = 24;
+        const rowHeight = cellHeight;
+        const totalWidth = leftMargin + 32 * cellWidth + 20;
+        const totalHeight = topOffset + dwCount * rowHeight + 10;
+
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalHeight}" width="${totalWidth}" height="${totalHeight}" font-family="'Microsoft YaHei', Arial, sans-serif">\n`;
+
+        const byteOrder = (endianness === 'little') ? [0,1,2,3] : [3,2,1,0];
+
+        let xOff = leftMargin;
+        for (let bIdx of byteOrder) {
+            const xCenter = xOff + (8 * cellWidth) / 2;
+            svg += `  <line x1="${xOff}" y1="4" x2="${xOff}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
+            svg += `  <line x1="${xOff + 8*cellWidth}" y1="4" x2="${xOff + 8*cellWidth}" y2="14" stroke="#b0bec5" stroke-width="1"/>\n`;
+            svg += `  <text x="${xCenter}" y="12" text-anchor="middle" font-size="12" font-weight="600" fill="#546e7a">Byte${bIdx}</text>\n`;
+            xOff += 8 * cellWidth;
+        }
+
+        const yIndex = 14;
+        xOff = leftMargin;
+        for (let bIdx of byteOrder) {
+            for (let bitInByte = 7; bitInByte >= 0; bitInByte--) {
+                const x = xOff + (7 - bitInByte) * cellWidth;
+                svg += `  <line x1="${x}" y1="${yIndex}" x2="${x}" y2="${yIndex + 10}" stroke="#b0bec5" stroke-width="1"/>\n`;
+                svg += `  <line x1="${x + cellWidth}" y1="${yIndex}" x2="${x + cellWidth}" y2="${yIndex + 10}" stroke="#b0bec5" stroke-width="1"/>\n`;
+                svg += `  <text x="${x + cellWidth/2}" y="${yIndex + 8}" text-anchor="middle" font-size="${bitIndexFont}" fill="#90a4ae">${bitInByte}</text>\n`;
+            }
+            xOff += 8 * cellWidth;
+        }
+
+        const dwStartY = topOffset;
+        for (let dw = 0; dw < dwCount; dw++) {
+            const yBase = dwStartY + dw * rowHeight;
+            svg += `  <text x="20" y="${yBase + cellHeight/2 + 5}" font-size="12" fill="#546e7a">DW${dw}</text>\n`;
+            for (let col = 0; col < 32; col++) {
+                const x = leftMargin + col * cellWidth;
+                svg += `  <rect x="${x}" y="${yBase}" width="${cellWidth}" height="${cellHeight}" fill="#f5f5f5" stroke="#ccc" stroke-width="0.5"/>\n`;
+            }
+        }
+
+        const textColor = '#000000', borderColor = '#000000';
+
+        for (let f of fields) {
+            const visIndices = f.visIndices.slice().sort((a,b) => a-b);
+            if (visIndices.length === 0) continue;
+            const fillColor = whiteBg ? '#FFFFFF' : f.color;
+
+            const segments = [];
+            let start = visIndices[0], end = visIndices[0];
+            for (let i = 1; i < visIndices.length; i++) {
+                if (visIndices[i] === end + 1) {
+                    end = visIndices[i];
+                } else {
+                    segments.push({ start, end });
+                    start = visIndices[i];
+                    end = visIndices[i];
+                }
+            }
+            segments.push({ start, end });
+
+            for (let seg of segments) {
+                const { start: segStart, end: segEnd } = seg;
+                const startRow = Math.floor(segStart / 32), endRow = Math.floor(segEnd / 32);
+                const startCol = segStart % 32, endCol = segEnd % 32;
+                if (startRow === endRow) {
+                    const x = leftMargin + startCol * cellWidth;
+                    const y = dwStartY + startRow * rowHeight;
+                    const width = (endCol - startCol + 1) * cellWidth;
+                    svg += `  <rect x="${x}" y="${y}" width="${width}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
+                } else {
+                    const x1 = leftMargin + startCol * cellWidth;
+                    const y1 = dwStartY + startRow * rowHeight;
+                    const width1 = (32 - startCol) * cellWidth;
+                    svg += `  <rect x="${x1}" y="${y1}" width="${width1}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
+                    for (let r = startRow + 1; r < endRow; r++) {
+                        const yMid = dwStartY + r * rowHeight;
+                        svg += `  <rect x="${leftMargin}" y="${yMid}" width="${32 * cellWidth}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
+                    }
+                    const xLast = leftMargin, yLast = dwStartY + endRow * rowHeight;
+                    const widthLast = (endCol + 1) * cellWidth;
+                    svg += `  <rect x="${xLast}" y="${yLast}" width="${widthLast}" height="${cellHeight}" fill="${fillColor}" stroke="${borderColor}" stroke-width="1"/>\n`;
+                }
+            }
+        }
+
+        for (let f of fields) {
+            const visIndices = f.visIndices.slice().sort((a,b) => a-b);
+            if (visIndices.length === 0) continue;
+            for (let i = 0; i < visIndices.length; i++) {
+                const v = visIndices[i];
+                if (i < visIndices.length - 1) {
+                    const col = v % 32, row = Math.floor(v / 32);
+                    const x = leftMargin + (col + 1) * cellWidth;
+                    const yBase = dwStartY + row * rowHeight;
+                    const tickHeight = cellHeight * 0.25;
+                    svg += `  <line x1="${x}" y1="${yBase + cellHeight}" x2="${x}" y2="${yBase + cellHeight - tickHeight}" stroke="#000000" stroke-width="0.5"/>\n`;
+                }
+            }
+        }
+
+        for (let f of fields) {
+            const visIndices = f.visIndices.slice().sort((a,b) => a-b);
+            if (visIndices.length === 0) continue;
+            const valueStr = f.value || '';
+            const totalBits = visIndices.length;
+            const hasValue = valueStr.length > 0 && valueStr.length === totalBits;
+            const displayText = (f.display && f.display.trim() !== '') ? f.display : (f.name || '');
+            const bitToIndex = {};
+            if (hasValue) {
+                for (let i = 0; i < f.globalBits.length; i++) {
+                    bitToIndex[f.globalBits[i]] = i;
+                }
+            }
+
+            const segments = [];
+            let start = visIndices[0], end = visIndices[0];
+            for (let i = 1; i < visIndices.length; i++) {
+                if (visIndices[i] === end + 1) {
+                    end = visIndices[i];
+                } else {
+                    segments.push({ start, end });
+                    start = visIndices[i];
+                    end = visIndices[i];
+                }
+            }
+            segments.push({ start, end });
+
+            for (let seg of segments) {
+                const { start: segStart, end: segEnd } = seg;
+                let sumX = 0, sumY = 0, count = 0;
+                for (let v = segStart; v <= segEnd; v++) {
+                    const col = v % 32;
+                    const row = Math.floor(v / 32);
+                    const x = leftMargin + col * cellWidth + cellWidth / 2;
+                    const y = dwStartY + row * rowHeight + cellHeight / 2;
+                    sumX += x;
+                    sumY += y;
+                    count++;
+                }
+                const centerX = sumX / count;
+                const centerY = sumY / count;
+
+                for (let v = segStart; v <= segEnd; v++) {
+                    const globalBit = visualToGlobal[v];
+                    const col = v % 32, row = Math.floor(v / 32);
+                    const x = leftMargin + col * cellWidth + cellWidth / 2;
+                    const y = dwStartY + row * rowHeight + cellHeight / 2;
+                    if (hasValue) {
+                        const idx = bitToIndex[globalBit];
+                        if (idx !== undefined && idx < valueStr.length) {
+                            const valChar = valueStr[idx];
+                            svg += `  <text x="${x}" y="${y + 16}" text-anchor="middle" font-size="${valueFont}" font-weight="normal" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${valChar}</text>\n`;
+                        }
+                    }
+                }
+
+                if (displayText) {
+                    svg += `  <text x="${centerX}" y="${centerY - 2}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" font-weight="bold" fill="${textColor}" text-shadow="0 1px 2px rgba(255,255,255,0.3)">${displayText}</text>\n`;
+                }
+            }
+        }
+
+        if (includeWatermark) {
+            const wmText = 'MangoPapa';
+            const wmFontSize = 50 * zoom;
+            const wmColor = '#888888', wmOpacity = 0.25, wmRotate = -30;
+            const spacingX = 140 * zoom, spacingY = 110 * zoom;
+            const startX = -50 * zoom, startY = -50 * zoom;
+            const cols = Math.ceil((totalWidth + 100) / spacingX);
+            const rows = Math.ceil((totalHeight + 100) / spacingY);
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const x = startX + c * spacingX, y = startY + r * spacingY;
+                    svg += `  <text x="${x}" y="${y}" transform="rotate(${wmRotate}, ${x}, ${y})" font-size="${wmFontSize}" font-weight="bold" fill="${wmColor}" opacity="${wmOpacity}" font-family="Arial, sans-serif" letter-spacing="6">${wmText}</text>\n`;
+                }
+            }
+        }
+
+        svg += '</svg>';
+        return svg;
+    }
+
+    async function exportSvgFile() {
+        const svgStr = getSvgString(showWatermark);
+        const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+        await saveFile(blob, 'tlp', 'image/svg+xml', 'svg');
+    }
+
+    async function exportJpgFile() {
+        const svgStr = getSvgString(showWatermark);
+        const viewBoxMatch = svgStr.match(/viewBox="0 0 (\d+) (\d+)"/);
+        if (!viewBoxMatch) { updateStatus('无法解析SVG尺寸'); return; }
+        const width = parseInt(viewBoxMatch[1]), height = parseInt(viewBoxMatch[2]);
+        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = async function() {
+                const scale = 2;
+                const canvas = document.createElement('canvas');
+                canvas.width = width * scale;
+                canvas.height = height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(async function(blob) {
+                    if (!blob) { updateStatus('JPG导出失败'); resolve(); return; }
+                    await saveFile(blob, 'tlp', 'image/jpeg', 'jpg');
+                    resolve();
+                }, 'image/jpeg', 0.92);
+                URL.revokeObjectURL(url);
+            };
+            img.onerror = function() { updateStatus('加载SVG失败'); URL.revokeObjectURL(url); resolve(); };
+            img.src = url;
         });
+    }
 
-        // ===== 事件绑定 =====
-        applyBtn.addEventListener('click', function() {
-            renderGrid();
-            // 配置变更不推历史
-            updateStatus('配置已应用');
-        });
-        clearFieldsBtn.addEventListener('click', handleClear);
-        editSelectionBtn.addEventListener('click', openEditModal);
-        previewSvgBtn.addEventListener('click', previewSvg);
-        exportSvgBtn.addEventListener('click', exportSvgFile);
-        exportJpgBtn.addEventListener('click', exportJpgFile);
-        exportJsonBtn.addEventListener('click', exportJson);
+    async function exportJson() {
+        const exportFields = fields.map(f => ({
+            name: f.name,
+            display: f.display,
+            value: f.value || '',
+            positions: f.globalBits.map(g => {
+                const p = globalToPosition(g);
+                return { dw: p.dw, byte: p.byte, bit: p.bit };
+            }),
+            color: f.color
+        }));
+        const data = { dwCount, endianness, fields: exportFields };
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        await saveFile(blob, 'tlp', 'application/json', 'json');
+    }
 
-        undoBtn.addEventListener('click', undo);
-        redoBtn.addEventListener('click', redo);
+    function previewSvg() {
+        recalcFieldVisIndices();
+        const svgStr = getSvgString(showWatermark);
+        previewContainer.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = svgStr;
+        const svgElem = wrapper.firstElementChild;
+        previewContainer.appendChild(svgElem);
+        updatePreviewButtons();
+        previewModal.classList.add('active');
+    }
 
-        importFieldBtn.addEventListener('click', function() { fieldFileInput.click(); });
-        fieldFileInput.addEventListener('change', function() {
-            if (this.files[0]) { importFieldLibraryFromFile(this.files[0]); this.value = ''; }
-        });
+    function closePreview() { previewModal.classList.remove('active'); }
 
-        importTlpBtn.addEventListener('click', function() { tlpFileInput.click(); });
-        tlpFileInput.addEventListener('change', function() {
-            if (this.files[0]) { importTlpFromFile(this.files[0]); this.value = ''; }
-        });
+    function openEditModal() {
+        const visIndices = getSelectedVisIndices();
+        if (visIndices.length === 0) { updateStatus('请先选中至少一个bit'); return; }
+        const firstVis = visIndices[0], lastVis = visIndices[visIndices.length-1];
+        const startGlobal = visualToGlobal[firstVis], endGlobal = visualToGlobal[lastVis];
+        modalBitInfo.textContent = `选中 ${visIndices.length} 个格子： ${formatPosition(startGlobal)} → ${formatPosition(endGlobal)}`;
 
-        recolorBtn.addEventListener('click', recolorFields);
+        const matchedField = findFieldByVisIndices(visIndices);
+        if (matchedField) {
+            modalFieldName.value = matchedField.name;
+            modalFieldDisplay.value = matchedField.display || matchedField.name;
+            modalFieldValue.value = matchedField.value || '';
+            editingField = matchedField;
+            updateStatus(`正在编辑字段 "${matchedField.name}"`);
+        } else {
+            modalFieldName.value = '';
+            modalFieldDisplay.value = '';
+            modalFieldValue.value = '';
+            editingField = null;
+            updateStatus('新建字段');
+        }
 
-        // 初始化：先推入初始空状态
+        fieldLibSelectWrapper.style.display = fieldLibrary.length > 0 ? 'block' : 'none';
+        if (fieldLibrary.length > 0) fieldLibSelect.value = '';
+        modalOverlay.classList.add('active');
+        setTimeout(() => modalFieldName.focus(), 100);
+    }
+
+    function closeModal() { modalOverlay.classList.remove('active'); }
+
+    // ===== 事件绑定 =====
+
+    endianToggle.addEventListener('click', function() {
+        endianness = endianness === 'little' ? 'big' : 'little';
         updateEndianButton();
         renderGrid();
-        pushHistory(); // 记录初始状态
+        updateStatus('端序已切换，网格已更新');
+    });
 
-        // 从历史加载后需更新按钮状态
-        updateUndoRedoButtons();
+    clearFieldsBtn.addEventListener('click', handleClear);
+    editSelectionBtn.addEventListener('click', openEditModal);
+    previewSvgBtn.addEventListener('click', previewSvg);
+    recolorBtn.addEventListener('click', recolorFields);
 
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'e') { e.preventDefault(); openEditModal(); }
-        });
-    })();
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    fieldLibSelect.addEventListener('change', function() {
+        const selected = this.value;
+        if (selected) {
+            const found = fieldLibrary.find(f => f.name === selected);
+            if (found) {
+                modalFieldName.value = found.name;
+                modalFieldDisplay.value = found.display || found.name;
+            }
+        }
+    });
+
+    modalConfirmBtn.addEventListener('click', function() {
+        const visIndices = getSelectedVisIndices();
+        if (visIndices.length === 0) { updateStatus('请先选中bit'); closeModal(); return; }
+        const name = modalFieldName.value.trim();
+        const display = modalFieldDisplay.value.trim() || name;
+        const value = modalFieldValue.value.trim();
+        if (!name) { updateStatus('请输入字段名'); return; }
+        if (addFieldFromVisIndices(name, display, value, visIndices)) {
+            closeModal();
+            editingField = null;
+        }
+    });
+
+    modalCancelBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+    previewCloseBtn.addEventListener('click', closePreview);
+    previewModal.addEventListener('click', function(e) { if (e.target === this) closePreview(); });
+
+    document.addEventListener('keydown', function(e) {
+        if (modalOverlay.classList.contains('active')) {
+            if (e.key === 'Escape') closeModal();
+            else if (e.key === 'Enter' && (document.activeElement === modalFieldName || document.activeElement === modalFieldDisplay || document.activeElement === modalFieldValue || document.activeElement === fieldLibSelect)) {
+                modalConfirmBtn.click();
+            }
+        }
+        if (previewModal.classList.contains('active') && e.key === 'Escape') closePreview();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '1') {
+            const now = Date.now();
+            if (now - lastKeyTime > 500) keyPressCount = 0;
+            keyPressCount++;
+            lastKeyTime = now;
+            if (keyPressCount >= 4) {
+                showWatermark = !showWatermark;
+                keyPressCount = 0;
+                updateStatus(showWatermark ? '水印已显示' : '水印已隐藏');
+                updateGridWatermark();
+                if (previewModal.classList.contains('active')) refreshPreview();
+            }
+        } else {
+            keyPressCount = 0;
+        }
+    });
+
+    container.addEventListener('click', function(e) {
+        if (!e.target.closest('.bit-cell')) {
+            clearSelection();
+            updateStatus('已取消选中');
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); redo(); }
+    });
+
+    function toggleWhiteBg() {
+        whiteBg = !whiteBg;
+        toggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+        toggleWhiteBgBtn.classList.toggle('active', whiteBg);
+        refreshAllFields();
+        updateStatus(whiteBg ? '已切换到白底+黑边框模式' : '已恢复正常配色');
+        if (previewModal.classList.contains('active')) refreshPreview();
+    }
+    toggleWhiteBgBtn.addEventListener('click', toggleWhiteBg);
+    previewToggleWhiteBgBtn.addEventListener('click', toggleWhiteBg);
+    previewRecolorBtn.addEventListener('click', recolorFields);
+
+    // ===== 初始化 =====
+    renderDwDropdown();
+    updateEndianButton();
+    renderGrid();
+    pushHistory();
+    updateUndoRedoButtons();
+    fetchFileList();
+})();
 </script>
 </body>
 </html>
