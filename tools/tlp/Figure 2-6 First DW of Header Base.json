@@ -1,0 +1,208 @@
+{
+  "dwCount": 1,
+  "endianness": "little",
+  "fields": [
+    {
+      "name": "Type",
+      "display": "Type",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#F2A65A"
+    },
+    {
+      "name": "TC",
+      "display": "TC",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 5
+        }
+      ],
+      "color": "#247BA0"
+    },
+    {
+      "name": "OHC",
+      "display": "OHC",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#90BE6D"
+    },
+    {
+      "name": "TS",
+      "display": "TS",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 5
+        }
+      ],
+      "color": "#A7C957"
+    },
+    {
+      "name": "Attr",
+      "display": "Attr",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 2
+        }
+      ],
+      "color": "#43AA8B"
+    },
+    {
+      "name": "Length",
+      "display": "Length",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#386641"
+    }
+  ]
+}

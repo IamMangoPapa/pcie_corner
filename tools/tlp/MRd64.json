@@ -1,0 +1,779 @@
+{
+  "dwCount": 4,
+  "endianness": "little",
+  "fields": [
+    {
+      "name": "Type",
+      "display": "Type",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#e6194b"
+    },
+    {
+      "name": "Tag",
+      "display": "T9",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 7
+        }
+      ],
+      "color": "#fabebe"
+    },
+    {
+      "name": "TC",
+      "display": "TC",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 4
+        }
+      ],
+      "color": "#3cb44b"
+    },
+    {
+      "name": "Tag",
+      "display": "T8",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 3
+        }
+      ],
+      "color": "#fabebe"
+    },
+    {
+      "name": "A2",
+      "display": "A2",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 2
+        }
+      ],
+      "color": "#f58231"
+    },
+    {
+      "name": "Reserved",
+      "display": "R",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 1
+        }
+      ],
+      "color": "#bcf60c"
+    },
+    {
+      "name": "TH",
+      "display": "TH",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#469990"
+    },
+    {
+      "name": "TD",
+      "display": "TD",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 7
+        }
+      ],
+      "color": "#9A6324"
+    },
+    {
+      "name": "EP",
+      "display": "EP",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 6
+        }
+      ],
+      "color": "#f032e6"
+    },
+    {
+      "name": "Attr",
+      "display": "Attr[1:0]",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 4
+        }
+      ],
+      "color": "#f58231"
+    },
+    {
+      "name": "AT",
+      "display": "AT",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 2
+        }
+      ],
+      "color": "#e6beff"
+    },
+    {
+      "name": "Length",
+      "display": "Length",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#911eb4"
+    },
+    {
+      "name": "Requester ID",
+      "display": "Requester ID",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#46f0f0"
+    },
+    {
+      "name": "Tag",
+      "display": "Tag",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 0
+        }
+      ],
+      "color": "#fabebe"
+    },
+    {
+      "name": "Last DW BE",
+      "display": "Last DW BE",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 4
+        }
+      ],
+      "color": "#000075"
+    },
+    {
+      "name": "First DW BE",
+      "display": "First DW BE",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#000075"
+    },
+    {
+      "name": "Address",
+      "display": "Address[63:32]",
+      "positions": [
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#008080"
+    },
+    {
+      "name": "Address",
+      "display": "Address[31:2]",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 2
+        }
+      ],
+      "color": "#008080"
+    },
+    {
+      "name": "PH",
+      "display": "PH[1:0]",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#ffd8b1"
+    }
+  ]
+}

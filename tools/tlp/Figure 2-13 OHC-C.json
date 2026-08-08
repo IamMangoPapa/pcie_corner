@@ -1,0 +1,229 @@
+{
+  "dwCount": 1,
+  "endianness": "little",
+  "fields": [
+    {
+      "name": "Requester Segment",
+      "display": "Requester Segment",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#F9C74F"
+    },
+    {
+      "name": "PR_Sent_Counter",
+      "display": "PR_Sent_Counter",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#F2C14E"
+    },
+    {
+      "name": "Stream_ID",
+      "display": "Stream_ID",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 0
+        }
+      ],
+      "color": "#6A994E"
+    },
+    {
+      "name": "XT",
+      "display": "XT",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 7
+        }
+      ],
+      "color": "#277DA1"
+    },
+    {
+      "name": "Sub-Stream",
+      "display": "Sub-Stream",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 4
+        }
+      ],
+      "color": "#A7C957"
+    },
+    {
+      "name": "RSV",
+      "display": "RSV",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 3
+        }
+      ],
+      "color": "#5E4B8C"
+    },
+    {
+      "name": "Rsvd",
+      "display": "R",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 2
+        }
+      ],
+      "color": "#B0B0B0"
+    },
+    {
+      "name": "K",
+      "display": "K",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 1
+        }
+      ],
+      "color": "#9C89B8"
+    },
+    {
+      "name": "T",
+      "display": "T",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#F2A65A"
+    }
+  ]
+}
