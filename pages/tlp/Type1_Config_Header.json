@@ -1,0 +1,2797 @@
+{
+  "dwCount": 16,
+  "endianness": "little",
+  "fields": [
+    {
+      "name": "Vendor ID",
+      "display": "Vendor ID",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#e6194b"
+    },
+    {
+      "name": "Device ID",
+      "display": "Device ID",
+      "positions": [
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 0,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#3cb44b"
+    },
+    {
+      "name": "Command",
+      "display": "Command",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#ffe119"
+    },
+    {
+      "name": "Status",
+      "display": "Status",
+      "positions": [
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 1,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#aaffc3"
+    },
+    {
+      "name": "Revision ID",
+      "display": "Revision ID",
+      "positions": [
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#aec7e8"
+    },
+    {
+      "name": "Class Code",
+      "display": "Class Code",
+      "positions": [
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 2,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#008080"
+    },
+    {
+      "name": "Cache Line Size",
+      "display": "Cache Line Size",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#ffd8b1"
+    },
+    {
+      "name": "Latency Timer",
+      "display": "Latency Timer",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#9A6324"
+    },
+    {
+      "name": "Header Type",
+      "display": "Header Type",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 2,
+          "bit": 0
+        }
+      ],
+      "color": "#f032e6"
+    },
+    {
+      "name": "BIST",
+      "display": "BIST",
+      "positions": [
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 3,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#bcf60c"
+    },
+    {
+      "name": "BAR0",
+      "display": "BAR0",
+      "positions": [
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 4,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 4,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 4,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 4,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#46f0f0"
+    },
+    {
+      "name": "BAR1",
+      "display": "BAR1",
+      "positions": [
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 5,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 5,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 5,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 5,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#46f0f0"
+    },
+    {
+      "name": "Primary Bus Number",
+      "display": "Primary Bus Number",
+      "positions": [
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 6,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#e6194b"
+    },
+    {
+      "name": "Secondary Bus Number",
+      "display": "Secondary Bus Number",
+      "positions": [
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 6,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#3cb44b"
+    },
+    {
+      "name": "Subordinate Bus Number",
+      "display": "Subordinate Bus Number",
+      "positions": [
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 6,
+          "byte": 2,
+          "bit": 0
+        }
+      ],
+      "color": "#ffe119"
+    },
+    {
+      "name": "Secondary Latency Timer",
+      "display": "Secondary Latency Timer",
+      "positions": [
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 6,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#ffd8b1"
+    },
+    {
+      "name": "I/O Base",
+      "display": "I/O Base",
+      "positions": [
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 7,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#aaffc3"
+    },
+    {
+      "name": "I/O Limit",
+      "display": "I/O Limit",
+      "positions": [
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 7,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#aec7e8"
+    },
+    {
+      "name": "Secondary Status",
+      "display": "Secondary Status",
+      "positions": [
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 7,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 7,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#008080"
+    },
+    {
+      "name": "Memory Base",
+      "display": "Memory Base",
+      "positions": [
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 8,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 8,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#46f0f0"
+    },
+    {
+      "name": "Memory Limit",
+      "display": "Memory Limit",
+      "positions": [
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 8,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 8,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#469990"
+    },
+    {
+      "name": "Prefetchable Memory Base",
+      "display": "Prefetchable Mem Base",
+      "positions": [
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 9,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 9,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#e6beff"
+    },
+    {
+      "name": "Prefetchable Memory Limit",
+      "display": "Prefetchable Mem Limit",
+      "positions": [
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 9,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 9,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#911eb4"
+    },
+    {
+      "name": "Prefetchable Base Upper 32",
+      "display": "Prefetchable Base Upper",
+      "positions": [
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 10,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 10,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 10,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 10,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#808000"
+    },
+    {
+      "name": "Prefetchable Limit Upper 32",
+      "display": "Prefetchable Limit Upper",
+      "positions": [
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 11,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 11,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 11,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 11,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#f58231"
+    },
+    {
+      "name": "I/O Base Upper 16",
+      "display": "I/O Base Upper 16",
+      "positions": [
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 12,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 12,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#000075"
+    },
+    {
+      "name": "I/O Limit Upper 16",
+      "display": "I/O Limit Upper 16",
+      "positions": [
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 12,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 12,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#4363d8"
+    },
+    {
+      "name": "Capabilities Pointer",
+      "display": "Capabilities Pointer",
+      "positions": [
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 13,
+          "byte": 0,
+          "bit": 0
+        }
+      ],
+      "color": "#f58231"
+    },
+    {
+      "name": "Reserved",
+      "display": "R",
+      "positions": [
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 13,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 13,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 13,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#aaaaaa"
+    },
+    {
+      "name": "Expansion ROM Base Addr",
+      "display": "Expansion ROM Base Addr",
+      "positions": [
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 14,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 14,
+          "byte": 1,
+          "bit": 0
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 14,
+          "byte": 2,
+          "bit": 0
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 14,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#808000"
+    },
+    {
+      "name": "Bridge Control",
+      "display": "Bridge Control",
+      "positions": [
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 7
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 6
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 5
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 4
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 3
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 2
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 1
+        },
+        {
+          "dw": 15,
+          "byte": 0,
+          "bit": 0
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 7
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 6
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 5
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 4
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 3
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 2
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 1
+        },
+        {
+          "dw": 15,
+          "byte": 1,
+          "bit": 0
+        }
+      ],
+      "color": "#fabebe"
+    },
+    {
+      "name": "Interrupt Pin",
+      "display": "Interrupt Pin",
+      "positions": [
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 7
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 6
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 5
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 4
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 3
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 2
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 1
+        },
+        {
+          "dw": 15,
+          "byte": 2,
+          "bit": 0
+        }
+      ],
+      "color": "#000075"
+    },
+    {
+      "name": "Interrupt Line",
+      "display": "Interrupt Line",
+      "positions": [
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 7
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 6
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 5
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 4
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 3
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 2
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 1
+        },
+        {
+          "dw": 15,
+          "byte": 3,
+          "bit": 0
+        }
+      ],
+      "color": "#4363d8"
+    }
+  ]
+}
