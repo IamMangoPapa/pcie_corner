@@ -5,6 +5,7 @@
     {
       "name": "Tag",
       "display": "T9",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -17,6 +18,7 @@
     {
       "name": "TC",
       "display": "TC",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -39,6 +41,7 @@
     {
       "name": "Tag",
       "display": "T8",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -51,6 +54,7 @@
     {
       "name": "A2",
       "display": "A2",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -63,6 +67,7 @@
     {
       "name": "Reserved",
       "display": "R",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -75,6 +80,7 @@
     {
       "name": "TH",
       "display": "TH",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -87,6 +93,7 @@
     {
       "name": "TD",
       "display": "TD",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -99,6 +106,7 @@
     {
       "name": "EP",
       "display": "EP",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -111,6 +119,7 @@
     {
       "name": "Attr",
       "display": "Attr[1:0]",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -128,6 +137,7 @@
     {
       "name": "AT",
       "display": "AT",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -145,6 +155,7 @@
     {
       "name": "Length",
       "display": "Length",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -202,6 +213,7 @@
     {
       "name": "Type",
       "display": "Type",
+      "value": "",
       "positions": [
         {
           "dw": 0,
@@ -233,7 +245,8 @@
     },
     {
       "name": "Fmt",
-      "display": "Fmt (3'b0x0)",
+      "display": "Fmt",
+      "value": "0x0",
       "positions": [
         {
           "dw": 0,
@@ -256,6 +269,7 @@
     {
       "name": "rsvd",
       "display": "{fields in bytes 4 through 7 depend on Request type}",
+      "value": "",
       "positions": [
         {
           "dw": 1,
@@ -423,6 +437,7 @@
     {
       "name": "Address",
       "display": "Address[31:2]",
+      "value": "",
       "positions": [
         {
           "dw": 2,
@@ -580,6 +595,7 @@
     {
       "name": "PH",
       "display": "PH",
+      "value": "",
       "positions": [
         {
           "dw": 2,
