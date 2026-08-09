@@ -165,7 +165,7 @@
                 <span class="zoom-label" id="zoomLabel">100%</span>
                 <button class="btn btn-secondary" id="zoomInBtn" title="放大">+</button>
             </span>
-            <button class="btn btn-whitebg" id="toggleWhiteBgBtn">白底</button>
+            <button class="btn btn-whitebg" id="toggleWhiteBgBtn">白底黑字</button>
             <button class="btn btn-recolor" id="recolorBtn">重新配色</button>
             <button class="btn btn-secondary" id="previewSvgBtn">预览</button>
             <div class="dropdown" id="exportDropdown">
@@ -914,7 +914,7 @@
     }
 
     function updatePreviewButtons() {
-        previewToggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+        previewToggleWhiteBgBtn.textContent = whiteBg ? '彩色视图' : '白底黑字';
         previewToggleWhiteBgBtn.classList.toggle('active', whiteBg);
     }
 
@@ -1777,7 +1777,7 @@
 
     function toggleWhiteBg() {
         whiteBg = !whiteBg;
-        toggleWhiteBgBtn.textContent = whiteBg ? '恢复配色' : '白底';
+        toggleWhiteBgBtn.textContent = whiteBg ? '彩色视图' : '白底黑字';
         toggleWhiteBgBtn.classList.toggle('active', whiteBg);
         refreshAllFields();
         updateStatus(whiteBg ? '已切换到白底+黑边框模式' : '已恢复正常配色');
