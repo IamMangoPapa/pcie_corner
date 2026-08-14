@@ -581,7 +581,7 @@
     {
       "name": "Fmt",
       "display": "Fmt",
-      "value": "0x0",
+      "value": "000",
       "positions": [
         {
           "dw": 0,
@@ -604,7 +604,7 @@
     {
       "name": "Type",
       "display": "Type",
-      "value": "0010x",
+      "value": "00010",
       "positions": [
         {
           "dw": 0,
