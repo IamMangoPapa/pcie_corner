@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PCIe TLP 解码器</title>
+<title>PCIe TLP 解码器（Based on PCIe 6.0）</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Noto Sans SC',sans-serif;background:#f0f2f5;color:#1a2332;min-height:100vh;padding:20px}
@@ -56,7 +56,7 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
 .dr{display:flex;align-items:stretch;margin-bottom:2px;min-height:30px}
 .dl{width:70px;min-width:70px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;color:#888;font-weight:600;white-space:nowrap}
 .fd{display:flex;flex:1;gap:1px}
-.fb{display:flex;align-items:center;justify-content:center;padding:4px 1px;font-size:10px;font-weight:600;color:#fff;cursor:pointer;border-radius:2px;min-height:30px;text-align:center;line-height:1.2;overflow:hidden;transition:all .08s}
+.fb{display:flex;align-items:center;justify-content:center;padding:4px 1px;font-size:10px;font-weight:600;color:#fff;cursor:pointer;border-radius:2px;min-height:30px;text-align:center;line-height:1.2;overflow:hidden;transition:all .08s;position:relative}
 .fb:hover{filter:brightness(1.12)!important;transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:5}
 .fb .fn{font-size:10px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);pointer-events:none}
 .fb .fv{font-size:8px;position:absolute;bottom:1px;right:2px;pointer-events:none;opacity:.9;text-shadow:0 1px 1px rgba(0,0,0,.3)}
@@ -73,8 +73,6 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
 .lg div{display:flex;align-items:center;gap:3px;font-size:10px;color:#6b7c93}
 .lg div .sw{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .h{font-size:11px;color:#8899b4;margin-top:6px}
-
-/* ====== Key Results Highlight ====== */
 .summary{background:linear-gradient(135deg,#1a2332,#2c3e50);border-radius:10px;padding:18px 22px;margin-bottom:16px;color:#fff;display:none}
 .summary.on{display:block}
 .summary .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
@@ -89,13 +87,12 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
 .summary .item .val{font-size:16px;font-weight:700;margin-top:2px;font-family:Consolas,Menlo,monospace}
 .summary .item .val .subv{font-size:11px;font-weight:400;opacity:.7;margin-left:6px}
 .summary .raw{font-size:11px;font-family:Consolas,monospace;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);word-break:break-all}
-
 @media(max-width:700px){body{padding:10px}.row input{min-width:100%}.dl{width:50px;min-width:50px;font-size:10px}.summary .name{font-size:20px}}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>🥭 PCIe TLP 解码器</h1>
+<h1>🥭 PCIe TLP 解码器 <span style="font-size:12px;font-weight:400;color:#6b7c93">(Based on PCIe 6.0)</span></h1>
 <div class="sub">输入 TLP 十六进制数据，自动解析各字段并可视化</div>
 
 <div class="panel">
@@ -141,9 +138,9 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
   var err = document.getElementById('errMsg');
   var res = document.getElementById('resArea');
   var modeSel = document.getElementById('modeSelect');
-  
+
   function isFlitMode() { return modeSel.value === 'fm'; }
-  
+
   function toggleMode() {
     modeSel.className = 'mode-select ' + (isFlitMode() ? 'fm' : 'nf');
     loadExamples(isFlitMode());
@@ -153,7 +150,7 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
   var histBtn = document.getElementById('histBtn');
   var histDD = document.getElementById('histDD');
   var histCnt = document.getElementById('histCnt');
-  
+
   // ====== Colors ======
   var C = {
     fmt:'#2980b9', type:'#1abc9c', tag:'#9b59b6', tc:'#c0392b', attr:'#2ecc71',
@@ -161,9 +158,11 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
     len:'#34495e', reqid:'#f39c12', addr:'#2c3e50', addr2:'#7f8c8d',
     be:'#1abc9c', status:'#be185d', msg:'#ea580c', ohc:'#059669', ph:'#bdc3c7'
   };
-  
+
+  // ====== Non-Flit Fmt 描述 ======
   var FMT = {'000':'3DW无数据','001':'4DW无数据','010':'3DW有数据','011':'4DW有数据','100':'TLP Prefix'};
-  
+
+  // ====== Non-Flit Type 映射 ======
   var TNAMES = {
     '000_00000':'MRd32','001_00000':'MRd64','010_00000':'MWr32','011_00000':'MWr64',
     '000_00001':'MRdLk32','001_00001':'MRdLk64',
@@ -174,100 +173,77 @@ h1{font-size:22px;color:#1a56db;margin-bottom:4px}
     '010_01100':'FetchAdd','011_01100':'FetchAdd64',
     '010_01101':'Swap','011_01101':'Swap64',
     '010_01110':'CAS','011_01110':'CAS64',
-    '010_01111':'DMWr32','011_01111':'DMWr64'
+    '010_01111':'DMWr32','011_01111':'DMWr64',
+    '000_11011':'TCfgRd'
   };
 
-  // Flit TLP type database
-  // {hex: {name, hdr, hasData, desc, nfm}}
+  // ====== Flit DB —— 基于 PCIe 6.0 Table 2-5 完整版 ======
   var FLIT_DB = {};
-function flitDB(hex, name, hdr, hasData, desc, nfm) {
-  var k = parseInt(hex,16);
-  FLIT_DB[k] = {n:name, h:hdr, d:hasData, desc:desc, nfm:nfm};
-}
-// Based on PCIe Base Spec Table 2-5 Flit Mode TLP Header Type Encodings
-//        hex  name              hdr data  desc                                            nfm
-flitDB('00','NOP',               1, false, 'NOP空闲填充 (1DW, 接收端直接丢弃)',             '—');
-flitDB('03','MemRead32',         3, false, '32-bit存储器读 (3DW, 无数据, 需CplD)',          'MRd32');
-flitDB('04','CfgRd0',            3, false, '配置读Type0 (3DW, 无数据, 需CplD)',            'CfgRd0');
-flitDB('06','IORd',              3, false, 'I/O读 (3DW, 无数据, 需CplD, 已废弃)',          'IORd');
-flitDB('08','MRd64',             4, false, '64-bit存储器读 (4DW, 无数据, 需CplD)',          'MRd64');
-flitDB('20','MWr64',             4, true,  '64-bit存储器写 (4DW, 有数据, Posted)',          'MWr64');
-flitDB('22','UioMemRead',        4, false, 'UIO 64-bit存储器读 (4DW, 无数据)',             'MRd64(UIO)');
-flitDB('24','Cpl',               3, false, '完成无数据 (3DW, 响应IOWr/CfgWr)',             'Cpl');
-flitDB('26','CplD',              3, true,  '完成带数据 (3DW, 响应MRd)',                    'CplD');
-flitDB('28','CfgWr0',            3, true,  '配置写Type0 (3DW, 有数据, 必须OHC-A3)',        'CfgWr0');
-flitDB('30','MsgToRc',           3, false, '消息到RC (3DW, 无数据, Posted)',               'Msg');
-flitDB('40','MemWrite32',        3, true,  '32-bit存储器写 (3DW, 有数据, Posted)',          'MWr32');
-flitDB('42','IoWrite',           3, true,  'I/O写 (3DW, 有数据, 必须OHC-A2)',              'IOWr');
-flitDB('44','CfgWrite0',         3, true,  '配置写Type0 (3DW, 有数据, 必须OHC-A3)',        'CfgWr0');
-flitDB('46','MsgDToRc',          3, true,  '带数据消息到RC (3DW, 1DW数据, Posted)',         'MsgD');
-flitDB('48','IOWr',              3, true,  'I/O写 (3DW, 有数据, 必须OHC-A2)',              'IOWr');
-flitDB('4A','CplD',              3, true,  '完成带数据 (3DW, 响应MRd)',                    'CplD');
-flitDB('4C','FetchAdd32',        3, true,  '32-bit FetchAdd (3DW, 有数据, 需CplD)',        'FetchAdd');
-flitDB('4E','CompareSwap32',     3, true,  '32-bit CAS (3DW, 2DW数据, 需CplD)',            'CAS');
-flitDB('58','Cpl',               3, false, '完成无数据 (3DW)',                             'Cpl');
-flitDB('5A','CplD (alt)',        3, true,  '完成带数据备选 (3DW)',                         'CplD');
-flitDB('5B','DMWr32',            3, true,  'Deferrable MWr (3DW, 有数据)',                 'DMWr32');
-flitDB('61','UioMemWrite',       4, true,  'UIO 64-bit存储器写 (4DW, 有数据)',              'MWr64(UIO)');
-flitDB('70','MsgDToRc (alt)',    3, true,  '带数据消息到RC备选 (3DW, Posted)',              'MsgD');
-flitDB('80','Swap32',            3, true,  '32-bit Swap原子操作 (3DW, 有数据, 需CplD)',     'Swap');
-flitDB('82','CAS32',             3, true,  '32-bit CAS原子操作 (3DW, 2DW数据, 需CplD)',     'CAS');
-flitDB('8D','LocalTLPPrefix',    1, false, '本地TLP前缀 (1DW, 链路本地)',                  'TLP Prefix');
-flitDB('A0','MRdLk32',           3, false, '32-bit锁定读 (3DW, 已废弃)',                   'MRdLk32');
-flitDB('C0','MRdLk64',           4, false, '64-bit锁定读 (4DW, 已废弃)',                   'MRdLk64');
-flitDB('E0','FetchAdd64',        4, true,  '64-bit FetchAdd (4DW, 有数据)',                'FetchAdd64');
-flitDB('E2','Swap64',            4, true,  '64-bit Swap (4DW, 有数据)',                    'Swap64');
-flitDB('E4','CAS64',             4, true,  '64-bit CAS (4DW, 2DW数据)',                    'CAS64');
-
-// ====== Universal Flit Type Resolver ======
-function resolveFlitType(type8) {
-  if(FLIT_DB[type8]) return FLIT_DB[type8];
-  var hex = ('00'+type8.toString(16).toUpperCase()).slice(-2);
-  var baseType = type8 & 0x1F;
-  var mod = (type8 >> 5) & 0x7;
-  var hdr = 3, hasData = false, name = 'Flit_0x'+hex, nfm = '—';
-  
-  // Infer from bit[4:0] = NFM Type pattern
-  var typeMap = {0:'Memory',1:'MRdLk',2:'I/O',4:'Cfg0',5:'Cfg1',0xA:'Cpl',0xB:'CplLk',
-                 0xC:'FetchAdd',0xD:'Swap',0xE:'CAS',0xF:'DMWr'};
-  
-  if(baseType >= 0x10) {
-    name = (mod&1?'MsgD':'Msg')+'_0x'+hex;
-    hasData = !!(mod&1);
-  } else {
-    var base = typeMap[baseType] || 'T'+baseType.toString(16);
-    var is64 = !!(mod&1);
-    var hasDat = !!(mod&2);
-    hdr = is64 ? 4 : 3;
-    hasData = hasDat;
-    if(type8===0x00||type8===0x8D) hdr=1;
-    name = base + (is64?'64':'') + (hasDat?'_W':'');
-    if(baseType===0) name = (!hasDat&&!is64)?'MRd32':(hasDat&&!is64)?'MWr32':(!hasDat&&is64)?'MRd64':'MWr64';
-    else if(baseType===2) name = hasDat?'IOWr':'IORd';
-    else if(baseType===4||baseType===5) {var t=baseType===4?'0':'1';name=hasDat?'CfgWr'+t:'CfgRd'+t;}
-    else if(baseType===0xA) name = hasDat?'CplD':'Cpl';
+  function flitDB(hex, name, hdr, hasData, desc) {
+    var k = parseInt(hex,16);
+    FLIT_DB[k] = {n:name, h:hdr, d:hasData, desc:desc};
   }
-  return {n:name, h:hdr, d:hasData, desc:'Flit 0x'+hex+' (推断: bits[4:0]='+baseType.toString(16)+')', nfm:nfm};
-}var EXAMPLES = [
+  flitDB('00','NOP',               1, false, 'NOP 空闲填充 (1DW)');
+  flitDB('01','MRdLk32',           3, false, '32-bit 锁定读 (3DW, 无数据, 已废弃)');
+  flitDB('02','IORd',              3, false, 'I/O 读 (3DW, 无数据, 已废弃)');
+  flitDB('03','MRd32',             3, false, '32-bit 存储器读 (3DW, 无数据, 需 CplD)');
+  flitDB('04','CfgRd0',            3, false, '配置读 Type 0 (3DW, 无数据, 需 CplD)');
+  flitDB('05','CfgRd1',            3, false, '配置读 Type 1 (3DW, 无数据, 需 CplD)');
+  flitDB('0A','Cpl',               3, false, '完成无数据 (3DW, 响应 IOWr/CfgWr)');
+  flitDB('0B','CplLk',             3, false, '锁定读完成无数据 (3DW, 已废弃)');
+  flitDB('20','MRd64',             4, false, '64-bit 存储器读 (4DW, 无数据, 需 CplD)');
+  flitDB('21','MRdLk64',           4, false, '64-bit 锁定读 (4DW, 已废弃)');
+  flitDB('30','MsgToRC',           4, false, '消息到 RC (4DW, 无数据, Posted)');
+  flitDB('31','MsgToAddr',         4, false, '消息按地址路由 (4DW, 无数据, Posted, 规范未定义使用)');
+  flitDB('32','MsgToID',           4, false, '消息按 ID 路由 (4DW, 无数据, Posted)');
+  flitDB('33','MsgToBC',           4, false, '消息广播 (4DW, 无数据, Posted)');
+  flitDB('34','MsgToLocal',        4, false, '消息本地终止 (4DW, 无数据, Posted)');
+  flitDB('35','Msg',               4, false, '通用消息 (4DW, 无数据)');
+  flitDB('36','Msg',               4, false, '通用消息 (4DW, 无数据)');
+  flitDB('37','Msg',               4, false, '通用消息 (4DW, 无数据)');
+  flitDB('40','MWr32',             3, true,  '32-bit 存储器写 (3DW, 有数据, Posted)');
+  flitDB('42','IOWr',              3, true,  'I/O 写 (3DW, 有数据, 已废弃)');
+  flitDB('44','CfgWr0',            3, true,  '配置写 Type 0 (3DW, 有数据, 必须 OHC-A3)');
+  flitDB('45','CfgWr1',            3, true,  '配置写 Type 1 (3DW, 有数据, 必须 OHC-A3)');
+  flitDB('4A','CplD',              3, true,  '完成带数据 (3DW, 响应 MRd)');
+  flitDB('4B','CplDLk',            3, true,  '锁定读完成带数据 (3DW, 已废弃)');
+  flitDB('4C','FetchAdd32',        3, true,  '32-bit FetchAdd 原子操作 (3DW, 有数据, 需 CplD)');
+  flitDB('4D','Swap32',            3, true,  '32-bit Swap 原子操作 (3DW, 有数据, 需 CplD)');
+  flitDB('4E','CAS32',             3, true,  '32-bit CAS 原子操作 (3DW, 2DW 数据, 需 CplD)');
+  flitDB('5B','DMWr32',            3, true,  '32-bit Deferrable Memory Write (3DW, 有数据)');
+  flitDB('60','MWr64',             4, true,  '64-bit 存储器写 (4DW, 有数据, Posted)');
+  flitDB('6C','FetchAdd64',        4, true,  '64-bit FetchAdd 原子操作 (4DW, 有数据, 需 CplD)');
+  flitDB('6D','Swap64',            4, true,  '64-bit Swap 原子操作 (4DW, 有数据, 需 CplD)');
+  flitDB('6E','CAS64',             4, true,  '64-bit CAS 原子操作 (4DW, 2DW 数据, 需 CplD)');
+  flitDB('70','MsgDToRC',          4, true,  '带数据消息到 RC (4DW, 1DW 数据, Posted)');
+  flitDB('71','MsgDToAddr',        4, true,  '带数据消息按地址路由 (4DW, Posted, 规范未定义使用)');
+  flitDB('72','MsgDToID',          4, true,  '带数据消息按 ID 路由 (4DW, Posted)');
+  flitDB('73','MsgDToBC',          4, true,  '带数据消息广播 (4DW, Posted)');
+  flitDB('74','MsgDToLocal',       4, true,  '带数据消息本地终止 (4DW, Posted, PTM ResponseD)');
+  flitDB('75','MsgD',              4, true,  '通用带数据消息 (4DW, Posted)');
+  flitDB('76','MsgD',              4, true,  '通用带数据消息 (4DW, Posted)');
+  flitDB('77','MsgD',              4, true,  '通用带数据消息 (4DW, Posted)');
+  flitDB('7B','DMWr64',            4, true,  '64-bit Deferrable Memory Write (4DW, 有数据)');
+
+  // ====== 示例 ======
+  var EXAMPLES = [
     '4A000001 02003000 00000001 80000000',
     '00000001 02003000 80000000',
     '0A000001 02003000 00000001',
     '4A000001 02003000 00000001 80000000 12345678 DEADBEEF'
   ];
-  
   var FLIT_EXAMPLES = [
-    '04000001 02003000 80000000',
-    '20000004 02003000 00000001 80000000',
-    '44000001 02003000 01000000',
+    '03000001 02003000 80000000',
+    '40000004 02003000 00000001 80000000',   // MWr32 with OHC-A
+    '44000001 02003000 01000000',            // CfgWr0 with OHC-A3
     '01000004 02003000 80000000',
-    '06000001 02003000 01000000'
+    '02000001 02003000 01000000',
+    '20000004 02003000 00000001 80000000',
+    '60000004 02003000 00000001 80000000'
   ];
-  
+
   // ====== History ======
-  function getHist() {
-    try { return JSON.parse(localStorage.getItem('tlp_hist') || '[]'); } catch(e) { return []; }
-  }
-  
+  function getHist() { try { return JSON.parse(localStorage.getItem('tlp_hist') || '[]'); } catch(e) { return []; } }
   function addHist(s) {
     try {
       var h = getHist();
@@ -280,50 +256,30 @@ function resolveFlitType(type8) {
       updHistUI();
     } catch(e) {}
   }
-  
   function clearHist() {
     if(!confirm('清空所有历史记录？')) return;
     try { localStorage.removeItem('tlp_hist'); } catch(e) {}
     updHistUI();
     histDD.classList.remove('show');
   }
-  
-  function updHistUI() {
-    var h = getHist();
-    histCnt.textContent = h.length;
-  }
-  
+  function updHistUI() { histCnt.textContent = getHist().length; }
   function renderHist() {
     var h = getHist();
     histDD.innerHTML = '';
-    if(h.length===0) {
-      histDD.innerHTML = '<div class="em">暂无历史记录</div>';
-      return;
-    }
+    if(h.length===0) { histDD.innerHTML = '<div class="em">暂无历史记录</div>'; return; }
     h.forEach(function(item) {
       var d = document.createElement('div');
       d.className = 'hi';
       d.innerHTML = '<span>'+item.h+'</span><span class="t">'+item.t+'</span>';
-      (function(val) {
-        d.onclick = function() {
-          inp.value = val;
-          histDD.classList.remove('show');
-          doDecode();
-        };
-      })(item.h);
+      (function(val) { d.onclick = function() { inp.value = val; histDD.classList.remove('show'); doDecode(); }; })(item.h);
       histDD.appendChild(d);
     });
   }
-  
-  histBtn.onclick = function(e) {
-    e.stopPropagation();
-    histDD.classList.toggle('show');
-    if(histDD.classList.contains('show')) renderHist();
-  };
+  histBtn.onclick = function(e) { e.stopPropagation(); histDD.classList.toggle('show'); if(histDD.classList.contains('show')) renderHist(); };
   document.addEventListener('click', function() { histDD.classList.remove('show'); });
   document.getElementById('clearHistBtn').onclick = clearHist;
-  
-  // ====== Helper ======
+
+  // ====== Helpers ======
   function hex2bytes(s) {
     s = s.replace(/\s+/g,'');
     if(!/^[0-9a-fA-F]+$/.test(s)) throw new Error('含有非十六进制字符');
@@ -332,62 +288,42 @@ function resolveFlitType(type8) {
     for(var i=0;i<s.length;i+=2) b.push(parseInt(s.substr(i,2),16));
     return b;
   }
-  
-  function dwVal(bytes, off) {
-    if(off+4>bytes.length) return null;
-    return ((bytes[off]<<24)|(bytes[off+1]<<16)|(bytes[off+2]<<8)|bytes[off+3])>>>0;
-  }
-  
+  function dwVal(bytes, off) { if(off+4>bytes.length) return null; return ((bytes[off]<<24)|(bytes[off+1]<<16)|(bytes[off+2]<<8)|bytes[off+3])>>>0; }
   function bits(val, hi, lo) { return (val>>>lo) & ((1<<(hi-lo+1))-1); }
-  
   function dwStr(v) { return ('00000000'+(v>>>0).toString(16).toUpperCase()).slice(-8); }
-  
   function tlpName(fmt, type) {
-    return TNAMES[fmt+'_'+type] || ('Fmt='+fmt+' Type='+type);
+    var key = fmt+'_'+type;
+    return TNAMES[key] || null;
   }
-  
+
   // ====== Main Decode ======
   function doDecode() {
     var input = inp.value.trim();
     err.style.display = 'none';
     var flit = isFlitMode();
-    
     if(!input) {
       err.textContent = '❌ 请输入 TLP 十六进制数据';
       err.style.display = 'block';
       res.classList.remove('on');
       return;
     }
-    
     try {
       var bytes = hex2bytes(input);
       if(bytes.length<4) throw new Error('至少需要4字节(1DW)，当前仅'+bytes.length+'字节');
-      
       addHist(input);
-      
       var dw = [];
-      for(var i=0;i<bytes.length;i+=4) {
-        var v = dwVal(bytes,i);
-        if(v!==null) dw.push(v);
-      }
-      
-      if(flit) {
-        doDecodeFlit(dw, bytes);
-      } else {
-        doDecodeNonFlit(dw, bytes);
-      }
-      
+      for(var i=0;i<bytes.length;i+=4) { var v = dwVal(bytes,i); if(v!==null) dw.push(v); }
+      if(flit) { doDecodeFlit(dw, bytes); } else { doDecodeNonFlit(dw, bytes); }
     } catch(e) {
       err.textContent = '❌ '+e.message;
       err.style.display = 'block';
       res.classList.remove('on');
     }
   }
-  
-  // ====== Non-Flit Mode Decode ======
+
+  // ====== Non-Flit Mode ======
   function doDecodeNonFlit(dw, bytes) {
-    var dw0=dw[0], dw1=dw[1], dw2=dw[2], dw3=dw.length>3?dw[3]:0;
-    
+    var dw0=dw[0], dw1=dw[1]||0, dw2=dw[2]||0, dw3=dw[3]||0;
     var fmt = bits(dw0,31,29);
     var type = bits(dw0,28,24);
     var t9 = bits(dw0,23,23);
@@ -405,206 +341,51 @@ function resolveFlitType(type8) {
     var lenL = bits(dw0,7,0);
     var len = (lenH<<8)|lenL;
     var lenDW = len===0?1024:len;
-    
+
     var fStr = ('000'+fmt.toString(2)).slice(-3);
     var tStr = ('00000'+type.toString(2)).slice(-5);
     var name = tlpName(fStr,tStr);
+    var isUnsupported = (name === null);
+    if(isUnsupported) name = 'Unsupported TLP (Fmt='+fStr+' Type='+tStr+')';
+
     var fDesc = FMT[fStr]||'保留';
-    
     var is4DW = (fmt===1||fmt===3);
     var hasData = (fmt===2||fmt===3);
     var hdrDW = is4DW?4:3;
-    
-    var rows = [];
-    var fields = [];
-    var idx = 0;
-    
+
+    var rows = [], fields = [], idx = 0;
+
     var dw0f = [
-      {n:'Fmt',b:3,v:fStr,hi:31,lo:29,c:C.fmt,d:'TLP格式: '+fDesc},
-      {n:'Type',b:5,v:'0x'+type.toString(16).toUpperCase(),hi:28,lo:24,c:C.type,d:'TLP类型编码: '+tStr},
-      {n:'T9',b:1,v:t9.toString(),hi:23,lo:23,c:C.tag,d:'Extended Tag bit 9'},
-      {n:'TC',b:3,v:tc.toString(),hi:22,lo:20,c:C.tc,d:'Traffic Class: TC'+tc},
-      {n:'T8',b:1,v:t8.toString(),hi:19,lo:19,c:C.tag,d:'Extended Tag bit 8'},
-      {n:'Attr',b:1,v:a2.toString(),hi:18,lo:18,c:C.attr,d:'Attr[2] IDO'},
-      {n:'R',b:1,v:r17.toString(),hi:17,lo:17,c:C.r,d:'Reserved'},
-      {n:'TH',b:1,v:th.toString(),hi:16,lo:16,c:C.th,d:'TPH: '+(th?'有':'无')},
-      {n:'TD',b:1,v:td.toString(),hi:15,lo:15,c:C.td,d:'ECRC: '+(td?'存在':'无')},
-      {n:'EP',b:1,v:ep.toString(),hi:14,lo:14,c:C.ep,d:'Poisoned: '+(ep?'是':'否')},
-      {n:'Attr',b:2,v:''+a1+a0,hi:13,lo:12,c:C.attr,d:'RO='+a1+' NS='+a0},
+      {n:'Fmt',b:3,v:fStr,hi:31,lo:29,c:C.fmt,d:'TLP 格式: '+fDesc},
+      {n:'Type',b:5,v:'0x'+type.toString(16).toUpperCase(),hi:28,lo:24,c:C.type,d:'TLP 类型编码: '+tStr+(isUnsupported?' ⚠️ 此编码为保留或不支持':'')},
+      {n:'T9',b:1,v:t9.toString(),hi:23,lo:23,c:C.tag,d:'Extended Tag bit 9 (Tag[9])'},
+      {n:'TC',b:3,v:'TC'+tc,hi:22,lo:20,c:C.tc,d:'Traffic Class: TC'+tc+' (TC0 必须支持)'},
+      {n:'T8',b:1,v:t8.toString(),hi:19,lo:19,c:C.tag,d:'Extended Tag bit 8 (Tag[8])'},
+      {n:'Attr[2]',b:1,v:a2.toString(),hi:18,lo:18,c:C.attr,d:'Attr[2] IDO: '+(a2?'允许基于ID排序':'强制PCI顺序')},
+      {n:'R',b:1,v:r17.toString(),hi:17,lo:17,c:C.r,d:'Reserved (必须为0)'},
+      {n:'TH',b:1,v:th.toString(),hi:16,lo:16,c:C.th,d:'TPH: '+(th?'包含 TLP Processing Hint':'无 TPH')},
+      {n:'TD',b:1,v:td.toString(),hi:15,lo:15,c:C.td,d:'TLP Digest (ECRC): '+(td?'存在':'无')},
+      {n:'EP',b:1,v:ep.toString(),hi:14,lo:14,c:C.ep,d:'Error Poisoned: '+(ep?'数据中毒':'正常')},
+      {n:'Attr[1:0]',b:2,v:''+a1+a0,hi:13,lo:12,c:C.attr,d:'RO='+a1+' (宽松排序), NS='+a0+' (No Snoop)'},
       {n:'AT',b:2,v:['00','01','10','11'][at],hi:11,lo:10,c:C.at,d:['Untranslated','Translation Req','Translated','Reserved'][at]},
-      {n:'Length',b:10,v:lenDW+'DW',hi:9,lo:0,c:C.len,d:'数据: '+lenDW+'DW ('+(lenDW*4)+'B)'+(len===0?' (0=1024DW)':'')}
+      {n:'Length',b:10,v:lenDW+' DW',hi:9,lo:0,c:C.len,d:'数据负载: '+lenDW+' DW ('+(lenDW*4)+' B)'+(len===0?' (编码0=1024DW)':'')}
     ];
     dw0f.forEach(function(f){fields.push({idx:idx++,dw:0,n:f.n,b:f.b,v:f.v,raw:bits(dw0,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
     rows.push({l:'DW0 [31:0]',f:dw0f});
-    
-    parseRemainingDW(name, tStr, dw, dw0, dw1, dw2, dw3, fields, rows, idx, t9, t8);
-    renderAll(name, fDesc, hasData, lenDW, hdrDW, dw, rows, fields, bytes, false);
+
+    if(!isUnsupported) {
+      parseRemainingDW_NF(name, tStr, dw, dw0, dw1, dw2, dw3, fields, rows, idx, t9, t8);
+    }
+    renderAll(name, fDesc, hasData, lenDW, hdrDW, dw, rows, fields, bytes, false, isUnsupported);
   }
-  
-  // ====== Flit Mode Decode ======
-  function doDecodeFlit(dw, bytes) {
-    var dw0 = dw[0];
-    
-    // Flit Mode DW0: Byte0=Type[7:0], Byte1=TC[2:0](7:5)+OHC[4:0](4:0),
-    // Byte2=TS[2:0](7:5)+Attr[2:0](4:2)+Length[9:8](1:0), Byte3=Length[7:0]
-    var type8 = bits(dw0,31,24);
-    var tc = bits(dw0,23,21);
-    var ohc = bits(dw0,20,16);
-    var ts = bits(dw0,15,13);
-    var attr = bits(dw0,12,10);
-    var lenH = bits(dw0,9,8);
-    var lenL = bits(dw0,7,0);
-    var len = (lenH<<8)|lenL;
-    var lenDW = len===0?1024:len;
-    
-    var typeHex = ('00'+type8.toString(16).toUpperCase()).slice(-2);
-    var p = resolveFlitType(type8);
-    var hdrDW = p.h;
-    var hasData = p.d;
-    var nameStr = p.n;
-    var nfmEquiv = p.nfm;
-    var suggestNFM = nfmEquiv !== '—' ? ' (对应Non-Flit: '+nfmEquiv+')' : '';
-    
-    // ====== Build DW0 fields ======
-    var rows = [], fields = [];
-    var idx = 0;
-    
-    var tsDesc = ['无Trailer','1DW ECRC','1DW Reserved','2DW Reserved','2DW Reserved','3DW IDE MAC','4DW IDE+PCRC','5DW Reserved'];
-    var ohcParts = [];
-    if(ohc&1) ohcParts.push('OHC-A');
-    if(ohc&2) ohcParts.push('OHC-B');
-    if(ohc&4) ohcParts.push('OHC-C');
-    if(ohc&8) ohcParts.push('OHC-E1');
-    if(ohc&16) ohcParts.push('OHC-E2/E4');
-    
-    // Generate binary representation of DW0 bytes
-    var b0 = ('00000000'+type8.toString(2)).slice(-8);
-    var b1 = ('00000000'+bits(dw0,23,16).toString(2)).slice(-8);
-    var b2 = ('00000000'+bits(dw0,15,8).toString(2)).slice(-8);
-    var b3 = ('00000000'+bits(dw0,7,0).toString(2)).slice(-8);
-    
-    var dw0f = [
-      {n:'Type',b:8,v:'0x'+typeHex+' → '+nameStr,hi:31,lo:24,c:C.type,d:'Flit扁平8-bit类型编码'+suggestNFM+'。'+p.desc},
-      {n:'TC',b:3,v:'TC'+tc,hi:23,lo:21,c:C.tc,d:'Traffic Class '+tc+' (3-bit, 与Non-Flit含义相同)'},
-      {n:'OHC',b:5,v:('00000'+ohc.toString(2)).slice(-5),hi:20,lo:16,c:C.ohc,d:'OHC存在位图 [4:0]。'+(ohcParts.length?ohcParts.join(' | '):'无OHC')},
-      {n:'TS',b:3,v:ts.toString(),hi:15,lo:13,c:C.td,d:'Trailer Size: '+tsDesc[ts]+' (替代Non-Flit的TD位)'},
-      {n:'Attr',b:3,v:('000'+attr.toString(2)).slice(-3),hi:12,lo:10,c:C.attr,d:'属性 (与Non-Flit含义相同)。RO='+(attr>>1&1)+' NS='+(attr&1)},
-      {n:'Length',b:10,v:lenDW+'DW',hi:9,lo:0,c:C.len,d:'数据负载长度: '+lenDW+'DW ('+(lenDW*4)+' Bytes)'+(len===0?' (编码0=1024DW)':'')}
-    ];
-    dw0f.forEach(function(f){fields.push({idx:idx++,dw:0,n:f.n,b:f.b,v:f.v,raw:bits(dw0,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-    rows.push({l:'DW0 [31:0] Flit',f:dw0f});
-    
-    // ====== Parse remaining DWs ======
-    // Flit DW1 typically: Requester ID[31:16] + Tag/Control[15:0]
-    if(dw.length>=2) {
-      var dw1 = dw[1];
-      var reqId = bits(dw1,31,16);
-      var tagCtrl = bits(dw1,15,0);
-      
-      var d1f = [
-        {n:'Requester ID',b:16,v:('0000'+reqId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者BDF (Bus:Device:Function)'}
-      ];
-      
-      // Check if this is a 3DW or 4DW header type
-      if(hdrDW>=3) {
-        // For memory-like Flit TLPs, DW1 lower 16 bits contain Tag+control
-        // Flit Tag is 14-bit (vs NFM 8-bit), located in DW1 or OHC
-        var tagVal = bits(dw1,13,0);
-        d1f.push({n:'Tag/Control',b:16,v:'0x'+('0000'+tagCtrl.toString(16).toUpperCase()).slice(-4),hi:15,lo:0,c:C.tag,
-          d:'Flit Tag(14-bit) + 控制位。Tag值: 0x'+('0000'+tagVal.toString(16).toUpperCase()).slice(-4)+' (扩展至14-bit)'});
-      } else {
-        // 1DW types (NOP, LocalTLPPrefix) - no more fields
-      }
-      
-      d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-      rows.push({l:'DW1 [31:0]',f:d1f});
-    }
-    
-    // DW2/DW3: Address or routing fields
-    if(dw.length>=3) {
-      var dw2 = dw[2];
-      if(hdrDW===4 && dw.length>=4) {
-        // 4DW header (UIO types): DW2=Address[63:32], DW3=Address[31:2]
-        var d2f = [{n:'Address[63:32]',b:32,v:'0x'+dwStr(dw2),hi:31,lo:0,c:C.addr,d:'UIO 64-bit地址高32位'}];
-        d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:dw2,c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-        rows.push({l:'DW2 [31:0]',f:d2f});
-        
-        var dw3 = dw[3];
-        var aLo = bits(dw3,31,2);
-        var d3f = [
-          {n:'Address[31:2]',b:30,v:'0x'+('00000000'+((aLo<<2)>>>0).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr2,d:'UIO 64-bit地址低30位 (完整: '+
-            '0x'+('00000000'+((aLo<<2)>>>0).toString(16).toUpperCase()).slice(-8)+')'},
-          {n:'R',b:2,v:bits(dw3,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.r,d:'Reserved'}
-        ];
-        d3f.forEach(function(f){fields.push({idx:idx++,dw:3,n:f.n,b:f.b,v:f.v,raw:bits(dw3,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-        rows.push({l:'DW3 [31:0]',f:d3f});
-        
-      } else if(hdrDW===3) {
-        // 3DW header: DW2=Address[31:2] (most types)
-        var a = bits(dw2,31,2);
-        if(type8===0x03||type8===0x0B) {
-          // Message types - DW2 is routing/data
-          var d2f = [{n:'Msg Routing/Data',b:32,v:'0x'+dwStr(dw2),hi:31,lo:0,c:C.msg,d:'消息路由信息或数据 (MsgToRc/MsgDToRc)'}];
-          d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:dw2,c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-          rows.push({l:'DW2 [31:0]',f:d2f});
-        } else if(type8===0x06) {
-          // Config type - DW2 contains Bus/Device/Function + Reg
-          var bus = bits(dw2,31,24);
-          var dev = bits(dw2,23,19);
-          var fnc = bits(dw2,18,16);
-          var er = bits(dw2,11,8);
-          var rg = bits(dw2,7,2);
-          var d2f = [
-            {n:'Bus',b:8,v:'0x'+bus.toString(16).toUpperCase(),hi:31,lo:24,c:C.reqid,d:'总线: '+bus},
-            {n:'Device',b:5,v:dev.toString(),hi:23,lo:19,c:C.reqid,d:'设备: '+dev},
-            {n:'Function',b:3,v:fnc.toString(),hi:18,lo:16,c:C.reqid,d:'功能: '+fnc},
-            {n:'R',b:4,v:'0',hi:15,lo:12,c:C.r,d:'Reserved'},
-            {n:'ExtRegNo',b:4,v:'0x'+er.toString(16).toUpperCase(),hi:11,lo:8,c:C.tc,d:'扩展寄存器号'},
-            {n:'RegNo',b:6,v:'0x'+rg.toString(16).toUpperCase(),hi:7,lo:2,c:C.tag,d:'寄存器号'},
-            {n:'R',b:2,v:'00',hi:1,lo:0,c:C.r,d:'Reserved'}
-          ];
-          d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-          rows.push({l:'DW2 [31:0]',f:d2f});
-        } else {
-          // Memory / I/O / Atomic - Address
-          var d2f = [
-            {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(a<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'32-bit地址 (4B对齐)'},
-            {n:'R',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.r,d:'Reserved'}
-          ];
-          d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-          rows.push({l:'DW2 [31:0]',f:d2f});
-        }
-      }
-      // hdrDW===1: NOP/LocalTLPPrefix - no more DWs
-    }
-    
-    // ====== OHC Info ======
-    if(ohc>0) {
-      var ohcRows = [];
-      if(ohc&1) {
-        ohcRows.push({n:'OHC-A',b:1,v:'存在',hi:0,lo:0,c:C.ohc,d:'OHC-A: 含FBE/LBE/PASID等。I/O请求必选A2, 配置请求必选A3'});
-      }
-      if(ohc&2) {
-        ohcRows.push({n:'OHC-B',b:1,v:'存在',hi:0,lo:0,c:C.ohc,d:'OHC-B: TPH扩展 (HV+PH+ST+AMA)'});
-      }
-      if(ohc&4) {
-        ohcRows.push({n:'OHC-C',b:1,v:'存在',hi:0,lo:0,c:C.ohc,d:'OHC-C: IDE安全扩展 (Stream_ID/PCRC/MAC等)'});
-      }
-      if(ohc&0x18) {
-        ohcRows.push({n:'OHC-E',b:1,v:'存在',hi:0,lo:0,c:C.ohc,d:'OHC-E: 附加扩展'});
-      }
-      if(ohcRows.length) {
-        rows.push({l:'OHC (OHC[4:0]='+('00000'+ohc.toString(2)).slice(-5)+')',f:ohcRows});
-      }
-    }
-    
-    renderAll(nameStr, 'Flit Mode Type=0x'+typeHex, hasData, lenDW, hdrDW, dw, rows, fields, bytes, true);
-  }
-  
-  // ====== Parse remaining DWs (Non-Flit) ======
-  function parseRemainingDW(name, tStr, dw, dw0, dw1, dw2, dw3, fields, rows, idx, t9, t8) {
+
+  // ====== Non-Flit 剩余 DW 解析（仅支持类型调用） ======
+  function parseRemainingDW_NF(name, tStr, dw, dw0, dw1, dw2, dw3, fields, rows, idx, t9, t8) {
     var isCpl = name.indexOf('Cpl')===0;
-    
+    var isCfg = name.indexOf('Cfg')===0;
+    var isIO = name.indexOf('IORd')===0 || name.indexOf('IOWr')===0;
+    var isMsg = name.indexOf('Msg')===0 || name.indexOf('MsgD')===0;
+
     if(isCpl) {
       var cplId = bits(dw1,31,16);
       var st = bits(dw1,15,13);
@@ -615,26 +396,26 @@ function resolveFlitType(type8) {
       var rId2 = bits(dw2,31,16);
       var tg2 = bits(dw2,15,8);
       var la = bits(dw2,7,1);
-      var sn = ['SC(成功)','UR(不支持)','CRS(重试)','保留','CA(中止)'];
-      
+      var sn = ['SC (成功)','UR (不支持)','CRS (重试, 仅Cfg)','Reserved','CA (中止)','Reserved','Reserved','Reserved'];
       var d1f = [
-        {n:'Completer ID',b:16,v:('0000'+cplId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'完成者BDF'},
-        {n:'Status',b:3,v:st+' ('+(sn[st]||'保留')+')',hi:15,lo:13,c:C.status,d:'完成状态'},
-        {n:'BCM',b:1,v:bcm.toString(),hi:12,lo:12,c:C.td,d:'Byte Count Modified'},
-        {n:'Byte Count',b:12,v:bc.toString(),hi:11,lo:0,c:C.len,d:'剩余: '+bc+'B'}
+        {n:'Completer ID',b:16,v:('0000'+cplId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'完成者 BDF'},
+        {n:'Status',b:3,v:st+' ('+(sn[st]||'Reserved')+')',hi:15,lo:13,c:C.status,d:'完成状态: '+(sn[st]||'保留')},
+        {n:'BCM',b:1,v:bcm.toString(),hi:12,lo:12,c:C.td,d:'Byte Count Modified: '+(bcm?'已修改':'未修改')},
+        {n:'Byte Count',b:12,v:bc+' B',hi:11,lo:0,c:C.len,d:'剩余字节数: '+bc+' B'}
       ];
       var d2f = [
-        {n:'Requester ID',b:16,v:('0000'+rId2.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者BDF(回显)'},
-        {n:'Tag',b:8,v:'0x'+('00'+tg2.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'标签(回显)'},
-        {n:'Lower Address',b:7,v:'0x'+('0'+la.toString(16)).toUpperCase().slice(-2),hi:7,lo:1,c:C.addr2,d:'低地址'},
-        {n:'Reserved',b:1,v:'0',hi:0,lo:0,c:C.r,d:'保留'}
+        {n:'Requester ID',b:16,v:('0000'+rId2.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF (回显)'},
+        {n:'Tag',b:8,v:'0x'+('00'+tg2.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'Tag (回显)'},
+        {n:'Lower Address',b:7,v:'0x'+('0'+la.toString(16)).toUpperCase().slice(-2),hi:7,lo:1,c:C.addr2,d:'低7位地址 (数据对齐)'},
+        {n:'R',b:1,v:'0',hi:0,lo:0,c:C.r,d:'Reserved'}
       ];
       d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
       d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-      rows.push({l:'DW1 [31:0]',f:d1f});
-      rows.push({l:'DW2 [31:0]',f:d2f});
-      
-    } else if(tStr==='00100'||tStr==='00101') {
+      rows.push({l:'DW1 [31:0]',f:d1f}); rows.push({l:'DW2 [31:0]',f:d2f});
+      return;
+    }
+
+    if(isCfg) {
       var rId = bits(dw1,31,16);
       var tg = bits(dw1,15,8);
       var lbe = bits(dw1,7,4);
@@ -644,108 +425,383 @@ function resolveFlitType(type8) {
       var fnc = bits(dw2,18,16);
       var er = bits(dw2,11,8);
       var rg = bits(dw2,7,2);
-      
+      var regOffset = ((er<<6)|rg)<<2;
       var d1f = [
-        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者BDF'},
-        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'标签'},
-        {n:'Last DW BE',b:4,v:lbe.toString(2).padStart(4,'0'),hi:7,lo:4,c:C.be,d:'末DW字节使能'},
-        {n:'First DW BE',b:4,v:fbe.toString(2).padStart(4,'0'),hi:3,lo:0,c:C.ep,d:'首DW字节使能'}
+        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF'},
+        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'Tag'},
+        {n:'Last DW BE',b:4,v:lbe.toString(2).padStart(4,'0'),hi:7,lo:4,c:C.be,d:'末 DW 字节使能'},
+        {n:'First DW BE',b:4,v:fbe.toString(2).padStart(4,'0'),hi:3,lo:0,c:C.be,d:'首 DW 字节使能'}
       ];
       var d2f = [
-        {n:'Bus',b:8,v:'0x'+bus.toString(16).toUpperCase(),hi:31,lo:24,c:C.reqid,d:'总线: '+bus},
-        {n:'Device',b:5,v:dev.toString(),hi:23,lo:19,c:C.reqid,d:'设备: '+dev},
-        {n:'Function',b:3,v:fnc.toString(),hi:18,lo:16,c:C.reqid,d:'功能: '+fnc},
-        {n:'Reserved',b:4,v:'0',hi:15,lo:12,c:C.r,d:'保留'},
-        {n:'Ext Reg No',b:4,v:'0x'+er.toString(16).toUpperCase(),hi:11,lo:8,c:C.tc,d:'扩展寄存器号'},
-        {n:'Register No',b:6,v:'0x'+rg.toString(16).toUpperCase(),hi:7,lo:2,c:C.tag,d:'DW地址: 0x'+((er<<6)|rg).toString(16).toUpperCase()},
-        {n:'Reserved',b:2,v:'00',hi:1,lo:0,c:C.r,d:'保留'}
+        {n:'Bus',b:8,v:'0x'+bus.toString(16).toUpperCase(),hi:31,lo:24,c:C.reqid,d:'总线号: '+bus},
+        {n:'Device',b:5,v:dev.toString(),hi:23,lo:19,c:C.reqid,d:'设备号: '+dev},
+        {n:'Function',b:3,v:fnc.toString(),hi:18,lo:16,c:C.reqid,d:'功能号: '+fnc},
+        {n:'R',b:4,v:'0',hi:15,lo:12,c:C.r,d:'Reserved'},
+        {n:'Ext Reg No',b:4,v:'0x'+er.toString(16).toUpperCase(),hi:11,lo:8,c:C.tc,d:'扩展寄存器号 (bit[11:8])'},
+        {n:'Reg No',b:6,v:'0x'+rg.toString(16).toUpperCase(),hi:7,lo:2,c:C.tag,d:'寄存器号 (bit[7:2]) 偏移 0x'+regOffset.toString(16).toUpperCase()},
+        {n:'R',b:2,v:'00',hi:1,lo:0,c:C.r,d:'Reserved'}
       ];
       d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
       d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-      rows.push({l:'DW1 [31:0]',f:d1f});
-      rows.push({l:'DW2 [31:0]',f:d2f});
-      
-    } else if(tStr==='10000'||tStr==='10010'||((parseInt(tStr,2)&0x18)===0x10)) {
+      rows.push({l:'DW1 [31:0]',f:d1f}); rows.push({l:'DW2 [31:0]',f:d2f});
+      return;
+    }
+
+    if(isMsg) {
       var rId = bits(dw1,31,16);
       var tg = bits(dw1,15,8);
       var mc = bits(dw1,7,0);
       var d1f = [
-        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者BDF'},
-        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'标签'},
-        {n:'Message Code',b:8,v:'0x'+('00'+mc.toString(16)).toUpperCase().slice(-2),hi:7,lo:0,c:C.msg,d:'消息编码'}
+        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF'},
+        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'Tag'},
+        {n:'Message Code',b:8,v:'0x'+('00'+mc.toString(16)).toUpperCase().slice(-2),hi:7,lo:0,c:C.msg,d:'消息编码 (Table 2-30)'}
       ];
+      var d2f = [{n:'Msg Data / Routing',b:32,v:dwStr(dw2),hi:31,lo:0,c:C.addr,d:'消息数据或路由信息'}];
       d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-      rows.push({l:'DW1 [31:0]',f:d1f});
-      rows.push({l:'DW2 [31:0]',f:[{n:'Msg Data',b:32,v:dwStr(dw[2]||0),hi:31,lo:0,c:C.addr,d:'消息数据/路由'}]});
-      
-    } else {
+      d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:dw2,c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+      rows.push({l:'DW1 [31:0]',f:d1f}); rows.push({l:'DW2 [31:0]',f:d2f});
+      return;
+    }
+
+    if(isIO) {
       var rId = bits(dw1,31,16);
       var tg = bits(dw1,15,8);
       var lbe = bits(dw1,7,4);
       var fbe = bits(dw1,3,0);
+      var addr = bits(dw2,31,2);
       var d1f = [
-        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'BDF: '+('0000'+rId.toString(16)).toUpperCase().slice(-4)},
-        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'标签 (T9='+t9+' T8='+t8+')'},
-        {n:'Last DW BE',b:4,v:lbe.toString(2).padStart(4,'0'),hi:7,lo:4,c:C.be,d:'末DW字节使能'},
-        {n:'First DW BE',b:4,v:fbe.toString(2).padStart(4,'0'),hi:3,lo:0,c:C.ep,d:'首DW字节使能'}
+        {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF'},
+        {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'Tag'},
+        {n:'Last DW BE',b:4,v:lbe.toString(2).padStart(4,'0'),hi:7,lo:4,c:C.be,d:'末 DW 字节使能 (I/O 强制为 0000)'},
+        {n:'First DW BE',b:4,v:fbe.toString(2).padStart(4,'0'),hi:3,lo:0,c:C.be,d:'首 DW 字节使能'}
+      ];
+      var d2f = [
+        {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(addr<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'I/O 地址 (4B 对齐)'},
+        {n:'PH',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.ph,d:'Processing Hints'}
       ];
       d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
-      rows.push({l:'DW1 [31:0]',f:d1f});
-      
-      var is4DW = (bits(dw0,31,29)===1||bits(dw0,31,29)===3);
-      if(is4DW && dw.length>=4) {
-        var aH = dw[2]>>>0;
-        var aL = bits(dw[3],31,2);
-        rows.push({l:'DW2 [31:0]',f:[{n:'Address[63:32]',b:32,v:'0x'+dwStr(aH),hi:31,lo:0,c:C.addr,d:'高32位'}]});
-        rows.push({l:'DW3 [31:0]',f:[
-          {n:'Address[31:2]',b:30,v:'0x'+('00000000'+((aL<<2)>>>0).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr2,d:'完整64-bit地址 (低30位)'},
-          {n:'PH',b:2,v:bits(dw[3],1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.ph,d:'Proc Hints'}
-        ]});
-      } else {
-        var a = bits(dw2,31,2);
-        rows.push({l:'DW2 [31:0]',f:[
-          {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(a<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'32-bit地址'},
-          {n:'PH',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.ph,d:'Proc Hints'}
-        ]});
-      }
+      d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+      rows.push({l:'DW1 [31:0]',f:d1f}); rows.push({l:'DW2 [31:0]',f:d2f});
+      return;
     }
-  }
-  
-  // ====== PCIe Config Register Names (first 64 registers = 256B) ======
-  var REG_NAMES = {
-    0x00:'Vendor ID',0x02:'Device ID',0x04:'Command',0x06:'Status',
-    0x08:'Revision ID',0x09:'Class Code',0x0C:'Cache Line Size',0x0D:'Latency Timer',
-    0x0E:'Header Type',0x0F:'BIST',0x10:'BAR0',0x14:'BAR1',
-    0x18:'BAR2',0x1C:'BAR3',0x20:'BAR4',0x24:'BAR5',
-    0x28:'CardBus CIS Pointer',0x2C:'Subsystem Vendor ID',0x2E:'Subsystem ID',
-    0x30:'Expansion ROM Base',0x34:'Capabilities Pointer',0x38:'Reserved',
-    0x3C:'Interrupt Line',0x3D:'Interrupt Pin',0x3E:'Min_Gnt',0x3F:'Max_Lat',
-    0x40:'Bridge Control (Bridge)',0x42:'Bridge Status (Bridge)'
-  };
-  function getConfigRegName(regNum) {
-    if(regNum < 0) return '';
-    var offset = regNum * 4;
-    if(offset > 0xFF) return '';
-    // Check DW-aligned register names
-    for(var key in REG_NAMES) {
-      if(parseInt(key) === regNum) return REG_NAMES[key];
+
+    // Memory / Atomic / DMWr
+    var rId = bits(dw1,31,16);
+    var tg = bits(dw1,15,8);
+    var lbe = bits(dw1,7,4);
+    var fbe = bits(dw1,3,0);
+    var d1f = [
+      {n:'Requester ID',b:16,v:('0000'+rId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF'},
+      {n:'Tag',b:8,v:'0x'+('00'+tg.toString(16)).toUpperCase().slice(-2),hi:15,lo:8,c:C.tag,d:'Tag (T9='+t9+' T8='+t8+')'},
+      {n:'Last DW BE',b:4,v:lbe.toString(2).padStart(4,'0'),hi:7,lo:4,c:C.be,d:'末 DW 字节使能'},
+      {n:'First DW BE',b:4,v:fbe.toString(2).padStart(4,'0'),hi:3,lo:0,c:C.be,d:'首 DW 字节使能'}
+    ];
+    d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+    rows.push({l:'DW1 [31:0]',f:d1f});
+
+    var is4DW = (bits(dw0,31,29)===1||bits(dw0,31,29)===3);
+    if(is4DW && dw.length>=4) {
+      var aH = dw[2]>>>0;
+      var aL = bits(dw[3],31,2);
+      rows.push({l:'DW2 [31:0]',f:[{n:'Address[63:32]',b:32,v:'0x'+dwStr(aH),hi:31,lo:0,c:C.addr,d:'64-bit 地址高32位'}]});
+      rows.push({l:'DW3 [31:0]',f:[
+        {n:'Address[31:2]',b:30,v:'0x'+('00000000'+((aL<<2)>>>0).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr2,d:'64-bit 地址低30位 (完整地址)'},
+        {n:'PH',b:2,v:bits(dw[3],1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.ph,d:'Processing Hints'}
+      ]});
+      var d2f = rows[rows.length-2].f;
+      var d3f = rows[rows.length-1].f;
+      d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+      d3f.forEach(function(f){fields.push({idx:idx++,dw:3,n:f.n,b:f.b,v:f.v,raw:bits(dw[3],f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+    } else {
+      var a = bits(dw2,31,2);
+      rows.push({l:'DW2 [31:0]',f:[
+        {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(a<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'32-bit 地址 (4B 对齐)'},
+        {n:'PH',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.ph,d:'Processing Hints'}
+      ]});
+      var d2f = rows[rows.length-1].f;
+      d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
     }
-    return '';
   }
 
-  // ====== Render ======
-  function renderAll(name, fDesc, hasData, lenDW, hdrDW, dw, rows, fields, bytes, flit) {
+  // ====== OHC 详细解析函数 ======
+  function parseOHC(type8, nameStr, ohc, dw, startIdx, fields, rows, idxRef) {
+    var idx = idxRef.value;
+    var baseOff = startIdx;  // DW offset in 'dw' array where OHC begins
+    var consumed = 0;
+    var ohcRows = [];
+
+    // 根据 TLP 类型决定 OHC-A 子类型
+    var isMemory = (nameStr.indexOf('MRd')===0 || nameStr.indexOf('MWr')===0 || nameStr.indexOf('FetchAdd')===0 || nameStr.indexOf('Swap')===0 || nameStr.indexOf('CAS')===0 || nameStr.indexOf('DMWr')===0);
+    var isIO = (nameStr.indexOf('IORd')===0 || nameStr.indexOf('IOWr')===0);
+    var isCfg = (nameStr.indexOf('Cfg')===0);
+    var isCompletion = (nameStr.indexOf('Cpl')===0);
+    var isMsgID = (nameStr.indexOf('MsgToID')===0 || nameStr.indexOf('MsgDToID')===0);
+    var isMsg = (nameStr.indexOf('Msg')===0);
+
+    var aSubType = 'A1';  // default
+    if (isIO) aSubType = 'A2';
+    else if (isCfg) aSubType = 'A3';
+    else if (isMsgID) aSubType = 'A4';
+    else if (isCompletion) aSubType = 'A5';
+    // else A1 for Memory
+
+    // 解析 OHC-A (bit 0)
+    if (ohc & 1) {
+      var dwA = dw[baseOff + consumed];
+      if (dwA !== undefined) {
+        var fbe = bits(dwA, 3, 0);
+        var lbe = bits(dwA, 7, 4);
+        var pasid = bits(dwA, 27, 8);  // 20 bits
+        var routing = bits(dwA, 31, 28); // reserved or routing
+        var fieldsA = [
+          {n:'OHC-A'+aSubType+' First DW BE', b:4, v:'0x'+fbe.toString(16).toUpperCase(), hi:3, lo:0, c:C.be, d:'首 DW 字节使能'},
+          {n:'OHC-A'+aSubType+' Last DW BE', b:4, v:'0x'+lbe.toString(16).toUpperCase(), hi:7, lo:4, c:C.be, d:'末 DW 字节使能'}
+        ];
+        // 对需要 PASID 的子类型显示 PASID
+        if (aSubType === 'A1' || aSubType === 'A4' || aSubType === 'A5') {
+          fieldsA.push({n:'PASID', b:20, v:'0x'+('00000'+pasid.toString(16).toUpperCase()).slice(-5), hi:27, lo:8, c:C.tag, d:'Process Address Space ID (20-bit)'});
+        }
+        // 对 A4 还有 Segment? 这里简化
+        fieldsA.forEach(function(f){
+          fields.push({idx:idx++, dw:baseOff+consumed, n:f.n, b:f.b, v:f.v, raw:bits(dwA,f.hi,f.lo), c:f.c, d:f.d, hi:f.hi, lo:f.lo});
+        });
+        ohcRows.push({l:'OHC-A (DW'+(baseOff+consumed)+')', f:fieldsA});
+        consumed++;
+      }
+    }
+
+    // OHC-B (bit 1)
+    if (ohc & 2) {
+      var dwB = dw[baseOff + consumed];
+      if (dwB !== undefined) {
+        var st = bits(dwB, 15, 0);
+        var ph = bits(dwB, 17, 16);
+        var hv = bits(dwB, 19, 18);
+        var ama = bits(dwB, 20, 20); // 假设
+        var fieldsB = [
+          {n:'TPH Steering Tag', b:16, v:'0x'+('0000'+st.toString(16).toUpperCase()).slice(-4), hi:15, lo:0, c:C.tag, d:'TPH Steering Tag (16-bit)'},
+          {n:'PH', b:2, v:ph.toString(2).padStart(2,'0'), hi:17, lo:16, c:C.ph, d:'Processing Hint: '+['双向','','',''][ph]},
+          {n:'HV', b:2, v:hv.toString(2).padStart(2,'0'), hi:19, lo:18, c:C.attr, d:'HV[1:0] 控制 PH/ST 有效性'},
+          {n:'AMA', b:1, v:ama.toString(), hi:20, lo:20, c:C.r, d:'AMA (Application Memory Attribute?)'}
+        ];
+        fieldsB.forEach(function(f){
+          fields.push({idx:idx++, dw:baseOff+consumed, n:f.n, b:f.b, v:f.v, raw:bits(dwB,f.hi,f.lo), c:f.c, d:f.d, hi:f.hi, lo:f.lo});
+        });
+        ohcRows.push({l:'OHC-B (DW'+(baseOff+consumed)+')', f:fieldsB});
+        consumed++;
+      }
+    }
+
+    // OHC-C (bit 2)
+    if (ohc & 4) {
+      var dwC = dw[baseOff + consumed];
+      if (dwC !== undefined) {
+        var streamId = bits(dwC, 15, 0);
+        var reqSeg = bits(dwC, 31, 16);
+        var fieldsC = [
+          {n:'IDE Stream ID', b:16, v:'0x'+('0000'+streamId.toString(16).toUpperCase()).slice(-4), hi:15, lo:0, c:C.td, d:'IDE Stream Identifier'},
+          {n:'Requester Segment', b:16, v:'0x'+('0000'+reqSeg.toString(16).toUpperCase()).slice(-4), hi:31, lo:16, c:C.reqid, d:'Requester Segment (用于路由)'}
+        ];
+        fieldsC.forEach(function(f){
+          fields.push({idx:idx++, dw:baseOff+consumed, n:f.n, b:f.b, v:f.v, raw:bits(dwC,f.hi,f.lo), c:f.c, d:f.d, hi:f.hi, lo:f.lo});
+        });
+        ohcRows.push({l:'OHC-C (DW'+(baseOff+consumed)+')', f:fieldsC});
+        consumed++;
+      }
+    }
+
+    // OHC-E (bits 3 and 4)
+    var eSize = 0;
+    if (ohc & 0x18) {
+      if (ohc & 0x08) eSize = 1;  // E1
+      else if (ohc & 0x10) {
+        // E2 or E4, 需要根据其他信息？假设 E2=2, E4=4，但这里简化，按 E2 处理
+        eSize = 2;
+      }
+      // 更精细：如果 OHC bit4=1 且 bit3=0 则为 E2，若 bit4=1 且 bit3=1 则为 E4，但这里我们尽可能
+      if ((ohc & 0x18) == 0x10) eSize = 2;
+      else if ((ohc & 0x18) == 0x18) eSize = 4;
+      else if ((ohc & 0x08) == 0x08) eSize = 1;
+    }
+
+    if (eSize > 0) {
+      for (var e = 0; e < eSize; e++) {
+        var dwE = dw[baseOff + consumed + e];
+        if (dwE !== undefined) {
+          var eType = (eSize==1) ? 'E1' : (eSize==2) ? 'E2' : 'E4';
+          var fieldsE = [
+            {n:'OHC-'+eType+' DW'+e, b:32, v:'0x'+dwStr(dwE), hi:31, lo:0, c:C.ohc, d:'End-End TLP Prefix 数据 (替代 EPrfx)'}
+          ];
+          // 可以进一步解析，但简化
+          fieldsE.forEach(function(f){
+            fields.push({idx:idx++, dw:baseOff+consumed+e, n:f.n, b:f.b, v:f.v, raw:bits(dwE,f.hi,f.lo), c:f.c, d:f.d, hi:f.hi, lo:f.lo});
+          });
+          ohcRows.push({l:'OHC-'+eType+' (DW'+(baseOff+consumed+e)+')', f:fieldsE});
+        }
+      }
+      consumed += eSize;
+    }
+
+    idxRef.value = idx;
+    return ohcRows;
+  }
+
+  // ====== Flit Mode ======
+  function doDecodeFlit(dw, bytes) {
+    var dw0 = dw[0];
+    var type8 = bits(dw0,31,24);
+    var tc = bits(dw0,23,21);
+    var ohc = bits(dw0,20,16);
+    var ts = bits(dw0,15,13);
+    var attr = bits(dw0,12,10);
+    var lenH = bits(dw0,9,8);
+    var lenL = bits(dw0,7,0);
+    var len = (lenH<<8)|lenL;
+    var lenDW = len===0?1024:len;
+
+    var typeHex = ('00'+type8.toString(16).toUpperCase()).slice(-2);
+    var p = FLIT_DB[type8];
+    var isUnsupported = (p === undefined);
+    var nameStr, hdrDW, hasData, desc;
+    if(isUnsupported) {
+      nameStr = 'Unsupported Flit Type (0x'+typeHex+')';
+      hdrDW = 3;
+      hasData = false;
+      desc = '⚠️ 此 Flit Type 在 PCIe 6.0 Table 2-5 中为 Reserved';
+    } else {
+      nameStr = p.n;
+      hdrDW = p.h;
+      hasData = p.d;
+      desc = p.desc;
+    }
+
+    var rows = [], fields = [], idx = 0;
+
+    var tsDesc = ['无 Trailer','1DW ECRC','1DW Reserved','2DW Reserved','2DW Reserved','3DW IDE MAC','4DW IDE+PCRC','5DW Reserved'];
+    var ohcParts = [];
+    if(ohc&1) ohcParts.push('OHC-A');
+    if(ohc&2) ohcParts.push('OHC-B');
+    if(ohc&4) ohcParts.push('OHC-C');
+    if(ohc&8) ohcParts.push('OHC-E1');
+    if(ohc&16) ohcParts.push('OHC-E2/E4');
+
+    var dw0f = [
+      {n:'Type',b:8,v:'0x'+typeHex+' → '+nameStr,hi:31,lo:24,c:C.type,d:'Flit 8-bit 类型编码。'+desc},
+      {n:'TC',b:3,v:'TC'+tc,hi:23,lo:21,c:C.tc,d:'Traffic Class: TC'+tc+' (3-bit)'},
+      {n:'OHC',b:5,v:('00000'+ohc.toString(2)).slice(-5),hi:20,lo:16,c:C.ohc,d:'OHC 存在位图 [4:0]。'+(ohcParts.length?ohcParts.join(' | '):'无 OHC')},
+      {n:'TS',b:3,v:ts.toString()+' ('+tsDesc[ts]+')',hi:15,lo:13,c:C.td,d:'Trailer Size: '+tsDesc[ts]+' (替代 Non-Flit TD)'},
+      {n:'Attr[2:0]',b:3,v:('000'+attr.toString(2)).slice(-3),hi:12,lo:10,c:C.attr,d:'Attr[2]=IDO, Attr[1]=RO, Attr[0]=NS'},
+      {n:'Length',b:10,v:lenDW+' DW',hi:9,lo:0,c:C.len,d:'数据负载: '+lenDW+' DW ('+(lenDW*4)+' B)'+(len===0?' (编码0=1024DW)':'')}
+    ];
+    dw0f.forEach(function(f){fields.push({idx:idx++,dw:0,n:f.n,b:f.b,v:f.v,raw:bits(dw0,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+    rows.push({l:'DW0 [31:0] Flit',f:dw0f});
+
+    if(!isUnsupported) {
+      // DW1: Requester ID + Tag/Control
+      if(dw.length>=2) {
+        var dw1 = dw[1];
+        var reqId = bits(dw1,31,16);
+        var tagCtrl = bits(dw1,15,0);
+        var d1f = [{n:'Requester ID',b:16,v:('0000'+reqId.toString(16)).toUpperCase().slice(-4),hi:31,lo:16,c:C.reqid,d:'请求者 BDF (Bus:Device:Function)'}];
+        if(hdrDW>=3) {
+          var tagVal = bits(dw1,13,0);
+          d1f.push({n:'Tag/Control',b:16,v:'0x'+('0000'+tagCtrl.toString(16).toUpperCase()).slice(-4),hi:15,lo:0,c:C.tag,
+            d:'Flit Tag(14-bit) + 控制位。Tag=0x'+('0000'+tagVal.toString(16).toUpperCase()).slice(-4)+' (14-bit扩展)'});
+        } else {
+          d1f.push({n:'Tag/Control',b:16,v:'0x'+('0000'+tagCtrl.toString(16).toUpperCase()).slice(-4),hi:15,lo:0,c:C.r,d:'NOP/前缀类型: 控制信息'});
+        }
+        d1f.forEach(function(f){fields.push({idx:idx++,dw:1,n:f.n,b:f.b,v:f.v,raw:bits(dw1,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+        rows.push({l:'DW1 [31:0]',f:d1f});
+      }
+
+      // DW2/DW3: Address / Routing / Config (仅当 hdrDW>=3)
+      if(dw.length>=3 && hdrDW>=3) {
+        var dw2 = dw[2];
+        if(hdrDW===4 && dw.length>=4) {
+          var dw3 = dw[3];
+          rows.push({l:'DW2 [31:0]',f:[{n:'Address[63:32]',b:32,v:'0x'+dwStr(dw2),hi:31,lo:0,c:C.addr,d:'64-bit 地址高32位'}]});
+          rows.push({l:'DW3 [31:0]',f:[
+            {n:'Address[31:2]',b:30,v:'0x'+('00000000'+((bits(dw3,31,2)<<2)>>>0).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr2,d:'64-bit 地址低30位'},
+            {n:'R',b:2,v:bits(dw3,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.r,d:'Reserved'}
+          ]});
+          var d2f = rows[rows.length-2].f;
+          var d3f = rows[rows.length-1].f;
+          d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+          d3f.forEach(function(f){fields.push({idx:idx++,dw:3,n:f.n,b:f.b,v:f.v,raw:bits(dw3,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+        } else if(hdrDW===3) {
+          // 3DW header: 根据类型解析
+          if(type8===0x04||type8===0x05||type8===0x44||type8===0x45) {
+            // 配置
+            var bus = bits(dw2,31,24);
+            var dev = bits(dw2,23,19);
+            var fnc = bits(dw2,18,16);
+            var er = bits(dw2,11,8);
+            var rg = bits(dw2,7,2);
+            var d2f = [
+              {n:'Bus',b:8,v:'0x'+bus.toString(16).toUpperCase(),hi:31,lo:24,c:C.reqid,d:'总线: '+bus},
+              {n:'Device',b:5,v:dev.toString(),hi:23,lo:19,c:C.reqid,d:'设备: '+dev},
+              {n:'Function',b:3,v:fnc.toString(),hi:18,lo:16,c:C.reqid,d:'功能: '+fnc},
+              {n:'R',b:4,v:'0',hi:15,lo:12,c:C.r,d:'Reserved'},
+              {n:'ExtRegNo',b:4,v:'0x'+er.toString(16).toUpperCase(),hi:11,lo:8,c:C.tc,d:'扩展寄存器号'},
+              {n:'RegNo',b:6,v:'0x'+rg.toString(16).toUpperCase(),hi:7,lo:2,c:C.tag,d:'寄存器号 偏移 0x'+(((er<<6)|rg)<<2).toString(16).toUpperCase()},
+              {n:'R',b:2,v:'00',hi:1,lo:0,c:C.r,d:'Reserved'}
+            ];
+            d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+            rows.push({l:'DW2 [31:0]',f:d2f});
+          } else if(type8===0x30||type8===0x32||type8===0x33||type8===0x34||type8===0x35||type8===0x36||type8===0x37||
+                     type8===0x5B||type8===0x70||type8===0x72||type8===0x73||type8===0x74||type8===0x75||type8===0x76||type8===0x77) {
+            // 消息类型
+            var d2f = [{n:'Msg Routing/Data',b:32,v:'0x'+dwStr(dw2),hi:31,lo:0,c:C.msg,d:'消息路由或数据'}];
+            d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:dw2,c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+            rows.push({l:'DW2 [31:0]',f:d2f});
+          } else if(type8===0x02 || type8===0x42) {
+            // I/O
+            var addr = bits(dw2,31,2);
+            var d2f = [
+              {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(addr<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'I/O 地址'},
+              {n:'R',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.r,d:'Reserved'}
+            ];
+            d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+            rows.push({l:'DW2 [31:0]',f:d2f});
+          } else {
+            // Memory / Atomic: 地址
+            var addr = bits(dw2,31,2);
+            var d2f = [
+              {n:'Address[31:2]',b:30,v:'0x'+('00000000'+(addr<<2).toString(16).toUpperCase()).slice(-8),hi:31,lo:2,c:C.addr,d:'32-bit 地址 (4B对齐)'},
+              {n:'R',b:2,v:bits(dw2,1,0).toString(2).padStart(2,'0'),hi:1,lo:0,c:C.r,d:'Reserved'}
+            ];
+            d2f.forEach(function(f){fields.push({idx:idx++,dw:2,n:f.n,b:f.b,v:f.v,raw:bits(dw2,f.hi,f.lo),c:f.c,d:f.d,hi:f.hi,lo:f.lo});});
+            rows.push({l:'DW2 [31:0]',f:d2f});
+          }
+        }
+      }
+
+      // ====== 解析 OHC ======
+      if (ohc > 0) {
+        var ohcStart = hdrDW;  // OHC 从第 hdrDW 个 DW 开始
+        var idxRef = {value: idx};
+        var ohcRows = parseOHC(type8, nameStr, ohc, dw, ohcStart, fields, rows, idxRef);
+        idx = idxRef.value;
+        // 将 ohcRows 添加到 rows 中
+        ohcRows.forEach(function(row){ rows.push(row); });
+      }
+    }
+
+    renderAll(nameStr, 'Flit Mode Type=0x'+typeHex, hasData, lenDW, hdrDW, dw, rows, fields, bytes, true, isUnsupported);
+  }
+
+  // ====== 渲染 ======
+  function renderAll(name, fDesc, hasData, lenDW, hdrDW, dw, rows, fields, bytes, flit, unsupported) {
     res.classList.add('on');
-    
-    // ====== Summary Card ======
+
     var payloadB = hasData && bytes.length>hdrDW*4 ? bytes.length-hdrDW*4 : 0;
     var rawHex = dw.map(dwStr).join(' ');
     var sumEl = document.getElementById('summaryBox');
     sumEl.className = 'summary on';
-    
+
     var keyFields = {};
     fields.forEach(function(f){ keyFields[f.n] = f; });
-    
+
     var addrStr = '';
     if(keyFields['Address[63:32]']) {
       addrStr = keyFields['Address[63:32]'].v + ' ' + (keyFields['Address[31:2]'] ? keyFields['Address[31:2]'].v : '');
@@ -754,7 +810,7 @@ function resolveFlitType(type8) {
     } else if(keyFields['Lower Address']) {
       addrStr = keyFields['Lower Address'].v;
     }
-    
+
     var reqStr = keyFields['Requester ID'] ? keyFields['Requester ID'].v : (keyFields['Completer ID'] ? keyFields['Completer ID'].v : '');
     var tagStr = keyFields['Tag'] ? keyFields['Tag'].v : '';
     var lenStr = keyFields['Length'] ? keyFields['Length'].v : '';
@@ -762,8 +818,8 @@ function resolveFlitType(type8) {
     var msgCodeStr = keyFields['Message Code'] ? keyFields['Message Code'].v : '';
     var busStr = keyFields['Bus'] ? 'B:'+keyFields['Bus'].v+' D:'+keyFields['Device'].v+' F:'+keyFields['Function'].v : '';
     var typeStr = keyFields['Type'] ? keyFields['Type'].v : '';
-    
     var modeLabel = flit ? 'FLIT' : 'Non-FLIT';
+
     var summaryHTML = '<div class="top">';
     summaryHTML += '<div class="name">'+name+' <span class="mode">'+modeLabel+'</span></div>';
     summaryHTML += '<div class="badges">';
@@ -771,8 +827,9 @@ function resolveFlitType(type8) {
     summaryHTML += '<span class="badge">Header: <b>'+hdrDW+' DW</b></span>';
     if(lenStr) summaryHTML += '<span class="badge">Payload: <b>'+lenStr+'</b></span>';
     if(payloadB>0) summaryHTML += '<span class="badge" style="background:#dc2626">Data: <b>'+payloadB+' B</b></span>';
+    if(unsupported) summaryHTML += '<span class="badge" style="background:#dc2626;color:#fff">⚠️ 不支持的 TLP 类型</span>';
     summaryHTML += '</div></div><div class="grid">';
-    
+
     var gridItems = [];
     if(flit) {
       gridItems.push({l:'Flit Type', v: typeStr});
@@ -790,83 +847,67 @@ function resolveFlitType(type8) {
     if(busStr) gridItems.push({l:'Config', v: busStr});
     if(lenStr) gridItems.push({l:'Length', v: lenStr});
     if(addrStr) gridItems.push({l:'Address', v: addrStr});
-    
+
     gridItems.forEach(function(item){
       summaryHTML += '<div class="item"><div class="lbl">'+item.l+'</div><div class="val">'+item.v+'</div></div>';
     });
-    
     summaryHTML += '</div><div class="raw">RAW: '+rawHex+'</div>';
-    
-    // ====== TLP Description ======
+
+    // 描述
     var descLines = [];
-    if(flit) {
-      var flitType = keyFields['Type'] ? keyFields['Type'].v : '';
-      descLines.push('⚡ FLIT模式 · 类型: '+name);
-      descLines.push('• 头长: '+hdrDW+'DW'+(hasData?' · 数据负载: '+lenDW+'DW ('+(lenDW*4)+'B)':' · 无数据负载'));
-      if(addrStr) descLines.push('• 目标地址: '+addrStr);
-      if(reqStr) descLines.push('• 请求者ID: '+reqStr);
-      if(addrStr && name.indexOf('Write')>=0) descLines.push('• 操作: 写入地址 '+addrStr+'，长度 '+lenDW+'DW');
-      if(addrStr && name.indexOf('Read')>=0) descLines.push('• 操作: 读取地址 '+addrStr+'，请求 '+lenDW+'DW');
+    if(unsupported) {
+      descLines.push('⚠️ 此 TLP 类型在 PCIe 6.0 Table 2-5 中为 Reserved，请检查数据是否正确。');
     } else {
-      var desc = '';
-      // Build natural language description
-      if(name.indexOf('MRd')===0) desc = '读存储器地址 '+addrStr+'，请求读取 '+lenDW+'DW ('+(lenDW*4)+'B)';
-      else if(name.indexOf('MWr')===0) desc = '写存储器地址 '+addrStr+'，数据长度 '+lenDW+'DW ('+(lenDW*4)+'B)';
-      else if(name.indexOf('CfgRd')===0) {
-        var busV = keyFields['Bus'] ? keyFields['Bus'].v : '';
-        var devV = keyFields['Device'] ? keyFields['Device'].v : '';
-        var fnV = keyFields['Function'] ? keyFields['Function'].v : '';
-        var regV = keyFields['Register No'] ? keyFields['Register No'].v : '';
-        var regNum = keyFields['Register No'] ? parseInt(keyFields['Register No'].raw) : -1;
-        var regName = getConfigRegName(regNum);
-        desc = '读取配置空间 B:'+busV+' D:'+devV+' F:'+fnV+'，寄存器偏移 0x'+(regNum*4).toString(16).toUpperCase()+(regName?' ('+regName+')':'');
+      if(flit) {
+        descLines.push('⚡ FLIT 模式 · 类型: '+name);
+        descLines.push('• 头长: '+hdrDW+' DW'+(hasData?' · 数据负载: '+lenDW+' DW ('+(lenDW*4)+' B)':' · 无数据负载'));
+        if(addrStr) descLines.push('• 目标地址: '+addrStr);
+        if(reqStr) descLines.push('• 请求者 ID: '+reqStr);
+        if(addrStr && name.indexOf('Write')>=0) descLines.push('• 操作: 写入地址 '+addrStr+'，长度 '+lenDW+' DW');
+        if(addrStr && name.indexOf('Read')>=0) descLines.push('• 操作: 读取地址 '+addrStr+'，请求 '+lenDW+' DW');
+      } else {
+        var desc = '';
+        if(name.indexOf('MRd')===0) desc = '读存储器地址 '+addrStr+'，请求读取 '+lenDW+' DW ('+(lenDW*4)+' B)';
+        else if(name.indexOf('MWr')===0) desc = '写存储器地址 '+addrStr+'，数据长度 '+lenDW+' DW ('+(lenDW*4)+' B)';
+        else if(name.indexOf('CfgRd')===0) {
+          var busV = keyFields['Bus'] ? keyFields['Bus'].v : '';
+          var devV = keyFields['Device'] ? keyFields['Device'].v : '';
+          var fnV = keyFields['Function'] ? keyFields['Function'].v : '';
+          var regNum = keyFields['Register No'] ? parseInt(keyFields['Register No'].raw) : -1;
+          desc = '读取配置空间 B:'+busV+' D:'+devV+' F:'+fnV+'，寄存器偏移 0x'+(regNum>=0?(regNum<<2).toString(16).toUpperCase():'??');
+        } else if(name.indexOf('CfgWr')===0) {
+          var busV = keyFields['Bus'] ? keyFields['Bus'].v : '';
+          var devV = keyFields['Device'] ? keyFields['Device'].v : '';
+          var fnV = keyFields['Function'] ? keyFields['Function'].v : '';
+          var regNum = keyFields['Register No'] ? parseInt(keyFields['Register No'].raw) : -1;
+          desc = '写入配置空间 B:'+busV+' D:'+devV+' F:'+fnV+'，寄存器偏移 0x'+(regNum>=0?(regNum<<2).toString(16).toUpperCase():'??');
+        } else if(name.indexOf('Cpl')===0) desc = '完成包'+(hasData?'，返回数据长度 '+lenDW+' DW':'')+(statusStr?'，状态: '+statusStr:'');
+        else if(name.indexOf('Msg')===0) desc = '消息 '+(msgCodeStr?'编码: '+msgCodeStr:'')+' 路由到目标';
+        else if(name.indexOf('IORd')===0) desc = '读 I/O 端口地址 '+addrStr;
+        else if(name.indexOf('IOWr')===0) desc = '写 I/O 端口地址 '+addrStr;
+        else if(name.indexOf('FetchAdd')===0||name.indexOf('Swap')===0||name.indexOf('CAS')===0) desc = '原子操作 '+name+' 地址 '+addrStr;
+        else desc = name+' TLP';
+        descLines.push('📦 '+desc);
+        var epVal = keyFields['EP'] ? keyFields['EP'].v : '';
+        if(epVal==='1') descLines.push('⚠️ 数据中毒 (Poisoned)');
+        var tdVal = keyFields['TD'] ? keyFields['TD'].v : '';
+        if(tdVal==='1') descLines.push('含 ECRC');
       }
-      else if(name.indexOf('CfgWr')===0) {
-        var busV = keyFields['Bus'] ? keyFields['Bus'].v : '';
-        var devV = keyFields['Device'] ? keyFields['Device'].v : '';
-        var fnV = keyFields['Function'] ? keyFields['Function'].v : '';
-        var regV = keyFields['Register No'] ? keyFields['Register No'].v : '';
-        var regNum = keyFields['Register No'] ? parseInt(keyFields['Register No'].raw) : -1;
-        var regName = getConfigRegName(regNum);
-        desc = '写入配置空间 B:'+busV+' D:'+devV+' F:'+fnV+'，寄存器偏移 0x'+(regNum*4).toString(16).toUpperCase()+(regName?' ('+regName+')':'');
-      }
-      else if(name.indexOf('Cpl')===0) desc = '完成包'+(hasData?'，返回数据长度 '+lenDW+'DW':'')+(statusStr?'，状态: '+statusStr:'');
-      else if(name.indexOf('Msg')===0) desc = '消息 '+(msgCodeStr?'编码: '+msgCodeStr:'')+' 路由到目标';
-      else if(name.indexOf('IORd')===0) desc = '读I/O端口地址 '+addrStr;
-      else if(name.indexOf('IOWr')===0) desc = '写I/O端口地址 '+addrStr;
-      else if(name.indexOf('FetchAdd')===0||name.indexOf('Swap')===0||name.indexOf('CAS')===0) desc = '原子操作 '+name+' 地址 '+addrStr;
-      else desc = name+' TLP';
-      descLines.push('📦 '+desc);
-      var epVal = keyFields['EP'] ? keyFields['EP'].v : '';
-      if(epVal==='1') descLines.push('⚠️ 数据中毒');
-      var tdVal = keyFields['TD'] ? keyFields['TD'].v : '';
-      if(tdVal==='1') descLines.push('含ECCRC');
     }
     summaryHTML += '<div style="margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.07);border-radius:6px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.9)">';
     descLines.forEach(function(l){ if(l) summaryHTML += '<div>'+l+'</div>'; });
     summaryHTML += '</div>';
-    
     sumEl.innerHTML = summaryHTML;
-    
-    // ====== Packet Info Bar ======
-    
-    // ====== Packet Info Bar (secondary) ======
-      '<span class="tag '+(flit?'tag-fm':'tag-nf')+'">'+(flit?'FLIT':'Non-FLIT')+'</span>'+
-      '<span class="tag tag-ty">'+name+'</span>'+
-      '<span class="tag tag-ln">'+hdrDW+'DW头'+(hasData?' · '+lenDW+'DW数据':' · 无数据')+'</span>'+
-      (payloadB>0?'<span class="tag" style="background:#fce4ec;color:#c62828">Payload: '+payloadB+'B</span>':'')+
-      '<span class="tag-rw">'+dw.map(dwStr).join(' ')+'</span>';
-    
+
     // Diagram
     var html = '<div class="dia-t">📊 TLP 帧结构 <span class="s">(MSB左→LSB右, Byte0先传)</span></div>';
-    // Bit position row with label spacer (70px to match .dl width)
     html += '<div style="display:flex;margin-bottom:2px"><div style="width:70px;min-width:70px"></div><div style="display:flex;flex:1">';
     for(var b=0;b<4;b++) html+='<div style="flex:1;text-align:center;font-size:10px;color:#888;font-weight:600;padding:1px 0;border-bottom:2px solid #000">Byte +'+b+'</div>';
     html += '</div></div>';
     html += '<div style="display:flex;margin-bottom:4px"><div style="width:70px;min-width:70px"></div><div style="display:flex;flex:1">';
     for(var b=0;b<4;b++) for(var i=7;i>=0;i--) html+='<div style="flex:1;text-align:center;font-size:8px;color:#bbb;font-family:Consolas,monospace">'+i+'</div>';
     html += '</div></div>';
-    
+
     rows.forEach(function(row){
       html += '<div class="dr"><div class="dl">'+row.l+'</div><div class="fd">';
       var bitPos = 31;
@@ -877,14 +918,13 @@ function resolveFlitType(type8) {
         html += '<span class="fn">'+dn+'</span>';
         html += '<span class="fv">'+f.v+'</span></div>';
         bitPos -= f.b;
-        // Add byte boundary marker after every 8 bits
         if(bitPos % 8 === 0 && bitPos > 0) {
           html += '<div style="width:2px;flex-shrink:0;background:rgba(0,0,0,.08);border-radius:1px"></div>';
         }
       });
       html += '</div></div>';
     });
-    
+
     html += '<div class="lg">';
     [['#2980b9','Fmt'],['#1abc9c','Type'],['#9b59b6','Tag'],['#c0392b','TC'],
      ['#2ecc71','Attr'],['#f39c12','ReqID'],['#34495e','Length'],['#3498db','AT'],
@@ -892,7 +932,7 @@ function resolveFlitType(type8) {
     .forEach(function(x){html+='<div><span class="sw" style="background:'+x[0]+'"></span>'+x[1]+'</div>';});
     html += '</div>';
     document.getElementById('diagram').innerHTML = html;
-    
+
     // Table
     var tb = document.getElementById('fieldBody');
     tb.innerHTML = '';
@@ -905,16 +945,15 @@ function resolveFlitType(type8) {
         '<td class="v" style="color:#8899b4">DW'+f.dw+' ['+f.hi+':'+f.lo+']</td>'+
         '<td class="v">'+rh+'</td><td style="font-family:inherit;color:#374151;font-size:13px">'+f.d+'</td></tr>';
     });
-    
+
     res.scrollIntoView({behavior:'smooth',block:'start'});
   }
-  
+
   // ====== Setup ======
   btn.onclick = doDecode;
   clr.onclick = function() { inp.value=''; err.style.display='none'; res.classList.remove('on'); inp.focus(); };
   inp.onkeydown = function(e) { if(e.key==='Enter') doDecode(); };
-  
-  // Examples
+
   function loadExamples(flit) {
     exEl.innerHTML = '';
     var list = flit ? FLIT_EXAMPLES : EXAMPLES;
@@ -926,26 +965,16 @@ function resolveFlitType(type8) {
     });
   }
   loadExamples(false);
-  
-  // Init
+
   updHistUI();
-  // Auto-decode first example
-  function autoDecode() {
+  (function autoDecode() {
     var list = isFlitMode() ? FLIT_EXAMPLES : EXAMPLES;
-    if(list.length>0) {
-      inp.value = list[0];
-      doDecode();
-    }
-  }
-  autoDecode();
-  
-  // 强制页面加载完成后滚动到顶部（覆盖任何可能的滚动）
-  window.addEventListener('load', function() {
-    window.scrollTo(0, 0);
-  });
+    if(list.length>0) { inp.value = list[0]; doDecode(); }
+  })();
+
+  window.addEventListener('load', function() { window.scrollTo(0, 0); });
 })();
 
-// Global for onclick from diagram
 function highlightField(name) {
   var els = document.querySelectorAll('.fb');
   els.forEach(function(e){e.style.outline='';});
