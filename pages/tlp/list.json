@@ -20,7 +20,7 @@
   "OHC-A5", 
   "OHC-B", 
   "OHC-C",
-  "Type0_Config_Header",   "Type1_Config_Header"
+  "Type0_Config_Header",   "Type1_Config_Header",
   "32-bit Address Routing - Flit Mode", 
   "32-bit Address Routing - Non-Flit Mode", 
   "64-bit Address Routing - Flit Mode - 4 DW", 
@@ -34,6 +34,6 @@
   "Fields Present in All Non-Flit Mode TLPs", 
   "First DW of Header Base", 
   "Non-ARI ID Routing with 3 DW Header - Non-Flit Mode", 
-  "Non-ARI ID Routing with 4 DW Header - Non-Flit Mode", 
+  "Non-ARI ID Routing with 4 DW Header - Non-Flit Mode"
 
 ]
