@@ -690,20 +690,42 @@
       };
 
       // ====== Non-Flit Fmt 描述 ======
-      var FMT = { '000': '3DW无数据', '001': '4DW无数据', '010': '3DW有数据', '011': '4DW有数据', '100': 'TLP Prefix' };
+      var FMT = { 
+        '000': '3DW无数据', 
+        '001': '4DW无数据', 
+        '010': '3DW有数据', 
+        '011': '4DW有数据', 
+        '100': 'TLP Prefix' 
+      };
 
       // ====== Non-Flit Type 映射 ======
       var TNAMES = {
-        '000_00000': 'MRd32', '001_00000': 'MRd64', '010_00000': 'MWr32', '011_00000': 'MWr64',
-        '000_00001': 'MRdLk32', '001_00001': 'MRdLk64',
-        '000_00010': 'IORd', '010_00010': 'IOWr',
-        '000_00100': 'CfgRd0', '010_00100': 'CfgWr0', '000_00101': 'CfgRd1', '010_00101': 'CfgWr1',
-        '001_10000': 'Msg', '011_10000': 'MsgD',
-        '000_01010': 'Cpl', '010_01010': 'CplD', '000_01011': 'CplLk', '010_01011': 'CplDLk',
-        '010_01100': 'FetchAdd', '011_01100': 'FetchAdd64',
-        '010_01101': 'Swap', '011_01101': 'Swap64',
-        '010_01110': 'CAS', '011_01110': 'CAS64',
-        '010_01111': 'DMWr32', '011_01111': 'DMWr64',
+        '000_00000': 'MRd32', 
+        '001_00000': 'MRd64', 
+        '010_00000': 'MWr32', 
+        '011_00000': 'MWr64',
+        '000_00001': 'MRdLk32', 
+        '001_00001': 'MRdLk64',
+        '000_00010': 'IORd', 
+        '010_00010': 'IOWr',
+        '000_00100': 'CfgRd0', 
+        '010_00100': 'CfgWr0',
+        '000_00101': 'CfgRd1',
+        '010_00101': 'CfgWr1',
+        '001_10000': 'Msg',
+        '011_10000': 'MsgD',
+        '000_01010': 'Cpl',
+        '010_01010': 'CplD',
+        '000_01011': 'CplLk',
+        '010_01011': 'CplDLk',
+        '010_01100': 'FetchAdd',
+        '011_01100': 'FetchAdd64',
+        '010_01101': 'Swap',
+        '011_01101': 'Swap64',
+        '010_01110': 'CAS',
+        '011_01110': 'CAS64',
+        '010_01111': 'DMWr32',
+        '011_01111': 'DMWr64',
         '000_11011': 'TCfgRd'
       };
 
@@ -723,14 +745,14 @@
       flitDB('0B', 'CplLk', 3, false, '锁定读完成无数据 (3DW, 已废弃)');
       flitDB('20', 'MRd64', 4, false, '64-bit 存储器读 (4DW, 无数据, 需 CplD)');
       flitDB('21', 'MRdLk64', 4, false, '64-bit 锁定读 (4DW, 已废弃)');
-      flitDB('30', 'MsgToRC', 4, false, '消息到 RC (4DW, 无数据, Posted)');
-      flitDB('31', 'MsgToAddr', 4, false, '消息按地址路由 (4DW, 无数据, Posted, 规范未定义使用)');
-      flitDB('32', 'MsgToID', 4, false, '消息按 ID 路由 (4DW, 无数据, Posted)');
-      flitDB('33', 'MsgToBC', 4, false, '消息广播 (4DW, 无数据, Posted)');
-      flitDB('34', 'MsgToLocal', 4, false, '消息本地终止 (4DW, 无数据, Posted)');
-      flitDB('35', 'Msg', 4, false, '通用消息 (4DW, 无数据)');
-      flitDB('36', 'Msg', 4, false, '通用消息 (4DW, 无数据)');
-      flitDB('37', 'Msg', 4, false, '通用消息 (4DW, 无数据)');
+      flitDB('30', 'Msg (to RC)', 4, false, '消息到 RC (4DW, 无数据, Posted)');
+      flitDB('31', 'Msg (Routed by Addr)', 4, false, '消息按地址路由 (4DW, 无数据, Posted, 规范未定义使用)');
+      flitDB('32', 'Msg (Routed by ID)', 4, false, '消息按 ID 路由 (4DW, 无数据, Posted)');
+      flitDB('33', 'Msg (Broadcast from RC)', 4, false, '消息广播 (4DW, 无数据, Posted)');
+      flitDB('34', 'Msg (Local Terminate)', 4, false, '消息本地终止 (4DW, 无数据, Posted)');
+      flitDB('35', 'Msg (Gathered and routed to RC)', 4, false, '通用消息 (4DW, 无数据)');
+      flitDB('36', 'Msg (Rsvd)', 4, false, '预留消息 (4DW, 无数据)');
+      flitDB('37', 'Msg (Rsvd)', 4, false, '预留消息 (4DW, 无数据)');
       flitDB('40', 'MWr32', 3, true, '32-bit 存储器写 (3DW, 有数据, Posted)');
       flitDB('42', 'IOWr', 3, true, 'I/O 写 (3DW, 有数据, 已废弃)');
       flitDB('44', 'CfgWr0', 3, true, '配置写 Type 0 (3DW, 有数据, 必须 OHC-A3)');
@@ -745,14 +767,14 @@
       flitDB('6C', 'FetchAdd64', 4, true, '64-bit FetchAdd 原子操作 (4DW, 有数据, 需 CplD)');
       flitDB('6D', 'Swap64', 4, true, '64-bit Swap 原子操作 (4DW, 有数据, 需 CplD)');
       flitDB('6E', 'CAS64', 4, true, '64-bit CAS 原子操作 (4DW, 2DW 数据, 需 CplD)');
-      flitDB('70', 'MsgDToRC', 4, true, '带数据消息到 RC (4DW, 1DW 数据, Posted)');
-      flitDB('71', 'MsgDToAddr', 4, true, '带数据消息按地址路由 (4DW, Posted, 规范未定义使用)');
-      flitDB('72', 'MsgDToID', 4, true, '带数据消息按 ID 路由 (4DW, Posted)');
-      flitDB('73', 'MsgDToBC', 4, true, '带数据消息广播 (4DW, Posted)');
-      flitDB('74', 'MsgDToLocal', 4, true, '带数据消息本地终止 (4DW, Posted, PTM ResponseD)');
-      flitDB('75', 'MsgD', 4, true, '通用带数据消息 (4DW, Posted)');
-      flitDB('76', 'MsgD', 4, true, '通用带数据消息 (4DW, Posted)');
-      flitDB('77', 'MsgD', 4, true, '通用带数据消息 (4DW, Posted)');
+      flitDB('70', 'MsgD (to RC)', 4, true, '带数据消息到 RC (4DW, 1DW 数据, Posted)');
+      flitDB('71', 'MsgD (Routed by Addr)', 4, true, '带数据消息按地址路由 (4DW, Posted, 规范未定义使用)');
+      flitDB('72', 'MsgD (Routed by ID)', 4, true, '带数据消息按 ID 路由 (4DW, Posted)');
+      flitDB('73', 'MsgD (Broadcast from RC)', 4, true, '带数据消息广播 (4DW, Posted)');
+      flitDB('74', 'MsgD (Local Terminate)', 4, true, '带数据消息本地终止 (4DW, Posted, PTM ResponseD)');
+      flitDB('75', 'MsgD (Gathered and routed to RC)', 4, true, '通用带数据消息 (4DW, Posted)');
+      flitDB('76', 'MsgD (Rsvd)', 4, true, '预留带数据消息 (4DW, Posted)');
+      flitDB('77', 'MsgD (Rsvd)', 4, true, '预留带数据消息 (4DW, Posted)');
       flitDB('7B', 'DMWr64', 4, true, '64-bit Deferrable Memory Write (4DW, 有数据)');
 
       // ====== 示例 ======
@@ -848,7 +870,7 @@
           err.textContent = '❌ ' + e.message;
           err.style.display = 'block';
           res.classList.remove('on');
-        }
+        } 
       }
 
       // ====== Non-Flit Mode ======
@@ -901,7 +923,7 @@
           { n: 'Length', b: 10, v: lenDW + ' DW', hi: 9, lo: 0, c: C.len, d: '数据负载: ' + lenDW + ' DW (' + (lenDW * 4) + ' B)' + (len === 0 ? ' (编码0=1024DW)' : '') }
         ];
         dw0f.forEach(function (f) { fields.push({ idx: idx++, dw: 0, n: f.n, b: f.b, v: f.v, raw: bits(dw0, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-        rows.push({ l: 'DW0 [31:0]', f: dw0f });
+        rows.push({ l: 'DW0', f: dw0f });
 
         if (!isUnsupported) {
           parseRemainingDW_NF(name, tStr, dw, dw0, dw1, dw2, dw3, fields, rows, idx, t9, t8);
@@ -941,7 +963,7 @@
           ];
           d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
           d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-          rows.push({ l: 'DW1 [31:0]', f: d1f }); rows.push({ l: 'DW2 [31:0]', f: d2f });
+          rows.push({ l: 'DW1', f: d1f }); rows.push({ l: 'DW2', f: d2f });
           return;
         }
 
@@ -973,7 +995,7 @@
           ];
           d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
           d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-          rows.push({ l: 'DW1 [31:0]', f: d1f }); rows.push({ l: 'DW2 [31:0]', f: d2f });
+          rows.push({ l: 'DW1', f: d1f }); rows.push({ l: 'DW2', f: d2f });
           return;
         }
 
@@ -989,7 +1011,7 @@
           var d2f = [{ n: 'Msg Data / Routing', b: 32, v: dwStr(dw2), hi: 31, lo: 0, c: C.addr, d: '消息数据或路由信息' }];
           d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
           d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: dw2, c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-          rows.push({ l: 'DW1 [31:0]', f: d1f }); rows.push({ l: 'DW2 [31:0]', f: d2f });
+          rows.push({ l: 'DW1', f: d1f }); rows.push({ l: 'DW2', f: d2f });
           return;
         }
 
@@ -1011,7 +1033,7 @@
           ];
           d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
           d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-          rows.push({ l: 'DW1 [31:0]', f: d1f }); rows.push({ l: 'DW2 [31:0]', f: d2f });
+          rows.push({ l: 'DW1', f: d1f }); rows.push({ l: 'DW2', f: d2f });
           return;
         }
 
@@ -1027,15 +1049,15 @@
           { n: 'First DW BE', b: 4, v: fbe.toString(2).padStart(4, '0'), hi: 3, lo: 0, c: C.be, d: '首 DW 字节使能' }
         ];
         d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-        rows.push({ l: 'DW1 [31:0]', f: d1f });
+        rows.push({ l: 'DW1', f: d1f });
 
         var is4DW = (bits(dw0, 31, 29) === 1 || bits(dw0, 31, 29) === 3);
         if (is4DW && dw.length >= 4) {
           var aH = dw[2] >>> 0;
           var aL = bits(dw[3], 31, 2);
-          rows.push({ l: 'DW2 [31:0]', f: [{ n: 'Address[63:32]', b: 32, v: '0x' + dwStr(aH), hi: 31, lo: 0, c: C.addr, d: '64-bit 地址高32位' }] });
+          rows.push({ l: 'DW2', f: [{ n: 'Address[63:32]', b: 32, v: '0x' + dwStr(aH), hi: 31, lo: 0, c: C.addr, d: '64-bit 地址高32位' }] });
           rows.push({
-            l: 'DW3 [31:0]', f: [
+            l: 'DW3', f: [
               { n: 'Address[31:2]', b: 30, v: '0x' + ('00000000' + ((aL << 2) >>> 0).toString(16).toUpperCase()).slice(-8), hi: 31, lo: 2, c: C.addr2, d: '64-bit 地址低30位 (完整地址)' },
               { n: 'PH', b: 2, v: bits(dw[3], 1, 0).toString(2).padStart(2, '0'), hi: 1, lo: 0, c: C.ph, d: 'Processing Hints' }
             ]
@@ -1047,7 +1069,7 @@
         } else {
           var a = bits(dw2, 31, 2);
           rows.push({
-            l: 'DW2 [31:0]', f: [
+            l: 'DW2', f: [
               { n: 'Address[31:2]', b: 30, v: '0x' + ('00000000' + (a << 2).toString(16).toUpperCase()).slice(-8), hi: 31, lo: 2, c: C.addr, d: '32-bit 地址 (4B 对齐)' },
               { n: 'PH', b: 2, v: bits(dw2, 1, 0).toString(2).padStart(2, '0'), hi: 1, lo: 0, c: C.ph, d: 'Processing Hints' }
             ]
@@ -1069,7 +1091,7 @@
         var isIO = (nameStr.indexOf('IORd') === 0 || nameStr.indexOf('IOWr') === 0);
         var isCfg = (nameStr.indexOf('Cfg') === 0);
         var isCompletion = (nameStr.indexOf('Cpl') === 0);
-        var isMsgID = (nameStr.indexOf('MsgToID') === 0 || nameStr.indexOf('MsgDToID') === 0);
+        var isMsgID = (nameStr.indexOf('Msg (Routed by ID)') === 0 || nameStr.indexOf('MsgDToID') === 0);
         var isMsg = (nameStr.indexOf('Msg') === 0);
 
         var aSubType = 'A1';  // default
@@ -1228,7 +1250,7 @@
           { n: 'Length', b: 10, v: lenDW + ' DW', hi: 9, lo: 0, c: C.len, d: '数据负载: ' + lenDW + ' DW (' + (lenDW * 4) + ' B)' + (len === 0 ? ' (编码0=1024DW)' : '') }
         ];
         dw0f.forEach(function (f) { fields.push({ idx: idx++, dw: 0, n: f.n, b: f.b, v: f.v, raw: bits(dw0, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-        rows.push({ l: 'DW0 [31:0] Flit', f: dw0f });
+        rows.push({ l: 'DW0', f: dw0f });
 
         if (!isUnsupported) {
           // DW1: Requester ID + Tag/Control
@@ -1247,7 +1269,7 @@
               d1f.push({ n: 'Tag/Control', b: 16, v: '0x' + ('0000' + tagCtrl.toString(16).toUpperCase()).slice(-4), hi: 15, lo: 0, c: C.r, d: 'NOP/前缀类型: 控制信息' });
             }
             d1f.forEach(function (f) { fields.push({ idx: idx++, dw: 1, n: f.n, b: f.b, v: f.v, raw: bits(dw1, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-            rows.push({ l: 'DW1 [31:0]', f: d1f });
+            rows.push({ l: 'DW1', f: d1f });
           }
 
           // DW2/DW3: Address / Routing / Config (仅当 hdrDW>=3)
@@ -1255,9 +1277,9 @@
             var dw2 = dw[2];
             if (hdrDW === 4 && dw.length >= 4) {
               var dw3 = dw[3];
-              rows.push({ l: 'DW2 [31:0]', f: [{ n: 'Address[63:32]', b: 32, v: '0x' + dwStr(dw2), hi: 31, lo: 0, c: C.addr, d: '64-bit 地址高32位' }] });
+              rows.push({ l: 'DW2', f: [{ n: 'Address[63:32]', b: 32, v: '0x' + dwStr(dw2), hi: 31, lo: 0, c: C.addr, d: '64-bit 地址高32位' }] });
               rows.push({
-                l: 'DW3 [31:0]', f: [
+                l: 'DW3', f: [
                   { n: 'Address[31:2]', b: 30, v: '0x' + ('00000000' + ((bits(dw3, 31, 2) << 2) >>> 0).toString(16).toUpperCase()).slice(-8), hi: 31, lo: 2, c: C.addr2, d: '64-bit 地址低30位' },
                   { n: 'R', b: 2, v: bits(dw3, 1, 0).toString(2).padStart(2, '0'), hi: 1, lo: 0, c: C.r, d: 'Reserved' }
                 ]
@@ -1285,13 +1307,13 @@
                   { n: 'R', b: 2, v: '00', hi: 1, lo: 0, c: C.r, d: 'Reserved' }
                 ];
                 d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-                rows.push({ l: 'DW2 [31:0]', f: d2f });
+                rows.push({ l: 'DW2', f: d2f });
               } else if (type8 === 0x30 || type8 === 0x32 || type8 === 0x33 || type8 === 0x34 || type8 === 0x35 || type8 === 0x36 || type8 === 0x37 ||
                 type8 === 0x5B || type8 === 0x70 || type8 === 0x72 || type8 === 0x73 || type8 === 0x74 || type8 === 0x75 || type8 === 0x76 || type8 === 0x77) {
                 // 消息类型
                 var d2f = [{ n: 'Msg Routing/Data', b: 32, v: '0x' + dwStr(dw2), hi: 31, lo: 0, c: C.msg, d: '消息路由或数据' }];
                 d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: dw2, c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-                rows.push({ l: 'DW2 [31:0]', f: d2f });
+                rows.push({ l: 'DW2', f: d2f });
               } else if (type8 === 0x02 || type8 === 0x42) {
                 // I/O
                 var addr = bits(dw2, 31, 2);
@@ -1300,7 +1322,7 @@
                   { n: 'R', b: 2, v: bits(dw2, 1, 0).toString(2).padStart(2, '0'), hi: 1, lo: 0, c: C.r, d: 'Reserved' }
                 ];
                 d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-                rows.push({ l: 'DW2 [31:0]', f: d2f });
+                rows.push({ l: 'DW2', f: d2f });
               } else {
                 // Memory / Atomic: 地址
                 var addr = bits(dw2, 31, 2);
@@ -1309,7 +1331,7 @@
                   { n: 'R', b: 2, v: bits(dw2, 1, 0).toString(2).padStart(2, '0'), hi: 1, lo: 0, c: C.r, d: 'Reserved' }
                 ];
                 d2f.forEach(function (f) { fields.push({ idx: idx++, dw: 2, n: f.n, b: f.b, v: f.v, raw: bits(dw2, f.hi, f.lo), c: f.c, d: f.d, hi: f.hi, lo: f.lo }); });
-                rows.push({ l: 'DW2 [31:0]', f: d2f });
+                rows.push({ l: 'DW2', f: d2f });
               }
             }
           }
@@ -1440,7 +1462,7 @@
         // Diagram
         var html = '<div class="dia-t">📊 TLP 帧结构 <span class="s">(MSB左→LSB右, Byte0先传)</span></div>';
         html += '<div style="display:flex;margin-bottom:2px"><div style="width:70px;min-width:70px"></div><div style="display:flex;flex:1">';
-        for (var b = 0; b < 4; b++) html += '<div style="flex:1;text-align:center;font-size:10px;color:#888;font-weight:600;padding:1px 0;border-bottom:2px solid #000">Byte +' + b + '</div>';
+        for (var b = 0; b < 4; b++) html += '<div style="flex:1;text-align:center;font-size:10px;color:#888;font-weight:600;padding:1px 0;border-bottom:2px solid #000">Byte ' + b + '</div>';
         html += '</div></div>';
         html += '<div style="display:flex;margin-bottom:4px"><div style="width:70px;min-width:70px"></div><div style="display:flex;flex:1">';
         for (var b = 0; b < 4; b++) for (var i = 7; i >= 0; i--) html += '<div style="flex:1;text-align:center;font-size:8px;color:#bbb;font-family:Consolas,monospace">' + i + '</div>';
