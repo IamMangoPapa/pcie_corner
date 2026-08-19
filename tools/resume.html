@@ -1,1171 +1,2184 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>个人简历 - 简约大气</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-size: 14px; }
-  body {
-    font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
-    background: linear-gradient(135deg,#f0f2f5 0%,#e8ecf0 100%);
-    color: #2c3e50; line-height: 1.6; -webkit-font-smoothing: antialiased;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人简历 - 简约大气</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ========== Page Layout ========== */
-  .page-wrapper { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; padding: 30px 16px; min-height: 100vh; gap: 24px; }
+    html {
+      font-size: 14px;
+    }
 
-  /* ========== Right Sidebar ========== */
-  .ctrl-sidebar {
-    position: sticky; top: 30px; z-index: 100;
-    display: flex; flex-direction: column; gap: 6px;
-    background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
-    padding: 10px 8px; border-radius: 14px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    flex-shrink: 0; min-width: 48px; align-items: center;
-    border: 1px solid rgba(255,255,255,0.5);
-  }
-  .ctrl-sidebar .ctrl-divider { width: 28px; height: 1px; background: #e8ecf0; margin: 3px 0; }
-  .ctrl-sidebar button {
-    width: 42px; height: 42px;
-    border: 1px solid #e8ecf0; border-radius: 10px; background: #fff;
-    color: #5e6c84; font-size: 1.1rem; cursor: pointer;
-    transition: all 0.2s; font-family: inherit;
-    display: flex; align-items: center; justify-content: center; position: relative;
-  }
-  .ctrl-sidebar button .tooltip {
-    display: none; position: absolute; left: calc(100% + 10px); top: 50%;
-    transform: translateY(-50%); background: #1a1a2e; color: #fff;
-    padding: 5px 12px; border-radius: 6px; font-size: 0.78rem;
-    white-space: nowrap; pointer-events: none; z-index: 200; line-height: 1.4;
-  }
-  .ctrl-sidebar button .tooltip::before {
-    content: ""; position: absolute; right: 100%; top: 50%;
-    transform: translateY(-50%);
-    border: 5px solid transparent; border-right-color: #1a1a2e;
-  }
-  .ctrl-sidebar button:hover { background: #f6f8fa; border-color: #1a73e8; color: #1a73e8; }
-  .ctrl-sidebar button:hover .tooltip { display: block; }
-  .ctrl-sidebar button.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
-  .ctrl-sidebar button.danger { color: #e74c3c; border-color: #e74c3c; }
-  .ctrl-sidebar button.danger:hover { background: #e74c3c; color: #fff; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f2f5 0%, #e8ecf0 100%);
+      color: #2c3e50;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  /* ========== Resume Card ========== */
-  .resume-card-wrap { width: 100%; max-width: 210mm; position: relative; }
-  .resume-card {
-    width: 100%; background: #fff; border-radius: 16px;
-    box-shadow: 0 4px 28px rgba(0,0,0,0.07); overflow: hidden;
-    transition: box-shadow 0.3s; position: relative;
-  }
-  .resume-card:hover { box-shadow: 0 8px 44px rgba(0,0,0,0.09); }
-  .resume-card::after {
-    content: ""; position: absolute; top: 18px; right: 18px;
-    width: 48px; height: 48px;
-    background: radial-gradient(circle,#d0d7de 1.2px,transparent 1.2px);
-    background-size: 8px 8px; opacity: 0.25; pointer-events: none; border-radius: 4px; z-index: 1;
-  }
-  .resume-page::before {
-    content: ""; position: absolute; bottom: 0; right: 0;
-    width: 180px; height: 180px;
-    background: radial-gradient(circle at 100% 100%,rgba(26,115,232,0.03) 0%,transparent 70%);
-    pointer-events: none; z-index: 0;
-  }
+    /* ========== Page Layout ========== */
+    .page-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 30px 16px;
+      min-height: 100vh;
+      gap: 24px;
+    }
 
-  /* ========== A4 Page ========== */
-  .resume-page { padding: 48px 50px; min-height: 297mm; position: relative; background: #fff; }
+    /* ========== Right Sidebar ========== */
+    .ctrl-sidebar {
+      position: sticky;
+      top: 30px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      padding: 10px 8px;
+      border-radius: 14px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+      min-width: 48px;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
 
-  /* ========== Watermark ========== */
-  .watermark-layer { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: hidden; }
-  .watermark-layer.show { display: block; }
-  .watermark-single {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%,-50%) rotate(-30deg);
-    font-size: 5rem; font-weight: 900; color: rgba(26,115,232,0.06);
-    white-space: nowrap; letter-spacing: 8px;
-    user-select: none; pointer-events: none; text-transform: uppercase;
-  }
-  .watermark-layer.mode-tile .watermark-single { display: none; }
-  .watermark-tile {
-    display: none;
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    flex-wrap: wrap; align-content: center; justify-content: center;
-    gap: 60px 100px; padding: 40px;
-    transform: rotate(-30deg); font-size: 2.8rem; font-weight: 900;
-    color: rgba(26,115,232,0.05); user-select: none; pointer-events: none;
-    text-transform: uppercase; letter-spacing: 4px; overflow: hidden;
-  }
-  .watermark-layer.mode-tile .watermark-tile { display: flex; }
-  .watermark-tile span { flex: 0 0 auto; white-space: nowrap; }
-  .edit-mode .watermark-tile span { pointer-events: auto; cursor: text; outline: none; }
+    .ctrl-sidebar .ctrl-divider {
+      width: 28px;
+      height: 1px;
+      background: #e8ecf0;
+      margin: 3px 0;
+    }
 
-  /* ========== Header ========== */
-  .resume-header {
-    display: flex; flex-wrap: wrap; justify-content: space-between;
-    align-items: flex-start; padding-bottom: 28px;
-    border-bottom: 2px solid #f0f2f5; margin-bottom: 28px; position: relative; z-index: 1;
-  }
-  .resume-header::after {
-    content: ""; position: absolute; bottom: -2px; left: 0;
-    width: 80px; height: 3px;
-    background: linear-gradient(90deg,#1a73e8,#8ab4f8); border-radius: 3px;
-  }
-  .resume-header .avatar-wrap { flex-shrink: 0; margin-right: 28px; position: relative; }
-  .resume-header .avatar-wrap::before {
-    content: ""; position: absolute; inset: -4px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#1a73e8,#4a9af5,#8ab4f8,#4a9af5,#1a73e8);
-    background-size: 200% 200%;
-    animation: avatarSpin 4s linear infinite;
-    z-index: 0;
-  }
-  @keyframes avatarSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-  .resume-header .avatar-wrap::after {
-    content: ""; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
-    border-radius: 50%;
-    background: #fff;
-    z-index: 1;
-  }
-  .resume-header .avatar-wrap .avatar {
-    display: block; width: 110px; height: 110px;
-    border-radius: 50%; object-fit: cover;
-    background: #f0f4ff;
-    transition: transform 0.3s, box-shadow 0.3s;
-    position: relative; z-index: 2;
-    box-shadow: 0 4px 16px rgba(26,115,232,0.15);
-  }
-  .resume-header .avatar-wrap .avatar:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(26,115,232,0.25); }
+    .ctrl-sidebar button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid #e8ecf0;
+      border-radius: 10px;
+      background: #fff;
+      color: #5e6c84;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-  /* ===== New header layout ===== */
-  .header-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-  .header-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-  .header-name-block { flex: 1; min-width: 120px; }
-  .resume-header .name { font-size: 2.5rem; font-weight: 800; color: #1a1a2e; letter-spacing: 3px; line-height: 1.25; }
-  .resume-header .title { font-size: 1.2rem; color: #1a73e8; margin-top: 6px; font-weight: 600; }
-  .header-contact-block { flex-shrink: 0; text-align: right; }
-  .header-contact-block .contact-info { font-size: 1.1rem; color: #5e6c84; line-height: 2; font-weight: 500; }
-  .header-contact-block .contact-info a { color: #1a73e8; text-decoration: none; transition: color 0.2s; }
-  .header-contact-block .contact-info a:hover { color: #1557b0; text-decoration: underline; }
-  .header-blog-row { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
-  .header-blog-row a {
-    display: inline-flex; align-items: center; gap: 3px;
-    padding: 2px 10px; background: #f0f4ff; border-radius: 12px;
-    color: #1a73e8; text-decoration: none; font-size: 0.78rem;
-    font-weight: 600; transition: all 0.2s; border: 1px solid transparent;
-    white-space: nowrap;
-  }
-  .header-blog-row a:hover { background: #1a73e8; color: #fff; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(26,115,232,0.2); }
+    .ctrl-sidebar button .tooltip {
+      display: none;
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 200;
+      line-height: 1.4;
+    }
 
-  /* ========== Section ========== */
-  .section { margin-bottom: 28px; position: relative; z-index: 1; }
-  .section:last-child { margin-bottom: 0; }
-  .section-title {
-    font-size: 1.2rem; font-weight: 700; color: #1a1a2e;
-    letter-spacing: 1px; padding-bottom: 10px; margin-bottom: 16px;
-    border-bottom: 1.5px solid #e8ecf0;
-    display: flex; align-items: center; justify-content: space-between; position: relative;
-  }
-  .section-title::after {
-    content: ""; position: absolute; bottom: -1.5px; left: 0;
-    width: 40px; height: 3px;
-    background: linear-gradient(90deg,#1a73e8,#8ab4f8); border-radius: 3px;
-  }
-  .section-title .title-icon { margin-right: 10px; color: #1a73e8; font-size: 1.1em; }
+    .ctrl-sidebar button .tooltip::before {
+      content: "";
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-right-color: #1a1a2e;
+    }
 
-  /* ========== Experience ========== */
-  .exp-item {
-    margin-bottom: 20px; padding-bottom: 20px;
-    border-bottom: 1px dashed #eef0f3; padding-left: 4px;
-    transition: background 0.2s, border-color 0.2s;
-    border-radius: 6px;
-    page-break-inside: avoid; break-inside: avoid;
-  }
-  .exp-item:hover { border-color: #d0d7de; }
-  .exp-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .exp-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 8px; }
-  .exp-header .exp-company { font-size: 1.15rem; font-weight: 700; color: #1a1a2e; }
-  .exp-header .exp-role { font-size: 0.95rem; color: #1a73e8; font-weight: 600; }
-  .exp-header .exp-date { font-size: 0.82rem; color: #8e99a9; font-weight: 400; background: #f6f8fa; padding: 1px 10px; border-radius: 10px; }
-  .exp-desc { font-size: 0.97rem; color: #2c3e50; line-height: 1.75; }
-  .exp-desc ul { list-style: none; padding-left: 4px; }
-  .exp-desc ul li { position: relative; padding-left: 22px; margin-bottom: 5px; }
-  .exp-desc ul li::before { content: "◆"; position: absolute; left: 0; top: 0.1em; color: #1a73e8; font-size: 0.65rem; }
+    .ctrl-sidebar button:hover {
+      background: #f6f8fa;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
 
-  /* ========== Skills ========== */
-  .skill-tags { display: flex; flex-wrap: wrap; gap: 10px; }
-  .skill-tags .tag {
-    padding: 5px 16px; background: linear-gradient(135deg,#f0f4ff,#e8f0fe);
-    color: #1a73e8; border-radius: 18px; font-size: 0.85rem;
-    font-weight: 600; transition: all 0.25s; border: 1px solid transparent;
-    position: relative;
-  }
-  .skill-tags .tag:hover { background: #1a73e8; color: #fff; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(26,115,232,0.2); }
+    .ctrl-sidebar button:hover .tooltip {
+      display: block;
+    }
 
-  /* ========== Education ========== */
-  .edu-item {
-    display: flex; justify-content: space-between; align-items: baseline;
-    flex-wrap: wrap; gap: 4px 12px; margin-bottom: 8px;
-    padding: 8px 10px 8px 20px; border-radius: 8px; transition: background 0.2s;
-  }
-  .edu-item:hover { background: #f8faff; }
-  .edu-item:last-child { margin-bottom: 0; }
-  .edu-item .edu-school { font-weight: 700; color: #1a1a2e; font-size: 1.05rem; min-width: 120px; }
-  .edu-item .edu-major { color: #5e6c84; font-size: 0.95rem; font-weight: 500; flex: 1; text-align: left; padding-left: 8px; }
-  .edu-item .edu-date { color: #8e99a9; font-size: 0.85rem; font-weight: 500; white-space: nowrap; }
+    .ctrl-sidebar button.active {
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+    }
 
-  /* ========== Section decor ========== */
-  .section-deco { position: absolute; right: 0; top: 0; width: 40px; height: 40px; pointer-events: none; opacity: 0.04; z-index: 0; }
-  .section-deco::before { content: ""; position: absolute; right: 0; top: 0; width: 28px; height: 28px; border-right: 3px solid #1a73e8; border-top: 3px solid #1a73e8; border-radius: 0 4px 0 0; }
+    .ctrl-sidebar button.danger {
+      color: #e74c3c;
+      border-color: #e74c3c;
+    }
 
-  /* ========== MODAL ========== */
-  .modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(26,26,46,0.5); z-index: 9999;
-    align-items: center; justify-content: center; backdrop-filter: blur(4px);
-  }
-  .modal-overlay.show { display: flex; }
-  .modal-box {
-    background: #fff; padding: 28px 32px; border-radius: 18px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.15);
-    width: 400px; max-width: 90vw; animation: modalIn 0.25s ease;
-  }
-  @keyframes modalIn { 0% { transform: scale(0.92) translateY(12px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
-  .modal-box h3 { font-size: 1.1rem; color: #1a1a2e; margin-bottom: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .modal-box .modal-close { float: right; width: 30px; height: 30px; border: none; background: #f0f2f5; border-radius: 8px; cursor: pointer; font-size: 1.1rem; color: #8e99a9; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-  .modal-box .modal-close:hover { background: #e74c3c; color: #fff; }
-  .modal-box label { display: block; font-size: 0.85rem; font-weight: 600; color: #5e6c84; margin-bottom: 6px; margin-top: 14px; }
-  .modal-box label:first-of-type { margin-top: 0; }
-  .modal-box input[type="text"] { width: 100%; padding: 9px 14px; border: 1.5px solid #d0d7de; border-radius: 8px; font-size: 0.9rem; font-family: inherit; transition: border-color 0.2s; outline: none; }
-  .modal-box input[type="text"]:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
-  .modal-box .radio-group { display: flex; gap: 12px; margin-top: 6px; }
-  .modal-box .radio-group label { display: flex; align-items: center; gap: 6px; font-size: 0.88rem; font-weight: 500; color: #2c3e50; cursor: pointer; margin: 0; padding: 8px 14px; border: 1.5px solid #d0d7de; border-radius: 8px; transition: all 0.15s; flex: 1; justify-content: center; }
-  .modal-box .radio-group label:hover { border-color: #1a73e8; }
-  .modal-box .radio-group input[type="radio"] { accent-color: #1a73e8; }
-  .modal-box .radio-group label:has(input:checked) { border-color: #1a73e8; background: #f0f4ff; }
-  .modal-box .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
-  .modal-box .modal-actions button { padding: 8px 22px; border-radius: 8px; font-size: 0.88rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid #d0d7de; background: #fff; color: #2c3e50; }
-  .modal-box .modal-actions button:hover { background: #f6f8fa; }
-  .modal-box .modal-actions button.primary { background: #1a73e8; color: #fff; border-color: #1a73e8; }
-  .modal-box .modal-actions button.primary:hover { background: #1557b0; }
+    .ctrl-sidebar button.danger:hover {
+      background: #e74c3c;
+      color: #fff;
+    }
 
-  .export-options { display: flex; gap: 10px; margin-top: 12px; }
-  .export-options .opt { flex: 1; padding: 16px 10px; border: 1.5px solid #e8ecf0; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafbfc; }
-  .export-options .opt:hover { border-color: #1a73e8; background: #f0f4ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,115,232,0.1); }
-  .export-options .opt .opt-icon { font-size: 1.6rem; display: block; margin-bottom: 6px; }
-  .export-options .opt .opt-label { font-size: 0.82rem; font-weight: 600; color: #2c3e50; }
-  .export-options .opt .opt-desc { font-size: 0.72rem; color: #8e99a9; margin-top: 3px; }
+    /* ========== Resume Card ========== */
+    .resume-card-wrap {
+      width: 100%;
+      max-width: 210mm;
+      position: relative;
+    }
 
-  /* ========== Floating Format Toolbar ========== */
-  .fmt-toolbar {
-    display: none; position: fixed; z-index: 9998;
-    background: #1a1a2e; border-radius: 10px; padding: 6px 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    align-items: center; gap: 4px;
-  }
-  .fmt-toolbar.show { display: flex; }
-  .fmt-toolbar button {
-    width: 30px; height: 30px; border: none; border-radius: 6px;
-    background: transparent; color: #e8ecf0; font-size: 0.85rem;
-    cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; font-family: inherit;
-  }
-  .fmt-toolbar button:hover { background: rgba(255,255,255,0.12); color: #fff; }
-  .fmt-toolbar .fmt-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 4px; }
-  .fmt-toolbar select {
-    background: rgba(255,255,255,0.1); color: #e8ecf0;
-    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
-    padding: 3px 6px; font-size: 0.75rem; cursor: pointer;
-    font-family: inherit; outline: none;
-  }
-  .fmt-toolbar select option { background: #1a1a2e; color: #e8ecf0; }
-  .fmt-toolbar .fmt-swatch {
-    width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2);
-    padding: 0; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
-  }
-  .fmt-toolbar .fmt-swatch:hover { border-color: #fff; transform: scale(1.2); }
+    .resume-card {
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 28px rgba(0, 0, 0, 0.07);
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+      position: relative;
+    }
 
-  /* ========== Edit Mode ========== */
-  .resume-page.edit-mode .editable { cursor: text; transition: background 0.15s; border-radius: 3px; padding: 1px 3px; margin: -1px -3px; }
-  .resume-page.edit-mode .editable:hover { background: #eef3ff; outline: 1px dashed #1a73e8; }
-  .resume-page.edit-mode .editable:focus { background: #fff; outline: 2px solid #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.12); }
-  .resume-page.edit-mode .avatar { cursor: pointer !important; outline: 2px dashed transparent !important; transition: outline 0.2s, transform 0.2s !important; }
-  .resume-page.edit-mode .avatar:hover { outline-color: #1a73e8 !important; transform: scale(1.03) !important; }
-  .edit-hint { display: none; text-align: center; padding: 12px 16px; background: linear-gradient(135deg,#e8f5e9,#f1f8e9); color: #2e7d32; font-size: 0.82rem; border-radius: 10px; margin-bottom: 20px; border-left: 3px solid #43a047; }
-  .edit-mode .edit-hint { display: block; }
+    .resume-card:hover {
+      box-shadow: 0 8px 44px rgba(0, 0, 0, 0.09);
+    }
 
-  /* ========== Edit action buttons (add/remove) ========== */
-  .section-actions { display: none; gap: 4px; }
-  .edit-mode .section-actions { display: flex; }
-  .section-actions button {
-    width: 22px; height: 22px; border: 1px solid #d0d7de; border-radius: 5px;
-    background: #fff; font-size: 0.85rem; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    color: #5e6c84; transition: all 0.15s; padding: 0; line-height: 1;
-  }
-  .section-actions button:hover { background: #f0f2f5; color: #1a73e8; border-color: #1a73e8; }
-  .section-actions button.rm:hover { color: #e74c3c; border-color: #e74c3c; background: #fef0ef; }
+    .resume-card::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 48px;
+      height: 48px;
+      background: radial-gradient(circle, #d0d7de 1.2px, transparent 1.2px);
+      background-size: 8px 8px;
+      opacity: 0.25;
+      pointer-events: none;
+      border-radius: 4px;
+      z-index: 1;
+    }
 
-  .edit-add-btn {
-    display: none; width: 100%; padding: 8px;
-    border: 1.5px dashed #d0d7de; border-radius: 8px;
-    background: transparent; color: #8e99a9; font-size: 0.82rem;
-    cursor: pointer; transition: all 0.2s; font-family: inherit;
-    margin-top: 8px; text-align: center;
-  }
-  .edit-add-btn:hover { border-color: #1a73e8; color: #1a73e8; background: #f6f8fa; }
-  .edit-mode .edit-add-btn { display: block; }
+    .resume-page::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle at 100% 100%, rgba(26, 115, 232, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* Skill tag remove in edit mode */
-  .skill-tags .tag { position: relative; }
-  .tag-rm, .link-rm, .edu-rm, .exp-rm { display: none !important; }
-  .edit-mode .tag-rm, .edit-mode .link-rm, .edit-mode .edu-rm, .edit-mode .exp-rm { display: flex !important; }
-  .tag-rm {
-    position: absolute; top: -6px; right: -6px;
-    width: 16px; height: 16px; border-radius: 50%; border: none;
-    background: #e74c3c; color: #fff; font-size: 0.6rem;
-    cursor: pointer; align-items: center; justify-content: center;
-    padding: 0; line-height: 1;
-  }
+    /* ========== A4 Page ========== */
+    .resume-page {
+      padding: 48px 50px;
+      min-height: 297mm;
+      position: relative;
+      background: #fff;
+    }
 
-  /* Blog link remove */
-  .header-blog-row a { position: relative; }
-  .header-blog-row a .link-rm {
-    position: absolute; top: -6px; right: -6px;
-    width: 16px; height: 16px; border-radius: 50%; border: none;
-    background: #e74c3c; color: #fff; font-size: 0.6rem;
-    cursor: pointer; align-items: center; justify-content: center;
-    padding: 0; line-height: 1;
-  }
-  .edit-mode .header-blog-row a .link-rm { display: flex !important; }
+    /* ========== Watermark ========== */
+    .watermark-layer {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+    }
 
-  /* Edu item remove */
-  .edu-item { position: relative; }
-  .edu-item .edu-rm {
-    position: absolute; left: -6px; top: -6px;
-    width: 18px; height: 18px; border-radius: 50%; border: none;
-    background: #e74c3c; color: #fff; font-size: 0.65rem;
-    cursor: pointer; align-items: center; justify-content: center;
-    padding: 0; line-height: 1; z-index: 3;
-  }
-  .edit-mode .edu-item .edu-rm { display: flex !important; }
+    .watermark-layer.show {
+      display: block;
+    }
 
-  /* Exp item remove */
-  .exp-item { position: relative; }
-  .exp-item .exp-rm {
-    position: absolute; right: 0; top: 0;
-    width: 20px; height: 20px; border-radius: 6px; border: 1px solid #e8ecf0;
-    background: #fff; color: #e74c3c; font-size: 0.7rem;
-    cursor: pointer; align-items: center; justify-content: center;
-    padding: 0; line-height: 1; z-index: 3; transition: all 0.15s;
-  }
-  .edit-mode .exp-item .exp-rm { display: flex !important; }
-  .edit-mode .exp-item .exp-rm:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+    .watermark-single {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 5rem;
+      font-weight: 900;
+      color: rgba(26, 115, 232, 0.06);
+      white-space: nowrap;
+      letter-spacing: 8px;
+      user-select: none;
+      pointer-events: none;
+      text-transform: uppercase;
+    }
 
-  /* ========== Toast ========== */
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: #fff; padding: 10px 28px; border-radius: 10px; font-size: 0.88rem; opacity: 0; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 999; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.18); }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .watermark-layer.mode-tile .watermark-single {
+      display: none;
+    }
 
-  /* ========== PRINT ========== */
-  @media print {
-    body { background: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    .page-wrapper { padding: 0 !important; gap: 0 !important; }
-    .ctrl-sidebar, .edit-hint, .modal-overlay, .toast, .fmt-toolbar { display: none !important; }
-    .resume-card { border-radius: 0 !important; box-shadow: none !important; max-width: 100% !important; }
-    .resume-card::after, .resume-page::before { display: none !important; }
-    .resume-page { padding: 0 !important; min-height: auto !important; }
-    .resume-page.edit-mode .editable, .resume-page.edit-mode .avatar { outline: none !important; background: transparent !important; transform: none !important; }
-    .header-blog-row a { border: 1px solid #d0d7de !important; background: #f5f7fa !important; color: #2c3e50 !important; }
-    .section-actions, .edit-add-btn, .tag-rm, .link-rm, .edu-rm, .exp-rm { display: none !important; }
-    .skill-tags .tag { background: #f0f4ff !important; color: #1a73e8 !important; }
-    .exp-date { background: #f6f8fa !important; }
-    .section-deco { display: none !important; }
-    .resume-header::after { background: #1a73e8 !important; }
-    .resume-header .avatar-wrap .avatar { box-shadow: none !important; }
-    .watermark-layer.show { display: block !important; }
-    .exp-item { page-break-inside: avoid !important; break-inside: avoid !important; }
-    @page { size: A4; margin: 22mm 18mm 25mm 18mm; @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 9px; color: #b0b8c4; font-family: "PingFang SC","Microsoft YaHei",sans-serif; } }
-  }
+    .watermark-tile {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      gap: 60px 100px;
+      padding: 40px;
+      transform: rotate(-30deg);
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: rgba(26, 115, 232, 0.05);
+      user-select: none;
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      overflow: hidden;
+    }
 
-  /* ========== Responsive ========== */
-  @media screen and (max-width: 820px) {
-    .page-wrapper { flex-direction: column; align-items: center; padding: 16px 10px; }
-    .ctrl-sidebar { position: fixed; top: auto; bottom: 16px; left: 50%; transform: translateX(-50%); flex-direction: row; padding: 8px 14px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); min-width: auto; z-index: 200; gap: 4px; }
-    .ctrl-sidebar .ctrl-divider { display: none; }
-    .ctrl-sidebar button { width: 38px; height: 38px; border-radius: 50%; font-size: 1rem; }
-    .ctrl-sidebar button .tooltip { display: none !important; }
-    .resume-page { padding: 28px 22px; }
-    .resume-header { flex-direction: column; gap: 12px; }
-    .resume-header .avatar-wrap { margin-right: 0; margin-bottom: 6px; }
-    .resume-header .avatar-wrap .avatar { width: 80px; height: 80px; }
-    .resume-header .contact-info { text-align: left; }
-    .header-blog-row { flex-wrap: wrap; }
-    .resume-header .name { font-size: 1.8rem; }
-    .exp-header { flex-direction: column; gap: 2px; }
-    .modal-box { padding: 20px; width: 95vw; }
-    .export-options { flex-direction: column; gap: 8px; }
-    .export-options .opt { padding: 12px; }
-    .fmt-toolbar { flex-wrap: wrap; max-width: 280px; }
-  }
-</style>
+    .watermark-layer.mode-tile .watermark-tile {
+      display: flex;
+    }
+
+    .watermark-tile span {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .edit-mode .watermark-tile span {
+      pointer-events: auto;
+      cursor: text;
+      outline: none;
+    }
+
+    /* ========== Header ========== */
+    .resume-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 28px;
+      border-bottom: 2px solid #f0f2f5;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .resume-header::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, #1a73e8, #8ab4f8);
+      border-radius: 3px;
+    }
+
+    .resume-header .avatar-wrap {
+      flex-shrink: 0;
+      margin-right: 28px;
+      position: relative;
+    }
+
+    .resume-header .avatar-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a73e8, #4a9af5, #8ab4f8, #4a9af5, #1a73e8);
+      background-size: 200% 200%;
+      animation: avatarSpin 4s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes avatarSpin {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .resume-header .avatar-wrap::after {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 50%;
+      background: #fff;
+      z-index: 1;
+    }
+
+    .resume-header .avatar-wrap .avatar {
+      display: block;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #f0f4ff;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 4px 16px rgba(26, 115, 232, 0.15);
+    }
+
+    .resume-header .avatar-wrap .avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 24px rgba(26, 115, 232, 0.25);
+    }
+
+    /* ===== New header layout ===== */
+    .header-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .header-name-block {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .resume-header .name {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      letter-spacing: 3px;
+      line-height: 1.25;
+    }
+
+    .resume-header .title {
+      font-size: 1.2rem;
+      color: #1a73e8;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .header-contact-block {
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .header-contact-block .contact-info {
+      font-size: 1.1rem;
+      color: #5e6c84;
+      line-height: 2;
+      font-weight: 500;
+    }
+
+    .header-contact-block .contact-info a {
+      color: #1a73e8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .header-contact-block .contact-info a:hover {
+      color: #1557b0;
+      text-decoration: underline;
+    }
+
+    .header-blog-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .header-blog-row a {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 10px;
+      background: #f0f4ff;
+      border-radius: 12px;
+      color: #1a73e8;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .header-blog-row a:hover {
+      background: #1a73e8;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(26, 115, 232, 0.2);
+    }
+
+    /* ========== Section ========== */
+    .section {
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: 1px;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      border-bottom: 1.5px solid #e8ecf0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: "";
+      position: absolute;
+      bottom: -1.5px;
+      left: 0;
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(90deg, #1a73e8, #8ab4f8);
+      border-radius: 3px;
+    }
+
+    .section-title .title-icon {
+      margin-right: 10px;
+      color: #1a73e8;
+      font-size: 1.1em;
+    }
+
+    /* ========== Experience ========== */
+    .exp-item {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px dashed #eef0f3;
+      padding-left: 4px;
+      transition: background 0.2s, border-color 0.2s;
+      border-radius: 6px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .exp-item:hover {
+      border-color: #d0d7de;
+    }
+
+    .exp-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .exp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      margin-bottom: 8px;
+    }
+
+    .exp-header .exp-company {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .exp-header .exp-role {
+      font-size: 0.95rem;
+      color: #1a73e8;
+      font-weight: 600;
+    }
+
+    .exp-header .exp-date {
+      font-size: 0.82rem;
+      color: #8e99a9;
+      font-weight: 400;
+      background: #f6f8fa;
+      padding: 1px 10px;
+      border-radius: 10px;
+    }
+
+    .exp-desc {
+      font-size: 0.97rem;
+      color: #2c3e50;
+      line-height: 1.75;
+    }
+
+    .exp-desc ul {
+      list-style: none;
+      padding-left: 4px;
+    }
+
+    .exp-desc ul li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 5px;
+    }
+
+    .exp-desc ul li::before {
+      content: "◆";
+      position: absolute;
+      left: 0;
+      top: 0.1em;
+      color: #1a73e8;
+      font-size: 0.65rem;
+    }
+
+    /* ========== Skills ========== */
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill-tags .tag {
+      padding: 5px 16px;
+      background: linear-gradient(135deg, #f0f4ff, #e8f0fe);
+      color: #1a73e8;
+      border-radius: 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.25s;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .skill-tags .tag:hover {
+      background: #1a73e8;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
+    }
+
+    /* ========== Education ========== */
+    .edu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      margin-bottom: 8px;
+      padding: 8px 10px 8px 20px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .edu-item:hover {
+      background: #f8faff;
+    }
+
+    .edu-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .edu-item .edu-school {
+      font-weight: 700;
+      color: #1a1a2e;
+      font-size: 1.05rem;
+      min-width: 120px;
+    }
+
+    .edu-item .edu-major {
+      color: #5e6c84;
+      font-size: 0.95rem;
+      font-weight: 500;
+      flex: 1;
+      text-align: left;
+      padding-left: 8px;
+    }
+
+    .edu-item .edu-date {
+      color: #8e99a9;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* ========== Section decor ========== */
+    .section-deco {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 40px;
+      height: 40px;
+      pointer-events: none;
+      opacity: 0.04;
+      z-index: 0;
+    }
+
+    .section-deco::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 28px;
+      height: 28px;
+      border-right: 3px solid #1a73e8;
+      border-top: 3px solid #1a73e8;
+      border-radius: 0 4px 0 0;
+    }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(26, 26, 46, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #fff;
+      padding: 28px 32px;
+      border-radius: 18px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+      width: 400px;
+      max-width: 90vw;
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      0% {
+        transform: scale(0.92) translateY(12px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-box h3 {
+      font-size: 1.1rem;
+      color: #1a1a2e;
+      margin-bottom: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-box .modal-close {
+      float: right;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #f0f2f5;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: #8e99a9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .modal-box .modal-close:hover {
+      background: #e74c3c;
+      color: #fff;
+    }
+
+    .modal-box label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #5e6c84;
+      margin-bottom: 6px;
+      margin-top: 14px;
+    }
+
+    .modal-box label:first-of-type {
+      margin-top: 0;
+    }
+
+    .modal-box input[type="text"] {
+      width: 100%;
+      padding: 9px 14px;
+      border: 1.5px solid #d0d7de;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .modal-box input[type="text"]:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+    }
+
+    .modal-box .radio-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .modal-box .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #2c3e50;
+      cursor: pointer;
+      margin: 0;
+      padding: 8px 14px;
+      border: 1.5px solid #d0d7de;
+      border-radius: 8px;
+      transition: all 0.15s;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .modal-box .radio-group label:hover {
+      border-color: #1a73e8;
+    }
+
+    .modal-box .radio-group input[type="radio"] {
+      accent-color: #1a73e8;
+    }
+
+    .modal-box .radio-group label:has(input:checked) {
+      border-color: #1a73e8;
+      background: #f0f4ff;
+    }
+
+    .modal-box .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+
+    .modal-box .modal-actions button {
+      padding: 8px 22px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid #d0d7de;
+      background: #fff;
+      color: #2c3e50;
+    }
+
+    .modal-box .modal-actions button:hover {
+      background: #f6f8fa;
+    }
+
+    .modal-box .modal-actions button.primary {
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+    }
+
+    .modal-box .modal-actions button.primary:hover {
+      background: #1557b0;
+    }
+
+    .export-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .export-options .opt {
+      flex: 1;
+      padding: 16px 10px;
+      border: 1.5px solid #e8ecf0;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafbfc;
+    }
+
+    .export-options .opt:hover {
+      border-color: #1a73e8;
+      background: #f0f4ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.1);
+    }
+
+    .export-options .opt .opt-icon {
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .export-options .opt .opt-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .export-options .opt .opt-desc {
+      font-size: 0.72rem;
+      color: #8e99a9;
+      margin-top: 3px;
+    }
+
+    /* ========== Floating Format Toolbar ========== */
+    .fmt-toolbar {
+      display: none;
+      position: fixed;
+      z-index: 9998;
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 6px 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      align-items: center;
+      gap: 4px;
+    }
+
+    .fmt-toolbar.show {
+      display: flex;
+    }
+
+    .fmt-toolbar button {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #e8ecf0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+    }
+
+    .fmt-toolbar button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .fmt-toolbar .fmt-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 0 4px;
+    }
+
+    .fmt-toolbar select {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e8ecf0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .fmt-toolbar select option {
+      background: #1a1a2e;
+      color: #e8ecf0;
+    }
+
+    .fmt-toolbar .fmt-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .fmt-toolbar .fmt-swatch:hover {
+      border-color: #fff;
+      transform: scale(1.2);
+    }
+
+    /* ========== Edit Mode ========== */
+    .resume-page.edit-mode .editable {
+      cursor: text;
+      transition: background 0.15s;
+      border-radius: 3px;
+      padding: 1px 3px;
+      margin: -1px -3px;
+    }
+
+    .resume-page.edit-mode .editable:hover {
+      background: #eef3ff;
+      outline: 1px dashed #1a73e8;
+    }
+
+    .resume-page.edit-mode .editable:focus {
+      background: #fff;
+      outline: 2px solid #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+    }
+
+    .resume-page.edit-mode .avatar {
+      cursor: pointer !important;
+      outline: 2px dashed transparent !important;
+      transition: outline 0.2s, transform 0.2s !important;
+    }
+
+    .resume-page.edit-mode .avatar:hover {
+      outline-color: #1a73e8 !important;
+      transform: scale(1.03) !important;
+    }
+
+    .edit-hint {
+      display: none;
+      text-align: center;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      color: #2e7d32;
+      font-size: 0.82rem;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 3px solid #43a047;
+    }
+
+    .edit-mode .edit-hint {
+      display: block;
+    }
+
+    /* ========== Edit action buttons (add/remove) ========== */
+    .section-actions {
+      display: none;
+      gap: 4px;
+    }
+
+    .edit-mode .section-actions {
+      display: flex;
+    }
+
+    .section-actions button {
+      width: 22px;
+      height: 22px;
+      border: 1px solid #d0d7de;
+      border-radius: 5px;
+      background: #fff;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #5e6c84;
+      transition: all 0.15s;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .section-actions button:hover {
+      background: #f0f2f5;
+      color: #1a73e8;
+      border-color: #1a73e8;
+    }
+
+    .section-actions button.rm:hover {
+      color: #e74c3c;
+      border-color: #e74c3c;
+      background: #fef0ef;
+    }
+
+    .edit-add-btn {
+      display: none;
+      width: 100%;
+      padding: 8px;
+      border: 1.5px dashed #d0d7de;
+      border-radius: 8px;
+      background: transparent;
+      color: #8e99a9;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .edit-add-btn:hover {
+      border-color: #1a73e8;
+      color: #1a73e8;
+      background: #f6f8fa;
+    }
+
+    .edit-mode .edit-add-btn {
+      display: block;
+    }
+
+    /* Skill tag remove in edit mode */
+    .skill-tags .tag {
+      position: relative;
+    }
+
+    .tag-rm,
+    .link-rm,
+    .edu-rm,
+    .exp-rm {
+      display: none !important;
+    }
+
+    .edit-mode .tag-rm,
+    .edit-mode .link-rm,
+    .edit-mode .edu-rm,
+    .edit-mode .exp-rm {
+      display: flex !important;
+    }
+
+    .tag-rm {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: none;
+      background: #e74c3c;
+      color: #fff;
+      font-size: 0.6rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+    }
+
+    /* Blog link remove */
+    .header-blog-row a {
+      position: relative;
+    }
+
+    .header-blog-row a .link-rm {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: none;
+      background: #e74c3c;
+      color: #fff;
+      font-size: 0.6rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .edit-mode .header-blog-row a .link-rm {
+      display: flex !important;
+    }
+
+    /* Edu item remove */
+    .edu-item {
+      position: relative;
+    }
+
+    .edu-item .edu-rm {
+      position: absolute;
+      left: -6px;
+      top: -6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: #e74c3c;
+      color: #fff;
+      font-size: 0.65rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      z-index: 3;
+    }
+
+    .edit-mode .edu-item .edu-rm {
+      display: flex !important;
+    }
+
+    /* Exp item remove */
+    .exp-item {
+      position: relative;
+    }
+
+    .exp-item .exp-rm {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid #e8ecf0;
+      background: #fff;
+      color: #e74c3c;
+      font-size: 0.7rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      z-index: 3;
+      transition: all 0.15s;
+    }
+
+    .edit-mode .exp-item .exp-rm {
+      display: flex !important;
+    }
+
+    .edit-mode .exp-item .exp-rm:hover {
+      background: #e74c3c;
+      color: #fff;
+      border-color: #e74c3c;
+    }
+
+    /* ========== Toast ========== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 10px 28px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 999;
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ========== PRINT ========== */
+    @media print {
+      body {
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .page-wrapper {
+        padding: 0 !important;
+        gap: 0 !important;
+      }
+
+      .ctrl-sidebar,
+      .edit-hint,
+      .modal-overlay,
+      .toast,
+      .fmt-toolbar {
+        display: none !important;
+      }
+
+      .resume-card {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+      }
+
+      .resume-card::after,
+      .resume-page::before {
+        display: none !important;
+      }
+
+      .resume-page {
+        padding: 0 !important;
+        min-height: auto !important;
+      }
+
+      .resume-page.edit-mode .editable,
+      .resume-page.edit-mode .avatar {
+        outline: none !important;
+        background: transparent !important;
+        transform: none !important;
+      }
+
+      .header-blog-row a {
+        border: 1px solid #d0d7de !important;
+        background: #f5f7fa !important;
+        color: #2c3e50 !important;
+      }
+
+      .section-actions,
+      .edit-add-btn,
+      .tag-rm,
+      .link-rm,
+      .edu-rm,
+      .exp-rm {
+        display: none !important;
+      }
+
+      .skill-tags .tag {
+        background: #f0f4ff !important;
+        color: #1a73e8 !important;
+      }
+
+      .exp-date {
+        background: #f6f8fa !important;
+      }
+
+      .section-deco {
+        display: none !important;
+      }
+
+      .resume-header::after {
+        background: #1a73e8 !important;
+      }
+
+      .resume-header .avatar-wrap .avatar {
+        box-shadow: none !important;
+      }
+
+      .watermark-layer.show {
+        display: block !important;
+      }
+
+      .exp-item {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      @page {
+        size: A4;
+        margin: 22mm 18mm 25mm 18mm;
+
+        @bottom-center {
+          content: "第 " counter(page) " 页 / 共 " counter(pages) " 页";
+          font-size: 9px;
+          color: #b0b8c4;
+          font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+      }
+    }
+
+    /* ========== Responsive ========== */
+    @media screen and (max-width: 820px) {
+      .page-wrapper {
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 10px;
+      }
+
+      .ctrl-sidebar {
+        position: fixed;
+        top: auto;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        flex-direction: row;
+        padding: 8px 14px;
+        border-radius: 50px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        min-width: auto;
+        z-index: 200;
+        gap: 4px;
+      }
+
+      .ctrl-sidebar .ctrl-divider {
+        display: none;
+      }
+
+      .ctrl-sidebar button {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        font-size: 1rem;
+      }
+
+      .ctrl-sidebar button .tooltip {
+        display: none !important;
+      }
+
+      .resume-page {
+        padding: 28px 22px;
+      }
+
+      .resume-header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .resume-header .avatar-wrap {
+        margin-right: 0;
+        margin-bottom: 6px;
+      }
+
+      .resume-header .avatar-wrap .avatar {
+        width: 80px;
+        height: 80px;
+      }
+
+      .resume-header .contact-info {
+        text-align: left;
+      }
+
+      .header-blog-row {
+        flex-wrap: wrap;
+      }
+
+      .resume-header .name {
+        font-size: 1.8rem;
+      }
+
+      .exp-header {
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .modal-box {
+        padding: 20px;
+        width: 95vw;
+      }
+
+      .export-options {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .export-options .opt {
+        padding: 12px;
+      }
+
+      .fmt-toolbar {
+        flex-wrap: wrap;
+        max-width: 280px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<!-- ===== Modal: Export ===== -->
-<div class="modal-overlay" id="modalExport">
-  <div class="modal-box">
-    <button class="modal-close" onclick="window._closeModal('modalExport')">✕</button>
-    <h3>📤 导出简历</h3>
-    <p style="font-size:0.85rem;color:#8e99a9;margin-bottom:12px">选择导出格式</p>
-    <div class="export-options">
-      <div class="opt" onclick="window._doExport('image')">
-        <span class="opt-icon">📷</span>
-        <span class="opt-label">长图 PNG</span>
-        <span class="opt-desc">高清图片 · 保留水印</span>
-      </div>
-      <div class="opt" onclick="window._doExport('html')">
-        <span class="opt-icon">📄</span>
-        <span class="opt-label">静态网页</span>
-        <span class="opt-desc">纯净 HTML · 保留水印</span>
-      </div>
-      <div class="opt" onclick="window._doExport('pdf')">
-        <span class="opt-icon">📕</span>
-        <span class="opt-label">PDF 文档</span>
-        <span class="opt-desc">打印质量 · A4 格式</span>
-      </div>
-    </div>
-    <div class="modal-actions"><button onclick="window._closeModal('modalExport')">取消</button></div>
-  </div>
-</div>
-
-<!-- ===== Modal: Watermark ===== -->
-<div class="modal-overlay" id="modalWatermark">
-  <div class="modal-box">
-    <button class="modal-close" onclick="window._closeModal('modalWatermark')">✕</button>
-    <h3>💧 水印设置</h3>
-    <label>水印文字</label>
-    <input type="text" id="wmInput" value="个人简历 · 仅供预览" placeholder="输入水印文字">
-    <label>显示模式</label>
-    <div class="radio-group">
-      <label><input type="radio" name="wmMode" value="single" checked> <span>单行斜角</span></label>
-      <label><input type="radio" name="wmMode" value="tile"> <span>铺满</span></label>
-    </div>
-    <div class="modal-actions">
-      <button onclick="window._closeModal('modalWatermark')">取消</button>
-      <button class="primary" onclick="window._applyWatermark()">应用水印</button>
-    </div>
-  </div>
-</div>
-
-<div class="page-wrapper">
-
-  <!-- ===== Right Sidebar ===== -->
-  <div class="ctrl-sidebar" id="ctrlSidebar">
-    <button id="btnPreview" class="active" title="预览">👁<span class="tooltip">预览</span></button>
-    <button id="btnEdit" title="编辑">✏️<span class="tooltip">编辑</span></button>
-    <div class="ctrl-divider"></div>
-    <button id="btnWatermark" class="" title="水印">💧<span class="tooltip">水印设置</span></button>
-    <div class="ctrl-divider"></div>
-    <button id="btnExport" title="导出">📤<span class="tooltip">导出简历</span></button>
-    <div class="ctrl-divider"></div>
-    <button id="btnPrint" title="打印">🖨<span class="tooltip">打印</span></button>
-    <button id="btnReset" class="danger" title="重置">↺<span class="tooltip">重置</span></button>
-  </div>
-
-  <!-- ===== Resume Card ===== -->
-  <div class="resume-card-wrap">
-    <div class="resume-card">
-
-      <!-- Resume Page -->
-      <div class="resume-page" id="resumePage">
-
-        <!-- Watermark layer (inside page so export captures it) -->
-        <div class="watermark-layer" id="watermarkLayer">
-          <div class="watermark-single" id="watermarkSingle">个人简历 · 仅供预览</div>
-          <div class="watermark-tile" id="watermarkTile"></div>
+  <!-- ===== Modal: Export ===== -->
+  <div class="modal-overlay" id="modalExport">
+    <div class="modal-box">
+      <button class="modal-close" onclick="window._closeModal('modalExport')">✕</button>
+      <h3>📤 导出简历</h3>
+      <p style="font-size:0.85rem;color:#8e99a9;margin-bottom:12px">选择导出格式</p>
+      <div class="export-options">
+        <div class="opt" onclick="window._doExport('image')">
+          <span class="opt-icon">📷</span>
+          <span class="opt-label">长图 PNG</span>
+          <span class="opt-desc">高清图片 · 保留水印</span>
         </div>
+        <div class="opt" onclick="window._doExport('html')">
+          <span class="opt-icon">📄</span>
+          <span class="opt-label">静态网页</span>
+          <span class="opt-desc">纯净 HTML · 保留水印</span>
+        </div>
+        <div class="opt" onclick="window._doExport('pdf')">
+          <span class="opt-icon">📕</span>
+          <span class="opt-label">PDF 文档</span>
+          <span class="opt-desc">打印质量 · A4 格式</span>
+        </div>
+      </div>
+      <div class="modal-actions"><button onclick="window._closeModal('modalExport')">取消</button></div>
+    </div>
+  </div>
 
-        <div class="edit-hint">💡 点击内容区域直接编辑 · 点击头像换图 · 选中文字可改字号/颜色 · 按 <kbd>Esc</kbd> 退出</div>
+  <!-- ===== Modal: Watermark ===== -->
+  <div class="modal-overlay" id="modalWatermark">
+    <div class="modal-box">
+      <button class="modal-close" onclick="window._closeModal('modalWatermark')">✕</button>
+      <h3>💧 水印设置</h3>
+      <label>水印文字</label>
+      <input type="text" id="wmInput" value="个人简历 · 仅供预览" placeholder="输入水印文字">
+      <label>显示模式</label>
+      <div class="radio-group">
+        <label><input type="radio" name="wmMode" value="single" checked> <span>单行斜角</span></label>
+        <label><input type="radio" name="wmMode" value="tile"> <span>铺满</span></label>
+      </div>
+      <div class="modal-actions">
+        <button onclick="window._closeModal('modalWatermark')">取消</button>
+        <button class="primary" onclick="window._applyWatermark()">应用水印</button>
+      </div>
+    </div>
+  </div>
 
-        <!-- ===== HEADER ===== -->
-        <header class="resume-header">
-          <div class="avatar-wrap">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Crect fill='%23e8ecf0' width='110' height='110'/%3E%3Ctext x='55' y='63' text-anchor='middle' font-size='44' fill='%23999'%3E👤%3C/text%3E%3C/svg%3E" alt="头像" class="avatar editable" contenteditable="false" spellcheck="false" id="avatarImg">
-            <input type="file" accept="image/*" id="avatarInput" style="display:none">
+  <div class="page-wrapper">
+
+    <!-- ===== Right Sidebar ===== -->
+    <div class="ctrl-sidebar" id="ctrlSidebar">
+      <button id="btnPreview" class="active" title="预览">👁<span class="tooltip">预览</span></button>
+      <button id="btnEdit" title="编辑">✏️<span class="tooltip">编辑</span></button>
+      <div class="ctrl-divider"></div>
+      <button id="btnWatermark" class="" title="水印">💧<span class="tooltip">水印设置</span></button>
+      <div class="ctrl-divider"></div>
+      <button id="btnExport" title="导出">📤<span class="tooltip">导出简历</span></button>
+      <div class="ctrl-divider"></div>
+      <button id="btnPrint" title="打印">🖨<span class="tooltip">打印</span></button>
+      <button id="btnReset" class="danger" title="重置">↺<span class="tooltip">重置</span></button>
+    </div>
+
+    <!-- ===== Resume Card ===== -->
+    <div class="resume-card-wrap">
+      <div class="resume-card">
+
+        <!-- Resume Page -->
+        <div class="resume-page" id="resumePage">
+
+          <!-- Watermark layer (inside page so export captures it) -->
+          <div class="watermark-layer" id="watermarkLayer">
+            <div class="watermark-single" id="watermarkSingle">个人简历 · 仅供预览</div>
+            <div class="watermark-tile" id="watermarkTile"></div>
           </div>
-          <div class="header-main">
-            <div class="header-top-row">
-              <div class="header-name-block">
-                <div class="name editable" contenteditable="false" spellcheck="true">李 明</div>
-                <div class="title editable" contenteditable="false" spellcheck="true">高级前端工程师</div>
+
+          <div class="edit-hint">💡 点击内容区域直接编辑 · 点击头像换图 · 选中文字可改字号/颜色 · 按 <kbd>Esc</kbd> 退出</div>
+
+          <!-- ===== HEADER ===== -->
+          <header class="resume-header">
+            <div class="avatar-wrap">
+              <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 110 110'%3E%3Crect fill='%23e8ecf0' width='110' height='110'/%3E%3Ctext x='55' y='63' text-anchor='middle' font-size='44' fill='%23999'%3E👤%3C/text%3E%3C/svg%3E"
+                alt="头像" class="avatar editable" contenteditable="false" spellcheck="false" id="avatarImg">
+              <input type="file" accept="image/*" id="avatarInput" style="display:none">
+            </div>
+            <div class="header-main">
+              <div class="header-top-row">
+                <div class="header-name-block">
+                  <div class="name editable" contenteditable="false" spellcheck="true">李 明</div>
+                  <div class="title editable" contenteditable="false" spellcheck="true">高级前端工程师</div>
+                </div>
+                <div class="header-contact-block">
+                  <div class="contact-info editable" contenteditable="false" spellcheck="true">
+                    📍 中国 · 上海 · 浦东<br>
+                    📧 <a href="mailto:liming@example.com">liming@example.com</a><br>
+                    📱 +86 138-0001-2345
+                  </div>
+                </div>
               </div>
-              <div class="header-contact-block">
-                <div class="contact-info editable" contenteditable="false" spellcheck="true">
-                  📍 中国 · 上海 · 浦东<br>
-                  📧 <a href="mailto:liming@example.com">liming@example.com</a><br>
-                  📱 +86 138-0001-2345
+              <div class="header-blog-row" id="blogList">
+                <a href="https://liming.dev" target="_blank" rel="noopener" class="editable" contenteditable="false">📖
+                  博客<button class="link-rm" data-type="blog">✕</button></a>
+                <a href="https://github.com/liming" target="_blank" rel="noopener" class="editable"
+                  contenteditable="false">🐙 GitHub<button class="link-rm" data-type="blog">✕</button></a>
+                <a href="https://juejin.cn/user/xxxx" target="_blank" rel="noopener" class="editable"
+                  contenteditable="false">🥇 掘金<button class="link-rm" data-type="blog">✕</button></a>
+                <a href="https://zhuanlan.zhihu.com/xxxx" target="_blank" rel="noopener" class="editable"
+                  contenteditable="false">📘 知乎<button class="link-rm" data-type="blog">✕</button></a>
+                <a href="https://stackoverflow.com/users/xxxx" target="_blank" rel="noopener" class="editable"
+                  contenteditable="false">🌍 SO<button class="link-rm" data-type="blog">✕</button></a>
+                <button class="edit-add-btn" data-add="blog"
+                  style="display:none;flex-shrink:0;padding:2px 8px;border:1px dashed #d0d7de;border-radius:8px;background:transparent;color:#8e99a9;font-size:0.75rem;cursor:pointer;font-family:inherit;white-space:nowrap;">+
+                  新增</button>
+              </div>
+            </div>
+          </header>
+
+          <!-- ===== EDUCATION ===== -->
+          <section class="section" id="section-edu">
+            <div class="section-deco"></div>
+            <div class="section-title">
+              <span><span class="title-icon">🎓</span> 教育背景</span>
+              <span class="section-actions"><button class="add-item" data-add="edu" title="新增">+</button></span>
+            </div>
+            <div id="eduList">
+              <div class="edu-item">
+                <button class="edu-rm" data-type="edu">✕</button>
+                <span class="edu-school editable" contenteditable="false" spellcheck="true">浙江大学</span>
+                <span class="edu-major editable" contenteditable="false" spellcheck="true">计算机科学与技术 · 硕士</span>
+                <span class="edu-date editable" contenteditable="false" spellcheck="true">2015.09 — 2018.06</span>
+              </div>
+              <div class="edu-item">
+                <button class="edu-rm" data-type="edu">✕</button>
+                <span class="edu-school editable" contenteditable="false" spellcheck="true">武汉大学</span>
+                <span class="edu-major editable" contenteditable="false" spellcheck="true">软件工程 · 学士</span>
+                <span class="edu-date editable" contenteditable="false" spellcheck="true">2011.09 — 2015.06</span>
+              </div>
+            </div>
+            <button class="edit-add-btn" data-add="edu">+ 新增教育</button>
+          </section>
+
+          <!-- ===== WORK EXPERIENCE ===== -->
+          <section class="section" id="section-experience">
+            <div class="section-deco"></div>
+            <div class="section-title">
+              <span><span class="title-icon">💼</span> 工作经历</span>
+              <span class="section-actions"><button class="add-item" data-add="exp" title="新增">+</button></span>
+            </div>
+            <div id="expList">
+              <div class="exp-item">
+                <button class="exp-rm" data-type="exp">✕</button>
+                <div class="exp-header">
+                  <span class="exp-company editable" contenteditable="false" spellcheck="true">字节跳动 — 飞书团队</span>
+                  <span class="exp-role editable" contenteditable="false" spellcheck="true">高级前端工程师</span>
+                  <span class="exp-date editable" contenteditable="false" spellcheck="true">2021.07 — 至今</span>
+                </div>
+                <div class="exp-desc editable" contenteditable="false" spellcheck="true">
+                  <ul>
+                    <li>主导飞书文档模块的重构，首屏加载性能提升 40%，LCP 从 2.8s 降至 1.2s</li>
+                    <li>设计并实现了一套微前端框架（基于 Module Federation），支撑 10+ 子应用独立迭代</li>
+                    <li>搭建前端监控告警体系（Sentry + 自研埋点），线上问题响应时间缩短 60%</li>
+                    <li>指导 4 名初级工程师，建立 Code Review 与单元测试规范，覆盖率从 23% 提升至 85%</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="exp-item">
+                <button class="exp-rm" data-type="exp">✕</button>
+                <div class="exp-header">
+                  <span class="exp-company editable" contenteditable="false" spellcheck="true">阿里巴巴 — 淘宝技术部</span>
+                  <span class="exp-role editable" contenteditable="false" spellcheck="true">前端工程师</span>
+                  <span class="exp-date editable" contenteditable="false" spellcheck="true">2018.07 — 2021.06</span>
+                </div>
+                <div class="exp-desc editable" contenteditable="false" spellcheck="true">
+                  <ul>
+                    <li>负责淘宝大促活动页面的渲染引擎开发，支撑双 11 日均千万级 PV 的稳定运行</li>
+                    <li>基于 React + TypeScript 重构商品详情页，代码可维护性大幅提升，年均减少 200+ 线上缺陷</li>
+                    <li>参与建设内部组件库（80+ 组件），推动设计系统标准化，团队开发效率提升 35%</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="exp-item">
+                <button class="exp-rm" data-type="exp">✕</button>
+                <div class="exp-header">
+                  <span class="exp-company editable" contenteditable="false" spellcheck="true">腾讯 — 微信事业部（实习）</span>
+                  <span class="exp-role editable" contenteditable="false" spellcheck="true">前端开发实习生</span>
+                  <span class="exp-date editable" contenteditable="false" spellcheck="true">2017.06 — 2018.05</span>
+                </div>
+                <div class="exp-desc editable" contenteditable="false" spellcheck="true">
+                  <ul>
+                    <li>参与微信小程序开发者工具的前端研发，负责模拟器与调试面板的维护与迭代</li>
+                    <li>基于 Electron 实现多窗口通信机制，解决复杂调试场景下的状态同步问题</li>
+                  </ul>
                 </div>
               </div>
             </div>
-            <div class="header-blog-row" id="blogList">
-              <a href="https://liming.dev" target="_blank" rel="noopener" class="editable" contenteditable="false">📖 博客<button class="link-rm" data-type="blog">✕</button></a>
-              <a href="https://github.com/liming" target="_blank" rel="noopener" class="editable" contenteditable="false">🐙 GitHub<button class="link-rm" data-type="blog">✕</button></a>
-              <a href="https://juejin.cn/user/xxxx" target="_blank" rel="noopener" class="editable" contenteditable="false">🥇 掘金<button class="link-rm" data-type="blog">✕</button></a>
-              <a href="https://zhuanlan.zhihu.com/xxxx" target="_blank" rel="noopener" class="editable" contenteditable="false">📘 知乎<button class="link-rm" data-type="blog">✕</button></a>
-              <a href="https://stackoverflow.com/users/xxxx" target="_blank" rel="noopener" class="editable" contenteditable="false">🌍 SO<button class="link-rm" data-type="blog">✕</button></a>
-              <button class="edit-add-btn" data-add="blog" style="display:none;flex-shrink:0;padding:2px 8px;border:1px dashed #d0d7de;border-radius:8px;background:transparent;color:#8e99a9;font-size:0.75rem;cursor:pointer;font-family:inherit;white-space:nowrap;">+ 新增</button>
+            <button class="edit-add-btn" data-add="exp">+ 新增工作经历</button>
+          </section>
+
+          <!-- ===== SKILLS ===== -->
+          <section class="section" id="section-skills">
+            <div class="section-deco"></div>
+            <div class="section-title">
+              <span><span class="title-icon">🛠</span> 专业技能</span>
+              <span class="section-actions"><button class="add-item" data-add="skill" title="新增">+</button></span>
             </div>
-          </div>
-        </header>
-
-        <!-- ===== EDUCATION ===== -->
-        <section class="section" id="section-edu">
-          <div class="section-deco"></div>
-          <div class="section-title">
-            <span><span class="title-icon">🎓</span> 教育背景</span>
-            <span class="section-actions"><button class="add-item" data-add="edu" title="新增">+</button></span>
-          </div>
-          <div id="eduList">
-            <div class="edu-item">
-              <button class="edu-rm" data-type="edu">✕</button>
-              <span class="edu-school editable" contenteditable="false" spellcheck="true">浙江大学</span>
-              <span class="edu-major editable" contenteditable="false" spellcheck="true">计算机科学与技术 · 硕士</span>
-              <span class="edu-date editable" contenteditable="false" spellcheck="true">2015.09 — 2018.06</span>
+            <div class="skill-tags" id="skillList">
+              <span class="tag editable" contenteditable="false" spellcheck="true">JavaScript / TypeScript<button
+                  class="tag-rm" data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">React & Next.js<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">Vue 3 & Nuxt<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">Node.js / Express<button
+                  class="tag-rm" data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">Webpack / Vite<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">Docker / K8s<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">CI/CD 流水线<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">微前端架构<button class="tag-rm"
+                  data-type="skill">✕</button></span>
+              <span class="tag editable" contenteditable="false" spellcheck="true">性能优化<button class="tag-rm"
+                  data-type="skill">✕</button></span>
             </div>
-            <div class="edu-item">
-              <button class="edu-rm" data-type="edu">✕</button>
-              <span class="edu-school editable" contenteditable="false" spellcheck="true">武汉大学</span>
-              <span class="edu-major editable" contenteditable="false" spellcheck="true">软件工程 · 学士</span>
-              <span class="edu-date editable" contenteditable="false" spellcheck="true">2011.09 — 2015.06</span>
-            </div>
-          </div>
-          <button class="edit-add-btn" data-add="edu">+ 新增教育</button>
-        </section>
+            <button class="edit-add-btn" data-add="skill">+ 新增技能</button>
+          </section>
 
-        <!-- ===== WORK EXPERIENCE ===== -->
-        <section class="section" id="section-experience">
-          <div class="section-deco"></div>
-          <div class="section-title">
-            <span><span class="title-icon">💼</span> 工作经历</span>
-            <span class="section-actions"><button class="add-item" data-add="exp" title="新增">+</button></span>
-          </div>
-          <div id="expList">
-            <div class="exp-item">
-              <button class="exp-rm" data-type="exp">✕</button>
-              <div class="exp-header">
-                <span class="exp-company editable" contenteditable="false" spellcheck="true">字节跳动 — 飞书团队</span>
-                <span class="exp-role editable" contenteditable="false" spellcheck="true">高级前端工程师</span>
-                <span class="exp-date editable" contenteditable="false" spellcheck="true">2021.07 — 至今</span>
-              </div>
-              <div class="exp-desc editable" contenteditable="false" spellcheck="true">
-                <ul>
-                  <li>主导飞书文档模块的重构，首屏加载性能提升 40%，LCP 从 2.8s 降至 1.2s</li>
-                  <li>设计并实现了一套微前端框架（基于 Module Federation），支撑 10+ 子应用独立迭代</li>
-                  <li>搭建前端监控告警体系（Sentry + 自研埋点），线上问题响应时间缩短 60%</li>
-                  <li>指导 4 名初级工程师，建立 Code Review 与单元测试规范，覆盖率从 23% 提升至 85%</li>
-                </ul>
-              </div>
-            </div>
-            <div class="exp-item">
-              <button class="exp-rm" data-type="exp">✕</button>
-              <div class="exp-header">
-                <span class="exp-company editable" contenteditable="false" spellcheck="true">阿里巴巴 — 淘宝技术部</span>
-                <span class="exp-role editable" contenteditable="false" spellcheck="true">前端工程师</span>
-                <span class="exp-date editable" contenteditable="false" spellcheck="true">2018.07 — 2021.06</span>
-              </div>
-              <div class="exp-desc editable" contenteditable="false" spellcheck="true">
-                <ul>
-                  <li>负责淘宝大促活动页面的渲染引擎开发，支撑双 11 日均千万级 PV 的稳定运行</li>
-                  <li>基于 React + TypeScript 重构商品详情页，代码可维护性大幅提升，年均减少 200+ 线上缺陷</li>
-                  <li>参与建设内部组件库（80+ 组件），推动设计系统标准化，团队开发效率提升 35%</li>
-                </ul>
-              </div>
-            </div>
-            <div class="exp-item">
-              <button class="exp-rm" data-type="exp">✕</button>
-              <div class="exp-header">
-                <span class="exp-company editable" contenteditable="false" spellcheck="true">腾讯 — 微信事业部（实习）</span>
-                <span class="exp-role editable" contenteditable="false" spellcheck="true">前端开发实习生</span>
-                <span class="exp-date editable" contenteditable="false" spellcheck="true">2017.06 — 2018.05</span>
-              </div>
-              <div class="exp-desc editable" contenteditable="false" spellcheck="true">
-                <ul>
-                  <li>参与微信小程序开发者工具的前端研发，负责模拟器与调试面板的维护与迭代</li>
-                  <li>基于 Electron 实现多窗口通信机制，解决复杂调试场景下的状态同步问题</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <button class="edit-add-btn" data-add="exp">+ 新增工作经历</button>
-        </section>
+        </div><!-- /resume-page -->
+      </div><!-- /resume-card -->
+    </div><!-- /resume-card-wrap -->
+  </div><!-- /page-wrapper -->
 
-        <!-- ===== SKILLS ===== -->
-        <section class="section" id="section-skills">
-          <div class="section-deco"></div>
-          <div class="section-title">
-            <span><span class="title-icon">🛠</span> 专业技能</span>
-            <span class="section-actions"><button class="add-item" data-add="skill" title="新增">+</button></span>
-          </div>
-          <div class="skill-tags" id="skillList">
-            <span class="tag editable" contenteditable="false" spellcheck="true">JavaScript / TypeScript<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">React & Next.js<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">Vue 3 & Nuxt<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">Node.js / Express<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">Webpack / Vite<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">Docker / K8s<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">CI/CD 流水线<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">微前端架构<button class="tag-rm" data-type="skill">✕</button></span>
-            <span class="tag editable" contenteditable="false" spellcheck="true">性能优化<button class="tag-rm" data-type="skill">✕</button></span>
-          </div>
-          <button class="edit-add-btn" data-add="skill">+ 新增技能</button>
-        </section>
+  <!-- Floating format toolbar -->
+  <div class="fmt-toolbar" id="fmtToolbar">
+    <button id="fmtBold" title="加粗"><b>B</b></button>
+    <button id="fmtItalic" title="斜体"><i>I</i></button>
+    <div class="fmt-divider"></div>
+    <button id="fmtSmaller" title="缩小字号">A⁻</button>
+    <button id="fmtBigger" title="放大字号">A⁺</button>
+    <div class="fmt-divider"></div>
+    <button class="fmt-swatch" data-color="#e74c3c" style="background:#e74c3c" title="红色"></button>
+    <button class="fmt-swatch" data-color="#e67e22" style="background:#e67e22" title="橙色"></button>
+    <button class="fmt-swatch" data-color="#2e7d32" style="background:#2e7d32" title="绿色"></button>
+    <button class="fmt-swatch" data-color="#1a73e8" style="background:#1a73e8" title="蓝色"></button>
+    <button class="fmt-swatch" data-color="#8e44ad" style="background:#8e44ad" title="紫色"></button>
+    <button class="fmt-swatch" data-color="#2c3e50" style="background:#2c3e50" title="默认色"></button>
+  </div>
 
-      </div><!-- /resume-page -->
-    </div><!-- /resume-card -->
-  </div><!-- /resume-card-wrap -->
-</div><!-- /page-wrapper -->
+  <script>
+    (function () {
+      'use strict';
 
-<!-- Floating format toolbar -->
-<div class="fmt-toolbar" id="fmtToolbar">
-  <button id="fmtBold" title="加粗"><b>B</b></button>
-  <button id="fmtItalic" title="斜体"><i>I</i></button>
-  <div class="fmt-divider"></div>
-  <button id="fmtSmaller" title="缩小字号">A⁻</button>
-  <button id="fmtBigger" title="放大字号">A⁺</button>
-  <div class="fmt-divider"></div>
-  <button class="fmt-swatch" data-color="#e74c3c" style="background:#e74c3c" title="红色"></button>
-  <button class="fmt-swatch" data-color="#e67e22" style="background:#e67e22" title="橙色"></button>
-  <button class="fmt-swatch" data-color="#2e7d32" style="background:#2e7d32" title="绿色"></button>
-  <button class="fmt-swatch" data-color="#1a73e8" style="background:#1a73e8" title="蓝色"></button>
-  <button class="fmt-swatch" data-color="#8e44ad" style="background:#8e44ad" title="紫色"></button>
-  <button class="fmt-swatch" data-color="#2c3e50" style="background:#2c3e50" title="默认色"></button>
-</div>
+      /* ===================== DOM ===================== */
+      var page = document.getElementById('resumePage');
+      var btnPreview = document.getElementById('btnPreview');
+      var btnEdit = document.getElementById('btnEdit');
+      var btnPrint = document.getElementById('btnPrint');
+      var btnReset = document.getElementById('btnReset');
+      var btnWatermark = document.getElementById('btnWatermark');
+      var btnExport = document.getElementById('btnExport');
+      var wmLayer = document.getElementById('watermarkLayer');
+      var wmSingle = document.getElementById('watermarkSingle');
+      var wmTile = document.getElementById('watermarkTile');
+      var toast = document.getElementById('toast');
+      var modalExport = document.getElementById('modalExport');
+      var modalWM = document.getElementById('modalWatermark');
+      var wmInput = document.getElementById('wmInput');
+      var fmtToolbar = document.getElementById('fmtToolbar');
+      var fmtBold = document.getElementById('fmtBold');
+      var fmtItalic = document.getElementById('fmtItalic');
+      var fmtSmaller = document.getElementById('fmtSmaller');
+      var fmtBigger = document.getElementById('fmtBigger');
 
-<script>
-(function(){
-  'use strict';
+      var toastTimer = null;
+      var watermarkOn = false;
 
-  /* ===================== DOM ===================== */
-  var page         = document.getElementById('resumePage');
-  var btnPreview   = document.getElementById('btnPreview');
-  var btnEdit      = document.getElementById('btnEdit');
-  var btnPrint     = document.getElementById('btnPrint');
-  var btnReset     = document.getElementById('btnReset');
-  var btnWatermark = document.getElementById('btnWatermark');
-  var btnExport    = document.getElementById('btnExport');
-  var wmLayer      = document.getElementById('watermarkLayer');
-  var wmSingle     = document.getElementById('watermarkSingle');
-  var wmTile       = document.getElementById('watermarkTile');
-  var toast        = document.getElementById('toast');
-  var modalExport  = document.getElementById('modalExport');
-  var modalWM      = document.getElementById('modalWatermark');
-  var wmInput      = document.getElementById('wmInput');
-  var fmtToolbar   = document.getElementById('fmtToolbar');
-  var fmtBold      = document.getElementById('fmtBold');
-  var fmtItalic    = document.getElementById('fmtItalic');
-  var fmtSmaller   = document.getElementById('fmtSmaller');
-  var fmtBigger    = document.getElementById('fmtBigger');
+      /* ===================== Snapshot ===================== */
+      var snapshotHTML = page.innerHTML;
 
-  var toastTimer   = null;
-  var watermarkOn  = false;
+      /* ===================== Toast ===================== */
+      function showToast(msg) {
+        if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+        toast.textContent = msg;
+        toast.classList.add('show');
+        toastTimer = setTimeout(function () { toast.classList.remove('show'); toastTimer = null; }, 2200);
+      }
 
-  /* ===================== Snapshot ===================== */
-  var snapshotHTML = page.innerHTML;
+      /* ===================== Modal helpers ===================== */
+      function openModal(id) { document.getElementById(id).classList.add('show'); }
+      function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+      window._closeModal = closeModal;
 
-  /* ===================== Toast ===================== */
-  function showToast(msg) {
-    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
-    toast.textContent = msg;
-    toast.classList.add('show');
-    toastTimer = setTimeout(function(){ toast.classList.remove('show'); toastTimer = null; }, 2200);
-  }
-
-  /* ===================== Modal helpers ===================== */
-  function openModal(id) { document.getElementById(id).classList.add('show'); }
-  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-  window._closeModal = closeModal;
-
-  /* ===================== Set editable ===================== */
-  function setAllEditable(enabled) {
-    var list = page.querySelectorAll('.editable');
-    for (var i = 0; i < list.length; i++) {
-      list[i].setAttribute('contenteditable', enabled ? 'true' : 'false');
-    }
-  }
-
-  /* ===================== Mode ===================== */
-  function setMode(mode) {
-    var isEdit = (mode === 'edit');
-    page.classList.toggle('edit-mode', isEdit);
-    btnPreview.classList.toggle('active', !isEdit);
-    btnEdit.classList.toggle('active', isEdit);
-    setAllEditable(isEdit);
-    if (!isEdit) fmtToolbar.classList.remove('show');
-    if (isEdit) showToast('✏️ 编辑模式 — 点击内容直接修改，选中文字可调字号/颜色');
-  }
-  btnPreview.addEventListener('click', function(){ setMode('preview'); });
-  btnEdit.addEventListener('click', function(){ setMode('edit'); });
-
-  /* ===================== Watermark ===================== */
-  function applyWatermark() {
-    var text = wmInput.value.trim() || '个人简历 · 仅供预览';
-    var mode = document.querySelector('input[name="wmMode"]:checked').value;
-
-    wmSingle.textContent = text;
-
-    // Build tile
-    wmTile.innerHTML = '';
-    if (mode === 'tile') {
-      for (var r = 0; r < 8; r++) {
-        for (var c = 0; c < 6; c++) {
-          var sp = document.createElement('span');
-          sp.textContent = text;
-          sp.setAttribute('contenteditable', 'false');
-          wmTile.appendChild(sp);
+      /* ===================== Set editable ===================== */
+      function setAllEditable(enabled) {
+        var list = page.querySelectorAll('.editable');
+        for (var i = 0; i < list.length; i++) {
+          list[i].setAttribute('contenteditable', enabled ? 'true' : 'false');
         }
       }
-    }
 
-    wmLayer.classList.remove('mode-tile');
-    if (mode === 'tile') wmLayer.classList.add('mode-tile');
+      /* ===================== Mode ===================== */
+      function setMode(mode) {
+        var isEdit = (mode === 'edit');
+        page.classList.toggle('edit-mode', isEdit);
+        btnPreview.classList.toggle('active', !isEdit);
+        btnEdit.classList.toggle('active', isEdit);
+        setAllEditable(isEdit);
+        if (!isEdit) fmtToolbar.classList.remove('show');
+        if (isEdit) showToast('✏️ 编辑模式 — 点击内容直接修改，选中文字可调字号/颜色');
+      }
+      btnPreview.addEventListener('click', function () { setMode('preview'); });
+      btnEdit.addEventListener('click', function () { setMode('edit'); });
 
-    wmLayer.classList.add('show');
-    watermarkOn = true;
-    btnWatermark.style.color = '#fff';
-    btnWatermark.style.background = '#1a73e8';
+      /* ===================== Watermark ===================== */
+      function applyWatermark() {
+        var text = wmInput.value.trim() || '个人简历 · 仅供预览';
+        var mode = document.querySelector('input[name="wmMode"]:checked').value;
 
-    closeModal('modalWatermark');
-    showToast('💧 水印已应用');
-  }
-  window._applyWatermark = applyWatermark;
+        wmSingle.textContent = text;
 
-  btnWatermark.addEventListener('click', function(){
-    if (watermarkOn) {
-      wmLayer.classList.remove('show');
-      watermarkOn = false;
-      btnWatermark.style.color = '';
-      btnWatermark.style.background = '';
-      showToast('💧 水印已隐藏');
-    } else {
-      openModal('modalWatermark');
-    }
-  });
-
-  /* ===================== Export ===================== */
-  btnExport.addEventListener('click', function(){ setMode('preview'); openModal('modalExport'); });
-
-  function doExport(type) {
-    closeModal('modalExport');
-    if (type === 'image') exportImage();
-    else if (type === 'html') exportHTML();
-    else if (type === 'pdf') exportPDF();
-  }
-  window._doExport = doExport;
-
-  function exportPDF() {
-    showToast('📕 打印对话框中选择「另存为 PDF」');
-    setTimeout(function(){ window.print(); }, 300);
-  }
-
-  function exportHTML() {
-    showToast('📄 正在生成静态 HTML…');
-    setTimeout(function(){
-      try {
-        var clone = page.cloneNode(true);
-        clone.classList.remove('edit-mode');
-        var hint = clone.querySelector('.edit-hint');
-        if (hint) hint.remove();
-        // Remove watermark layer from clone (handled separately via wmHTML)
-        var wmClone = clone.querySelector('.watermark-layer');
-        if (wmClone) wmClone.remove();
-        var remove = clone.querySelectorAll('.section-actions, .edit-add-btn, .tag-rm, .link-rm, .edu-rm, .exp-rm');
-        remove.forEach(function(el){ el.remove(); });
-        var eds = clone.querySelectorAll('[contenteditable]');
-        eds.forEach(function(el){ el.removeAttribute('contenteditable'); });
-
-        var wmHTML = '';
-        var wmEl = document.querySelector('.watermark-layer');
-        if (wmEl && wmEl.classList.contains('show')) {
-          var ws = document.getElementById('watermarkSingle');
-          var isTile = wmEl.classList.contains('mode-tile');
-          var txt = ws ? ws.textContent : '个人简历 · 仅供预览';
-
-          wmHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;overflow:hidden;">';
-          if (!isTile) {
-            wmHTML += '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:5rem;font-weight:900;color:rgba(26,115,232,0.06);white-space:nowrap;letter-spacing:8px;user-select:none;">' + txt + '</div>';
-          } else {
-            wmHTML += '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:60px 100px;padding:40px;transform:rotate(-30deg);font-size:2.8rem;font-weight:900;color:rgba(26,115,232,0.05);user-select:none;letter-spacing:4px;overflow:hidden;">';
-            for (var wi=0;wi<48;wi++) wmHTML += '<span style="flex:0 0 auto;white-space:nowrap">' + txt + '</span>';
-            wmHTML += '</div>';
+        // Build tile
+        wmTile.innerHTML = '';
+        if (mode === 'tile') {
+          for (var r = 0; r < 8; r++) {
+            for (var c = 0; c < 6; c++) {
+              var sp = document.createElement('span');
+              sp.textContent = text;
+              sp.setAttribute('contenteditable', 'false');
+              wmTile.appendChild(sp);
+            }
           }
-          wmHTML += '</div>';
         }
 
-        var style = 'body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#2c3e50;padding:20mm 15mm;line-height:1.6}' +
-          '.resume-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;padding-bottom:28px;border-bottom:2px solid #f0f2f5;margin-bottom:28px}' +
-          '.avatar-wrap{flex-shrink:0;margin-right:28px}' +
-          '.avatar-wrap img{width:110px;height:110px;border-radius:50%;object-fit:cover}' +
-          '.info-left{flex:1;min-width:200px}' +
-          '.name{font-size:2.5rem;font-weight:800;color:#1a1a2e;letter-spacing:3px}' +
-          '.title{font-size:1.2rem;color:#1a73e8;margin-top:6px;font-weight:600}' +
-          '.header-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}' +
-          '.header-name-block{flex:1}' +
-          '.header-contact-block{flex-shrink:0;text-align:right}' +
-          '.header-contact-block .contact-info{font-size:1.1rem;color:#5e6c84;line-height:2}' +
-          '.header-contact-block .contact-info a{color:#1a73e8;text-decoration:none}' +
-          '.header-blog-row{display:flex;flex-wrap:nowrap;gap:6px}' +
-          '.header-blog-row a{padding:2px 10px;background:#f0f4ff;border-radius:12px;color:#1a73e8;text-decoration:none;font-size:0.78rem;font-weight:600;white-space:nowrap}' +
-          '.section{margin-bottom:28px}' +
-          '.section-title{font-size:1.2rem;font-weight:700;color:#1a1a2e;padding-bottom:10px;margin-bottom:16px;border-bottom:1.5px solid #e8ecf0}' +
-          '.section-title .title-icon{margin-right:10px;color:#1a73e8}' +
-          '.exp-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px dashed #eef0f3}' +
-          '.exp-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px}' +
-          '.exp-company{font-size:1.15rem;font-weight:700;color:#1a1a2e}' +
-          '.exp-role{font-size:0.95rem;color:#1a73e8;font-weight:600}' +
-          '.exp-date{font-size:0.82rem;color:#8e99a9;background:#f6f8fa;padding:1px 10px;border-radius:10px}' +
-          '.exp-desc{font-size:0.97rem;color:#2c3e50;line-height:1.75}' +
-          '.exp-desc ul{list-style:none;padding-left:4px}' +
-          '.exp-desc ul li{position:relative;padding-left:22px;margin-bottom:5px}' +
-          '.exp-desc ul li::before{content:"◆";position:absolute;left:0;color:#1a73e8;font-size:0.65rem}' +
-          '.skill-tags{display:flex;flex-wrap:wrap;gap:10px}' +
-          '.skill-tags .tag{padding:5px 16px;background:#f0f4ff;color:#1a73e8;border-radius:18px;font-size:0.85rem;font-weight:600}' +
-          '.edu-item{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px;padding:8px 10px}' +
-          '.edu-school{font-weight:700;color:#1a1a2e;font-size:1.05rem}' +
-          '.edu-major{color:#5e6c84;font-size:0.95rem}' +
-          '.edu-date{color:#8e99a9;font-size:0.85rem}' +
-          '@media print{body{padding:0}}';
+        wmLayer.classList.remove('mode-tile');
+        if (mode === 'tile') wmLayer.classList.add('mode-tile');
 
-        var cleanHTML = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>个人简历</title><style>' + style + '</style></head><body style="position:relative">' + clone.innerHTML + wmHTML + '</body></html>';
+        wmLayer.classList.add('show');
+        watermarkOn = true;
+        btnWatermark.style.color = '#fff';
+        btnWatermark.style.background = '#1a73e8';
 
-        var blob = new Blob([cleanHTML], {type:'text/html;charset=utf-8'});
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'resume.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('✅ 静态 HTML 已导出' + (watermarkOn ? '（含水印）' : ''));
-      } catch(e) { showToast('❌ 导出失败: ' + e.message); }
-    }, 150);
-  }
-
-  function exportImage() {
-    showToast('📷 正在生成长图…');
-    setTimeout(function(){
-      try {
-        var origMinH = page.style.minHeight;
-        page.style.minHeight = 'auto';
-
-        html2canvas(page, {
-          scale: 2, useCORS: true, allowTaint: true,
-          backgroundColor: '#ffffff', logging: false,
-          width: page.scrollWidth, height: page.scrollHeight,
-        }).then(function(canvas){
-          page.style.minHeight = origMinH;
-          var link = document.createElement('a');
-          link.download = 'resume.png';
-          link.href = canvas.toDataURL('image/png');
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          showToast('✅ 长图已导出' + (watermarkOn ? '（含水印）' : ''));
-        }).catch(function(err){
-          page.style.minHeight = origMinH;
-          showToast('❌ 导出失败');
-        });
-      } catch(e) { showToast('❌ 导出失败'); }
-    }, 200);
-  }
-
-  /* ===================== Print ===================== */
-  btnPrint.addEventListener('click', function(){ setMode('preview'); setTimeout(function(){ window.print(); }, 80); });
-
-  /* ===================== Reset ===================== */
-  btnReset.addEventListener('click', function(){
-    if (confirm('确定重置？所有修改将丢失。')) {
-      page.innerHTML = snapshotHTML;
-      setMode('preview');
-      if (watermarkOn) {
-        wmLayer.classList.remove('show');
-        watermarkOn = false;
-        btnWatermark.style.color = '';
-        btnWatermark.style.background = '';
+        closeModal('modalWatermark');
+        showToast('💧 水印已应用');
       }
-      showToast('↺ 已重置');
-    }
-  });
+      window._applyWatermark = applyWatermark;
 
-  /* ===================== Generic Add/Remove ===================== */
-  function addItem(type) {
-    if (type === 'exp') {
-      var list = document.getElementById('expList');
-      var div = document.createElement('div');
-      div.className = 'exp-item';
-      div.innerHTML =
-        '<button class="exp-rm" data-type="exp">✕</button>' +
-        '<div class="exp-header">' +
-          '<span class="exp-company editable" contenteditable="false">新公司名称</span>' +
-          '<span class="exp-role editable" contenteditable="false">职位</span>' +
-          '<span class="exp-date editable" contenteditable="false">202X.XX — 至今</span>' +
-        '</div>' +
-        '<div class="exp-desc editable" contenteditable="false"><ul><li>请填写工作内容</li><li>建议使用 STAR 原则</li></ul></div>';
-      list.appendChild(div);
-    } else if (type === 'edu') {
-      var list = document.getElementById('eduList');
-      var div = document.createElement('div');
-      div.className = 'edu-item';
-      div.innerHTML =
-        '<button class="edu-rm" data-type="edu">✕</button>' +
-        '<span class="edu-school editable" contenteditable="false">新学校</span>' +
-        '<span class="edu-major editable" contenteditable="false">专业 · 学历</span>' +
-        '<span class="edu-date editable" contenteditable="false">202X.XX — 202X.XX</span>';
-      list.appendChild(div);
-    } else if (type === 'skill') {
-      var list = document.getElementById('skillList');
-      var span = document.createElement('span');
-      span.className = 'tag editable';
-      span.setAttribute('contenteditable', 'false');
-      span.setAttribute('spellcheck', 'true');
-      span.innerHTML = '新技能<button class="tag-rm" data-type="skill">✕</button>';
-      list.appendChild(span);
-    } else if (type === 'blog') {
-      var newUrl = prompt('输入新链接的URL：', 'https://');
-      if (newUrl === null) { showToast('已取消'); return; }
-      var list = document.getElementById('blogList');
-      var a = document.createElement('a');
-      a.href = newUrl || '#';
-      a.className = 'editable';
-      a.setAttribute('contenteditable', 'false');
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.innerHTML = '🔗 新链接<button class="link-rm" data-type="blog">✕</button>';
-      list.appendChild(a);
-    }
-    if (page.classList.contains('edit-mode')) {
-      var news = page.querySelectorAll('.editable');
-      for (var i = 0; i < news.length; i++) {
-        if (news[i].getAttribute('contenteditable') !== 'true') {
-          news[i].setAttribute('contenteditable', 'true');
+      btnWatermark.addEventListener('click', function () {
+        if (watermarkOn) {
+          wmLayer.classList.remove('show');
+          watermarkOn = false;
+          btnWatermark.style.color = '';
+          btnWatermark.style.background = '';
+          showToast('💧 水印已隐藏');
+        } else {
+          openModal('modalWatermark');
+        }
+      });
+
+      /* ===================== Export ===================== */
+      btnExport.addEventListener('click', function () { setMode('preview'); openModal('modalExport'); });
+
+      function doExport(type) {
+        closeModal('modalExport');
+        if (type === 'image') exportImage();
+        else if (type === 'html') exportHTML();
+        else if (type === 'pdf') exportPDF();
+      }
+      window._doExport = doExport;
+
+      function exportPDF() {
+        showToast('📕 打印对话框中选择「另存为 PDF」');
+        setTimeout(function () { window.print(); }, 300);
+      }
+
+      function exportHTML() {
+        showToast('📄 正在生成静态 HTML…');
+        setTimeout(function () {
+          try {
+            var clone = page.cloneNode(true);
+            clone.classList.remove('edit-mode');
+            var hint = clone.querySelector('.edit-hint');
+            if (hint) hint.remove();
+            // Remove watermark layer from clone (handled separately via wmHTML)
+            var wmClone = clone.querySelector('.watermark-layer');
+            if (wmClone) wmClone.remove();
+            var remove = clone.querySelectorAll('.section-actions, .edit-add-btn, .tag-rm, .link-rm, .edu-rm, .exp-rm');
+            remove.forEach(function (el) { el.remove(); });
+            var eds = clone.querySelectorAll('[contenteditable]');
+            eds.forEach(function (el) { el.removeAttribute('contenteditable'); });
+
+            var wmHTML = '';
+            var wmEl = document.querySelector('.watermark-layer');
+            if (wmEl && wmEl.classList.contains('show')) {
+              var ws = document.getElementById('watermarkSingle');
+              var isTile = wmEl.classList.contains('mode-tile');
+              var txt = ws ? ws.textContent : '个人简历 · 仅供预览';
+
+              wmHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;overflow:hidden;">';
+              if (!isTile) {
+                wmHTML += '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:5rem;font-weight:900;color:rgba(26,115,232,0.06);white-space:nowrap;letter-spacing:8px;user-select:none;">' + txt + '</div>';
+              } else {
+                wmHTML += '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:60px 100px;padding:40px;transform:rotate(-30deg);font-size:2.8rem;font-weight:900;color:rgba(26,115,232,0.05);user-select:none;letter-spacing:4px;overflow:hidden;">';
+                for (var wi = 0; wi < 48; wi++) wmHTML += '<span style="flex:0 0 auto;white-space:nowrap">' + txt + '</span>';
+                wmHTML += '</div>';
+              }
+              wmHTML += '</div>';
+            }
+
+            var style = 'body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#2c3e50;padding:20mm 15mm;line-height:1.6}' +
+              '.resume-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;padding-bottom:28px;border-bottom:2px solid #f0f2f5;margin-bottom:28px}' +
+              '.avatar-wrap{flex-shrink:0;margin-right:28px}' +
+              '.avatar-wrap img{width:110px;height:110px;border-radius:50%;object-fit:cover}' +
+              '.info-left{flex:1;min-width:200px}' +
+              '.name{font-size:2.5rem;font-weight:800;color:#1a1a2e;letter-spacing:3px}' +
+              '.title{font-size:1.2rem;color:#1a73e8;margin-top:6px;font-weight:600}' +
+              '.header-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}' +
+              '.header-name-block{flex:1}' +
+              '.header-contact-block{flex-shrink:0;text-align:right}' +
+              '.header-contact-block .contact-info{font-size:1.1rem;color:#5e6c84;line-height:2}' +
+              '.header-contact-block .contact-info a{color:#1a73e8;text-decoration:none}' +
+              '.header-blog-row{display:flex;flex-wrap:nowrap;gap:6px}' +
+              '.header-blog-row a{padding:2px 10px;background:#f0f4ff;border-radius:12px;color:#1a73e8;text-decoration:none;font-size:0.78rem;font-weight:600;white-space:nowrap}' +
+              '.section{margin-bottom:28px}' +
+              '.section-title{font-size:1.2rem;font-weight:700;color:#1a1a2e;padding-bottom:10px;margin-bottom:16px;border-bottom:1.5px solid #e8ecf0}' +
+              '.section-title .title-icon{margin-right:10px;color:#1a73e8}' +
+              '.exp-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px dashed #eef0f3}' +
+              '.exp-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px}' +
+              '.exp-company{font-size:1.15rem;font-weight:700;color:#1a1a2e}' +
+              '.exp-role{font-size:0.95rem;color:#1a73e8;font-weight:600}' +
+              '.exp-date{font-size:0.82rem;color:#8e99a9;background:#f6f8fa;padding:1px 10px;border-radius:10px}' +
+              '.exp-desc{font-size:0.97rem;color:#2c3e50;line-height:1.75}' +
+              '.exp-desc ul{list-style:none;padding-left:4px}' +
+              '.exp-desc ul li{position:relative;padding-left:22px;margin-bottom:5px}' +
+              '.exp-desc ul li::before{content:"◆";position:absolute;left:0;color:#1a73e8;font-size:0.65rem}' +
+              '.skill-tags{display:flex;flex-wrap:wrap;gap:10px}' +
+              '.skill-tags .tag{padding:5px 16px;background:#f0f4ff;color:#1a73e8;border-radius:18px;font-size:0.85rem;font-weight:600}' +
+              '.edu-item{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px;padding:8px 10px}' +
+              '.edu-school{font-weight:700;color:#1a1a2e;font-size:1.05rem}' +
+              '.edu-major{color:#5e6c84;font-size:0.95rem}' +
+              '.edu-date{color:#8e99a9;font-size:0.85rem}' +
+              '@media print{body{padding:0}}';
+
+            var cleanHTML = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>个人简历</title><style>' + style + '</style></head><body style="position:relative">' + clone.innerHTML + wmHTML + '</body></html>';
+
+            var blob = new Blob([cleanHTML], { type: 'text/html;charset=utf-8' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'resume.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('✅ 静态 HTML 已导出' + (watermarkOn ? '（含水印）' : ''));
+          } catch (e) { showToast('❌ 导出失败: ' + e.message); }
+        }, 150);
+      }
+
+      function exportImage() {
+        showToast('📷 正在生成长图…');
+        setTimeout(function () {
+          try {
+            var origMinH = page.style.minHeight;
+            page.style.minHeight = 'auto';
+
+            html2canvas(page, {
+              scale: 2, useCORS: true, allowTaint: true,
+              backgroundColor: '#ffffff', logging: false,
+              width: page.scrollWidth, height: page.scrollHeight,
+            }).then(function (canvas) {
+              page.style.minHeight = origMinH;
+              var link = document.createElement('a');
+              link.download = 'resume.png';
+              link.href = canvas.toDataURL('image/png');
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              showToast('✅ 长图已导出' + (watermarkOn ? '（含水印）' : ''));
+            }).catch(function (err) {
+              page.style.minHeight = origMinH;
+              showToast('❌ 导出失败');
+            });
+          } catch (e) { showToast('❌ 导出失败'); }
+        }, 200);
+      }
+
+      /* ===================== Print ===================== */
+      btnPrint.addEventListener('click', function () { setMode('preview'); setTimeout(function () { window.print(); }, 80); });
+
+      /* ===================== Reset ===================== */
+      btnReset.addEventListener('click', function () {
+        if (confirm('确定重置？所有修改将丢失。')) {
+          page.innerHTML = snapshotHTML;
+          setMode('preview');
+          if (watermarkOn) {
+            wmLayer.classList.remove('show');
+            watermarkOn = false;
+            btnWatermark.style.color = '';
+            btnWatermark.style.background = '';
+          }
+          showToast('↺ 已重置');
+        }
+      });
+
+      /* ===================== Generic Add/Remove ===================== */
+      function addItem(type) {
+        if (type === 'exp') {
+          var list = document.getElementById('expList');
+          var div = document.createElement('div');
+          div.className = 'exp-item';
+          div.innerHTML =
+            '<button class="exp-rm" data-type="exp">✕</button>' +
+            '<div class="exp-header">' +
+            '<span class="exp-company editable" contenteditable="false">新公司名称</span>' +
+            '<span class="exp-role editable" contenteditable="false">职位</span>' +
+            '<span class="exp-date editable" contenteditable="false">202X.XX — 至今</span>' +
+            '</div>' +
+            '<div class="exp-desc editable" contenteditable="false"><ul><li>请填写工作内容</li><li>建议使用 STAR 原则</li></ul></div>';
+          list.appendChild(div);
+        } else if (type === 'edu') {
+          var list = document.getElementById('eduList');
+          var div = document.createElement('div');
+          div.className = 'edu-item';
+          div.innerHTML =
+            '<button class="edu-rm" data-type="edu">✕</button>' +
+            '<span class="edu-school editable" contenteditable="false">新学校</span>' +
+            '<span class="edu-major editable" contenteditable="false">专业 · 学历</span>' +
+            '<span class="edu-date editable" contenteditable="false">202X.XX — 202X.XX</span>';
+          list.appendChild(div);
+        } else if (type === 'skill') {
+          var list = document.getElementById('skillList');
+          var span = document.createElement('span');
+          span.className = 'tag editable';
+          span.setAttribute('contenteditable', 'false');
+          span.setAttribute('spellcheck', 'true');
+          span.innerHTML = '新技能<button class="tag-rm" data-type="skill">✕</button>';
+          list.appendChild(span);
+        } else if (type === 'blog') {
+          var newUrl = prompt('输入新链接的URL：', 'https://');
+          if (newUrl === null) { showToast('已取消'); return; }
+          var list = document.getElementById('blogList');
+          var a = document.createElement('a');
+          a.href = newUrl || '#';
+          a.className = 'editable';
+          a.setAttribute('contenteditable', 'false');
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.innerHTML = '🔗 新链接<button class="link-rm" data-type="blog">✕</button>';
+          list.appendChild(a);
+        }
+        if (page.classList.contains('edit-mode')) {
+          var news = page.querySelectorAll('.editable');
+          for (var i = 0; i < news.length; i++) {
+            if (news[i].getAttribute('contenteditable') !== 'true') {
+              news[i].setAttribute('contenteditable', 'true');
+            }
+          }
+        }
+        showToast('✅ 已新增');
+      }
+
+      function removeItem(el) {
+        var parent = el.closest('.exp-item, .edu-item, .tag, a');
+        if (parent) {
+          var tag = parent.tagName.toLowerCase();
+          // Don't remove the last item for edu/skills/blog
+          if (tag === 'span' || tag === 'a') {
+            var list = parent.parentNode;
+            if (list.children.length <= 1) { showToast('⚠️ 至少保留一项'); return; }
+          }
+          parent.remove();
+          showToast('🗑 已删除');
         }
       }
-    }
-    showToast('✅ 已新增');
-  }
 
-  function removeItem(el) {
-    var parent = el.closest('.exp-item, .edu-item, .tag, a');
-    if (parent) {
-      var tag = parent.tagName.toLowerCase();
-      // Don't remove the last item for edu/skills/blog
-      if (tag === 'span' || tag === 'a') {
-        var list = parent.parentNode;
-        if (list.children.length <= 1) { showToast('⚠️ 至少保留一项'); return; }
-      }
-      parent.remove();
-      showToast('🗑 已删除');
-    }
-  }
+      /* ===================== Event delegation ===================== */
+      page.addEventListener('click', function (e) {
+        var t = e.target;
 
-  /* ===================== Event delegation ===================== */
-  page.addEventListener('click', function(e){
-    var t = e.target;
-
-    // Avatar click in edit mode
-    if (page.classList.contains('edit-mode') && (t.classList.contains('avatar') || t.id === 'avatarImg')) {
-      e.preventDefault();
-      // Show a small confirm box: local file or URL
-      if (confirm('点击「确定」从本地选择图片，点击「取消」输入URL')) {
-        document.getElementById('avatarInput').click();
-      } else {
-        var url = prompt('头像图片URL（留空用默认）：', document.getElementById('avatarImg').getAttribute('src') || '');
-        if (url !== null) {
-          var def = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect fill=\'%23e8ecf0\' width=\'110\' height=\'110\'/%3E%3Ctext x=\'55\' y=\'63\' text-anchor=\'middle\' font-size=\'44\' fill=\'%23999\'%3E👤%3C/text%3E%3C/svg%3E';
-          document.getElementById('avatarImg').setAttribute('src', url || def);
-          showToast('✅ 头像已更新');
+        // Avatar click in edit mode
+        if (page.classList.contains('edit-mode') && (t.classList.contains('avatar') || t.id === 'avatarImg')) {
+          e.preventDefault();
+          // Show a small confirm box: local file or URL
+          if (confirm('点击「确定」从本地选择图片，点击「取消」输入URL')) {
+            document.getElementById('avatarInput').click();
+          } else {
+            var url = prompt('头像图片URL（留空用默认）：', document.getElementById('avatarImg').getAttribute('src') || '');
+            if (url !== null) {
+              var def = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'110\' height=\'110\' viewBox=\'0 0 110 110\'%3E%3Crect fill=\'%23e8ecf0\' width=\'110\' height=\'110\'/%3E%3Ctext x=\'55\' y=\'63\' text-anchor=\'middle\' font-size=\'44\' fill=\'%23999\'%3E👤%3C/text%3E%3C/svg%3E';
+              document.getElementById('avatarImg').setAttribute('src', url || def);
+              showToast('✅ 头像已更新');
+            }
+          }
+          return;
         }
-      }
-      return;
-    }
 
-    // Blog link: in edit mode, clicking the link text prompts for URL update
-    if (page.classList.contains('edit-mode') && t.tagName === 'A' && t.closest('#blogList') && !t.classList.contains('link-rm') && !t.closest('.link-rm')) {
-      e.preventDefault();
-      var currentUrl = t.getAttribute('href') || '';
-      if (currentUrl === '#' || currentUrl === '') currentUrl = 'https://';
-      var newUrl = prompt('修改链接URL：', currentUrl);
-      if (newUrl !== null) {
-        t.setAttribute('href', newUrl || '#');
-        showToast('✅ 链接已更新');
-      }
-      return;
-    }
+        // Blog link: in edit mode, clicking the link text prompts for URL update
+        if (page.classList.contains('edit-mode') && t.tagName === 'A' && t.closest('#blogList') && !t.classList.contains('link-rm') && !t.closest('.link-rm')) {
+          e.preventDefault();
+          var currentUrl = t.getAttribute('href') || '';
+          if (currentUrl === '#' || currentUrl === '') currentUrl = 'https://';
+          var newUrl = prompt('修改链接URL：', currentUrl);
+          if (newUrl !== null) {
+            t.setAttribute('href', newUrl || '#');
+            showToast('✅ 链接已更新');
+          }
+          return;
+        }
 
-    // Remove buttons
-    if (t.classList.contains('tag-rm') || t.classList.contains('link-rm') || t.classList.contains('edu-rm') || t.classList.contains('exp-rm')) {
-      e.preventDefault();
-      removeItem(t);
-      return;
-    }
+        // Remove buttons
+        if (t.classList.contains('tag-rm') || t.classList.contains('link-rm') || t.classList.contains('edu-rm') || t.classList.contains('exp-rm')) {
+          e.preventDefault();
+          removeItem(t);
+          return;
+        }
 
-    // Add buttons
-    if (t.classList.contains('add-item')) {
-      e.preventDefault();
-      var type = t.getAttribute('data-add');
-      if (type) addItem(type);
-      return;
-    }
-    if (t.classList.contains('edit-add-btn')) {
-      e.preventDefault();
-      var type = t.getAttribute('data-add');
-      if (type) addItem(type);
-      return;
-    }
-  });
+        // Add buttons
+        if (t.classList.contains('add-item')) {
+          e.preventDefault();
+          var type = t.getAttribute('data-add');
+          if (type) addItem(type);
+          return;
+        }
+        if (t.classList.contains('edit-add-btn')) {
+          e.preventDefault();
+          var type = t.getAttribute('data-add');
+          if (type) addItem(type);
+          return;
+        }
+      });
 
-  /* ===================== Floating Format Toolbar ===================== */
-  var fmtActive = false;
+      /* ===================== Floating Format Toolbar ===================== */
+      var fmtActive = false;
 
-  document.addEventListener('mouseup', function(e){
-    if (!page.classList.contains('edit-mode')) return;
-    // Only for exp-desc areas
-    var sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.rangeCount) {
-      fmtToolbar.classList.remove('show');
-      fmtActive = false;
-      return;
-    }
-    var node = sel.anchorNode;
-    if (!node) return;
-    var el = node.nodeType === 3 ? node.parentElement : node;
-    if (!el || !el.closest('.exp-desc')) {
-      fmtToolbar.classList.remove('show');
-      fmtActive = false;
-      return;
-    }
-    fmtActive = true;
-    var range = sel.getRangeAt(0);
-    var rect = range.getBoundingClientRect();
-    var top = rect.top - fmtToolbar.offsetHeight - 8;
-    var left = rect.left + (rect.width / 2) - (fmtToolbar.offsetWidth / 2);
-    if (top < 8) top = rect.bottom + 8;
-    if (left < 8) left = 8;
-    if (left + fmtToolbar.offsetWidth > window.innerWidth - 8) left = window.innerWidth - fmtToolbar.offsetWidth - 8;
-    fmtToolbar.style.top = top + 'px';
-    fmtToolbar.style.left = left + 'px';
-    fmtToolbar.classList.add('show');
-  });
-
-  document.addEventListener('mousedown', function(e){
-    if (!fmtToolbar.contains(e.target)) {
-      // Delay to let click finish
-      setTimeout(function(){
+      document.addEventListener('mouseup', function (e) {
+        if (!page.classList.contains('edit-mode')) return;
+        // Only for exp-desc areas
         var sel = window.getSelection();
-        if (!sel || sel.isCollapsed) {
+        if (!sel || sel.isCollapsed || !sel.rangeCount) {
           fmtToolbar.classList.remove('show');
           fmtActive = false;
+          return;
         }
-      }, 100);
-    }
-  });
+        var node = sel.anchorNode;
+        if (!node) return;
+        var el = node.nodeType === 3 ? node.parentElement : node;
+        if (!el || !el.closest('.exp-desc')) {
+          fmtToolbar.classList.remove('show');
+          fmtActive = false;
+          return;
+        }
+        fmtActive = true;
+        var range = sel.getRangeAt(0);
+        var rect = range.getBoundingClientRect();
+        var top = rect.top - fmtToolbar.offsetHeight - 8;
+        var left = rect.left + (rect.width / 2) - (fmtToolbar.offsetWidth / 2);
+        if (top < 8) top = rect.bottom + 8;
+        if (left < 8) left = 8;
+        if (left + fmtToolbar.offsetWidth > window.innerWidth - 8) left = window.innerWidth - fmtToolbar.offsetWidth - 8;
+        fmtToolbar.style.top = top + 'px';
+        fmtToolbar.style.left = left + 'px';
+        fmtToolbar.classList.add('show');
+      });
 
-  // Format actions
-  fmtBold.addEventListener('mousedown', function(e){ e.preventDefault(); document.execCommand('bold'); });
-  fmtItalic.addEventListener('mousedown', function(e){ e.preventDefault(); document.execCommand('italic'); });
+      document.addEventListener('mousedown', function (e) {
+        if (!fmtToolbar.contains(e.target)) {
+          // Delay to let click finish
+          setTimeout(function () {
+            var sel = window.getSelection();
+            if (!sel || sel.isCollapsed) {
+              fmtToolbar.classList.remove('show');
+              fmtActive = false;
+            }
+          }, 100);
+        }
+      });
 
-  function adjustFontSize(delta) {
-    var sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.rangeCount) return;
-    var range = sel.getRangeAt(0);
-    var text = range.toString();
-    if (!text) return;
+      // Format actions
+      fmtBold.addEventListener('mousedown', function (e) { e.preventDefault(); document.execCommand('bold'); });
+      fmtItalic.addEventListener('mousedown', function (e) { e.preventDefault(); document.execCommand('italic'); });
 
-    // Look up from startContainer for an existing font-size span
-    var node = range.startContainer;
-    if (node.nodeType === 3) node = node.parentElement;
-    var existingSpan = null;
-    var el = node;
-    while (el && el !== page) {
-      if (el.tagName === 'SPAN' && el.style.fontSize) { existingSpan = el; break; }
-      el = el.parentElement;
-    }
+      function adjustFontSize(delta) {
+        var sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+        var range = sel.getRangeAt(0);
+        var text = range.toString();
+        if (!text) return;
 
-    var sizes = [10, 12, 14, 16, 18, 20, 24, 28];
-    var cur = 14;
-    if (existingSpan) cur = parseFloat(existingSpan.style.fontSize) || 14;
-    var idx = 0;
-    for (var i = 0; i < sizes.length; i++) { if (sizes[i] <= cur) idx = i; }
-    var newIdx = idx + delta;
-    if (newIdx < 0 || newIdx >= sizes.length) return;
+        // Look up from startContainer for an existing font-size span
+        var node = range.startContainer;
+        if (node.nodeType === 3) node = node.parentElement;
+        var existingSpan = null;
+        var el = node;
+        while (el && el !== page) {
+          if (el.tagName === 'SPAN' && el.style.fontSize) { existingSpan = el; break; }
+          el = el.parentElement;
+        }
 
-    // If existing span fully contains selection, just modify it
-    if (existingSpan && existingSpan.textContent === text) {
-      existingSpan.style.fontSize = sizes[newIdx] + 'px';
-      return;
-    }
+        var sizes = [10, 12, 14, 16, 18, 20, 24, 28];
+        var cur = 14;
+        if (existingSpan) cur = parseFloat(existingSpan.style.fontSize) || 14;
+        var idx = 0;
+        for (var i = 0; i < sizes.length; i++) { if (sizes[i] <= cur) idx = i; }
+        var newIdx = idx + delta;
+        if (newIdx < 0 || newIdx >= sizes.length) return;
 
-    // Wrap selection in a new span
-    document.execCommand('styleWithCSS', false, true);
-    try {
-      var r2 = window.getSelection().getRangeAt(0);
-      var sp = document.createElement('span');
-      sp.style.fontSize = sizes[newIdx] + 'px';
-      r2.surroundContents(sp);
-    } catch(e) {
-      // Fallback: extract and insert
-      try {
-        var r2 = window.getSelection().getRangeAt(0);
-        var frag = r2.extractContents();
-        var sp = document.createElement('span');
-        sp.style.fontSize = sizes[newIdx] + 'px';
-        sp.appendChild(frag);
-        r2.insertNode(sp);
-      } catch(e2) { /* ignore */ }
-    }
-    document.execCommand('styleWithCSS', false, false);
-  }
+        // If existing span fully contains selection, just modify it
+        if (existingSpan && existingSpan.textContent === text) {
+          existingSpan.style.fontSize = sizes[newIdx] + 'px';
+          return;
+        }
 
-  fmtSmaller.addEventListener('mousedown', function(e){ e.preventDefault(); adjustFontSize(-1); });
-  fmtBigger.addEventListener('mousedown', function(e){ e.preventDefault(); adjustFontSize(1); });
-  // Color swatches
-  document.querySelectorAll('.fmt-swatch').forEach(function(btn){
-    btn.addEventListener('mousedown', function(e){
-      e.preventDefault();
-      var color = this.getAttribute('data-color');
-      document.execCommand('styleWithCSS', false, true);
-      document.execCommand('foreColor', false, color);
-      document.execCommand('styleWithCSS', false, false);
-    });
-  });
+        // Wrap selection in a new span
+        document.execCommand('styleWithCSS', false, true);
+        try {
+          var r2 = window.getSelection().getRangeAt(0);
+          var sp = document.createElement('span');
+          sp.style.fontSize = sizes[newIdx] + 'px';
+          r2.surroundContents(sp);
+        } catch (e) {
+          // Fallback: extract and insert
+          try {
+            var r2 = window.getSelection().getRangeAt(0);
+            var frag = r2.extractContents();
+            var sp = document.createElement('span');
+            sp.style.fontSize = sizes[newIdx] + 'px';
+            sp.appendChild(frag);
+            r2.insertNode(sp);
+          } catch (e2) { /* ignore */ }
+        }
+        document.execCommand('styleWithCSS', false, false);
+      }
 
-  /* ===================== Escape ===================== */
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') {
-      if (modalExport.classList.contains('show')) closeModal('modalExport');
-      else if (modalWM.classList.contains('show')) closeModal('modalWM');
-      else if (page.classList.contains('edit-mode')) { setMode('preview'); showToast('👁 预览模式'); }
-    }
-  });
+      fmtSmaller.addEventListener('mousedown', function (e) { e.preventDefault(); adjustFontSize(-1); });
+      fmtBigger.addEventListener('mousedown', function (e) { e.preventDefault(); adjustFontSize(1); });
+      // Color swatches
+      document.querySelectorAll('.fmt-swatch').forEach(function (btn) {
+        btn.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          var color = this.getAttribute('data-color');
+          document.execCommand('styleWithCSS', false, true);
+          document.execCommand('foreColor', false, color);
+          document.execCommand('styleWithCSS', false, false);
+        });
+      });
 
-  /* ===================== Init ===================== */
-  setMode('preview');
-  wmLayer.classList.remove('show');
+      /* ===================== Escape ===================== */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (modalExport.classList.contains('show')) closeModal('modalExport');
+          else if (modalWM.classList.contains('show')) closeModal('modalWM');
+          else if (page.classList.contains('edit-mode')) { setMode('preview'); showToast('👁 预览模式'); }
+        }
+      });
 
-  // Avatar file input handler
-  document.getElementById('avatarInput').addEventListener('change', function(e){
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      document.getElementById('avatarImg').setAttribute('src', ev.target.result);
-      showToast('✅ 头像已更新（本地图片）');
-    };
-    reader.readAsDataURL(file);
-    this.value = '';
-  });
+      /* ===================== Init ===================== */
+      setMode('preview');
+      wmLayer.classList.remove('show');
 
-})();
-</script>
+      // Avatar file input handler
+      document.getElementById('avatarInput').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          document.getElementById('avatarImg').setAttribute('src', ev.target.result);
+          showToast('✅ 头像已更新（本地图片）');
+        };
+        reader.readAsDataURL(file);
+        this.value = '';
+      });
+
+    })();
+  </script>
 </body>
+
 </html>

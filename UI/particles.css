@@ -1,0 +1,16 @@
+/* particles.css - 粒子画布样式 */
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;    /* 鼠标穿透，不干扰点击 */
+    opacity: 0.5;
+}
+
+/* 如果页面存在深色模式，自动降低透明度 */
+[data-theme="dark"] #particleCanvas {
+    opacity: 0.3;
+}

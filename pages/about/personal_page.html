@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
+    <link rel="stylesheet" href="./../../UI/particles.css">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>个人主页</title>
@@ -286,7 +288,9 @@
         }
     </style>
 </head>
+
 <body>
+    <canvas id="particleCanvas"></canvas>
 
     <div class="card">
 
@@ -332,7 +336,7 @@
             </li>
 
             <!-- GitHub -->
-			<!--
+            <!--
             <li>
                 <span class="icon">🐙</span>
                 <span class="label">GitHub</span>
@@ -382,7 +386,7 @@
     <script>
         // 微信二维码点击切换显示
         const wechatRow = document.getElementById('wechatRow');
-        const qrPopup   = document.getElementById('qrPopup');
+        const qrPopup = document.getElementById('qrPopup');
 
         wechatRow.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -391,7 +395,7 @@
         });
 
         // 联系我弹窗点击切换显示
-        const contactBtn  = document.getElementById('contactBtn');
+        const contactBtn = document.getElementById('contactBtn');
         const contactPopup = document.getElementById('contactPopup');
 
         contactBtn.addEventListener('click', function (e) {
@@ -415,5 +419,7 @@
         });
     </script>
 
+    <script src="./../../UI/particles.js"></script>
 </body>
+
 </html>
