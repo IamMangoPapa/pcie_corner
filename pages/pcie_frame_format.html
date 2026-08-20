@@ -4,79 +4,94 @@
     <meta charset="UTF-8">
     <title>PCIe 帧格式</title>
     <style>
+        /* ===== 浅色科技主题 ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: 'Segoe UI', 'PingFang SC', system-ui, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            background: #f0f4fa;
             color: #1a2332;
             min-height: 100vh;
+            background-image: radial-gradient(circle at 20% 30%, rgba(26, 86, 219, 0.04) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 70%, rgba(0, 150, 255, 0.03) 0%, transparent 50%);
         }
 
+        /* ===== 顶栏 ===== */
         .topbar {
-            background: #fff;
-            border-bottom: 1px solid #d0d5dd;
-            padding: 8px 24px;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(26, 86, 219, 0.12);
+            padding: 12px 32px;
             position: sticky;
             top: 0;
             z-index: 100;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 28px;
             flex-wrap: wrap;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255,255,255,0.8);
         }
         .topbar h1 {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
             color: #1a56db;
+            letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(26, 86, 219, 0.15);
             white-space: nowrap;
+            background: linear-gradient(135deg, #1a56db, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .topbar .tabs {
             display: flex;
-            gap: 2px;
+            gap: 4px;
             flex-wrap: wrap;
         }
         .topbar .tab {
-            padding: 6px 14px;
+            padding: 8px 20px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
             color: #6b7c93;
-            border-radius: 6px 6px 0 0;
-            transition: all 0.12s;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
             user-select: none;
             border-bottom: 2px solid transparent;
+            letter-spacing: 0.3px;
         }
         .topbar .tab:hover {
-            background: #eef2f7;
+            background: rgba(0, 0, 0, 0.06);
             color: #1a2332;
         }
         .topbar .tab.active {
             color: #1a56db;
             border-bottom-color: #1a56db;
-            background: #f0f5ff;
+            background: rgba(0, 6, 19, 0.06);
+            text-shadow: 0 0 20px rgba(26, 86, 219, 0.1);
         }
         .topbar .mode-switch {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             margin-left: auto;
-            font-size: 12px;
+            font-size: 14px;
             color: #6b7c93;
         }
         .topbar .mode-switch label {
             cursor: pointer;
             user-select: none;
+            font-weight: 500;
         }
         .topbar .mode-switch .sw {
             position: relative;
             display: inline-block;
-            width: 38px;
-            height: 20px;
+            width: 44px;
+            height: 24px;
             flex-shrink: 0;
         }
         .topbar .mode-switch .sw input {
@@ -92,184 +107,233 @@
             right: 0;
             bottom: 0;
             background: #d0d5dd;
-            border-radius: 20px;
+            border-radius: 24px;
             transition: .3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
         }
         .topbar .mode-switch .sl:before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
+            height: 18px;
+            width: 18px;
             left: 3px;
             bottom: 3px;
             background: #fff;
             border-radius: 50%;
             transition: .3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .topbar .mode-switch .sw input:checked+.sl {
             background: #1a56db;
+            box-shadow: 0 0 24px rgba(26, 86, 219, 0.25);
         }
         .topbar .mode-switch .sw input:checked+.sl:before {
-            transform: translateX(18px);
+            transform: translateX(20px);
+            background: #fff;
         }
         .topbar .mode-badge {
-            font-size: 10px;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(26, 86, 219, 0.15);
         }
         .topbar .mode-badge.nf {
-            background: #e8eefb;
+            background: rgba(26, 86, 219, 0.06);
             color: #1a56db;
         }
         .topbar .mode-badge.fl {
-            background: #f0e8fb;
+            background: rgba(124, 58, 237, 0.08);
             color: #7c3aed;
+            border-color: rgba(124, 58, 237, 0.15);
         }
 
+        /* ===== 主体布局 ===== */
         .main {
             display: flex;
-            height: calc(100vh - 56px);
+            height: calc(100vh - 76px);
         }
 
+        /* ===== 侧边栏 ===== */
         .sidebar {
-            width: 200px;
-            min-width: 200px;
-            background: #fff;
-            border-right: 1px solid #d0d5dd;
-            padding: 8px 0;
+            width: 240px;
+            min-width: 240px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-right: 1px solid rgba(26, 86, 219, 0.08);
+            padding: 12px 0;
             overflow-y: auto;
             flex-shrink: 0;
         }
         .sidebar .s-head {
-            font-size: 11px;
-            color: #6b7c93;
-            padding: 6px 16px;
-            font-weight: 600;
-            border-bottom: 1px solid #eef2f7;
+            font-size: 18px;
+            color: #1a56db;
+            padding: 10px 20px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(26, 86, 219, 0.08);
+            letter-spacing: 0.5px;
+        }
+        .sidebar .group {
+            margin-bottom: 4px;
+        }
+        .sidebar .group .cat-label {
+            font-size: 15px;
+            color: #220de1;                 /* 主标题加深 */
+            padding: 8px 20px 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            background: rgba(26, 86, 219, 0.04);
+            border-radius: 6px;
+            margin: 0 8px;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+            border-left: 3px solid transparent;
+        }
+        .sidebar .group .cat-label:hover {
+            background: rgba(26, 86, 219, 0.08);
+            color: #0f172a;
+            border-left-color: #1a56db;
+        }
+        .sidebar .group .items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .sidebar .group:hover .items {
+            max-height: 500px;
+        }
+        .sidebar .group.open .items {
+            max-height: 500px;
         }
         .sidebar .item {
-            padding: 5px 16px;
+            padding: 6px 20px 6px 36px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 15px;
+            font-weight: 500;
             color: #4a5568;
             border-left: 3px solid transparent;
-            transition: all 0.1s;
+            transition: all 0.15s;
             user-select: none;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.2px;
         }
         .sidebar .item:hover {
-            background: #f0f5ff;
-            color: #1a56db;
+            background: rgba(26, 86, 219, 0.04);
+            color: #1a2332;
         }
         .sidebar .item.active {
             color: #1a56db;
             border-left-color: #1a56db;
-            background: #f0f5ff;
-            font-weight: 600;
-        }
-        .sidebar .sep {
-            height: 1px;
-            background: #eef2f7;
-            margin: 4px 12px;
-        }
-        .sidebar .cat-label {
-            font-size: 10px;
-            color: #8899b4;
-            padding: 8px 16px 2px;
+            background: rgba(26, 86, 219, 0.08);
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
+        /* ===== 内容区域 ===== */
         .content {
             flex: 1;
-            padding: 16px 24px;
+            padding: 24px 32px;
             overflow-y: auto;
-            background: #f0f2f5;
+            background: rgba(240, 244, 250, 0.5);
         }
         .content .page-title {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
             color: #1a2332;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #1a2332, #4a5568);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .content .page-sub {
-            font-size: 13px;
+            font-size: 15px;
             color: #1a56db;
-            font-weight: 500;
-            margin-bottom: 4px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
         }
         .content .page-desc {
-            font-size: 13px;
-            color: #4a5568;
-            line-height: 1.7;
-            margin-bottom: 12px;
+            font-size: 15px;
+            color: #6b7c93;
+            line-height: 1.8;
+            margin-bottom: 16px;
             max-width: 900px;
         }
 
-        .tlp-container {
-            background: #fff;
-            border: 1px solid #d0d5dd;
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 8px;
+        /* ===== 卡片容器 ===== */
+        .tlp-container,
+        .cfg-container {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(26, 86, 219, 0.08);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
             overflow-x: auto;
             max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255,255,255,0.6);
         }
-        .tlp-container .tlp-label {
-            font-size: 12px;
+        .tlp-container .tlp-label,
+        .cfg-container .cfg-label {
+            font-size: 13px;
             font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 6px;
+            color: #6b7c93;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
         .tlp-container .tlp-label .sub {
             font-weight: 400;
-            font-size: 11px;
+            font-size: 12px;
             color: #8899b4;
         }
 
-        /* 通用表格样式 (32列) */
+        /* ===== 表格样式 ===== */
         .tlp-table, .ts-table, .cfg-table {
             border-collapse: collapse;
             width: 100%;
             max-width: 1000px;
             margin: 0 auto;
-            border: 2px solid #1a1a1a;
-            font-size: 13px;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 2px solid #d0d5dd;
+            font-size: 14px;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
             table-layout: fixed;
         }
         .ts-table {
             max-width: 420px;
         }
         .cfg-table {
-            width: 630px; /* 54 + 32*18 */
+            width: 630px;
             max-width: 630px;
             table-layout: fixed;
         }
         .tlp-table th, .tlp-table td,
         .ts-table th, .ts-table td,
         .cfg-table th, .cfg-table td {
-            border: 1px solid #444;
+            border: 1px solid #d0d5dd;
             text-align: center;
             vertical-align: middle;
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: all 0.15s ease;
         }
         .tlp-table tbody td, .ts-table tbody td, .cfg-table tbody td {
-            padding: 7px 2px !important;
-            height: 23px !important;
+            padding: 8px 2px !important;
+            height: 28px !important;
         }
         .tlp-table td:first-child, .tlp-table th:first-child,
         .ts-table td:first-child, .ts-table th:first-child,
         .cfg-table td:first-child, .cfg-table th:first-child {
-            border: 1px solid #444 !important;
+            border: 1px solid #d0d5dd !important;
             width: 54px !important;
             min-width: 54px !important;
             max-width: 54px !important;
@@ -279,296 +343,238 @@
             min-width: 18px !important;
             max-width: 18px !important;
         }
-        .tlp-table .byte-label th:first-child,
-        .tlp-table .bit-label th:first-child,
-        .tlp-table tbody tr:first-child td:first-child,
-        .ts-table .bit-label th:first-child,
-        .ts-table tbody tr:first-child td:first-child,
-        .cfg-table .byte-label th:first-child,
-        .cfg-table .bit-label th:first-child,
-        .cfg-table tbody tr:first-child td:first-child {
-            border-top: none !important;
-        }
-
         .tlp-table .row-label, .ts-table .row-label, .cfg-table .row-label {
             background: transparent !important;
-            font-weight: bold;
-            width: 100% !important;
-            font-size: 12px;
-            color: #888;
+            font-weight: 700;
+            font-size: 13px;
+            color: #6b7c93;
             cursor: default;
             text-align: right !important;
-            padding-right: 10px !important;
+            padding-right: 12px !important;
             white-space: nowrap !important;
             overflow: hidden !important;
             text-overflow: clip !important;
         }
-
         .tlp-table .byte-label th, .ts-table .byte-label th, .cfg-table .byte-label th {
-            background: transparent !important;
-            height: 20px;
-            line-height: 20px;
+            background: rgba(26, 86, 219, 0.03) !important;
+            height: 24px;
+            line-height: 24px;
             padding: 0 !important;
-            font-size: 11px;
+            font-size: 12px;
             cursor: default;
-            font-weight: bold;
+            font-weight: 700;
             white-space: nowrap !important;
-            border-top: 2px solid #1a1a1a !important;
+            border-top: 2px solid #d0d5dd !important;
             text-align: center !important;
-            color: #888 !important;
+            color: #6b7c93 !important;
         }
-        .tlp-table .byte-label, .ts-table .byte-label, .cfg-table .byte-label {
-            border-bottom: 2px solid #000;
-        }
-
         .tlp-table .bit-label th, .ts-table .bit-label th, .cfg-table .bit-label th {
-            background: transparent !important;
-            height: 20px;
-            line-height: 20px;
+            background: rgba(240, 244, 250, 0.5) !important;
+            height: 22px;
+            line-height: 22px;
             padding: 0 !important;
             font-size: 11px;
             cursor: default;
-            font-weight: bold;
+            font-weight: 600;
             white-space: nowrap !important;
-            border-bottom: 2px solid #000;
+            border-bottom: 2px solid #d0d5dd;
             text-align: center !important;
+            color: #8899b4 !important;
         }
         .tlp-table .bit-cell, .ts-table .bit-cell, .cfg-table .bit-cell {
             padding: 0 !important;
-            border: 1px solid #444;
+            border: 1px solid #d0d5dd;
             font-family: monospace;
             text-align: center !important;
             vertical-align: middle !important;
-            color: #888 !important;
+            color: #6b7c93 !important;
+            background: rgba(240, 244, 250, 0.2);
         }
         .tlp-table tbody tr:last-child td:not(:first-child),
         .ts-table tbody tr:last-child td:not(:first-child),
         .cfg-table tbody tr:last-child td:not(:first-child) {
-            border-bottom: 2px solid #1a1a1a !important;
+            border-bottom: 2px solid #d0d5dd !important;
         }
-
         .tlp-table .field-cell, .ts-table .field-cell, .cfg-table .field-cell {
             color: #fff;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 13px;
             padding: 6px 4px !important;
             white-space: nowrap !important;
             text-align: center !important;
             position: relative;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         .cfg-table .field-cell {
-            font-size: 11px;
+            font-size: 12px;
         }
         .tlp-table .field-cell.dark-text, .ts-table .field-cell.dark-text, .cfg-table .field-cell.dark-text {
-            color: #111;
+            color: #1a2332;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.3);
         }
         .tlp-table .field-cell:hover, .ts-table .field-cell:hover, .cfg-table .field-cell:hover {
-            opacity: 0.85;
-            border: 2px solid #000;
+            opacity: 0.9;
+            border: 2px solid #1a56db;
             z-index: 2;
             transform: scale(1.02);
+            box-shadow: 0 0 24px rgba(26, 86, 219, 0.15);
         }
         .cfg-table .field-cell:hover {
             transform: scale(1.05) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-        .tlp-table .field-cell:active, .ts-table .field-cell:active, .cfg-table .field-cell:active {
-            transform: scale(0.96);
-        }
+        /* 颜色保留 */
+        .bg-reserved { background-color: #e8ecf1; color: #4a5568; }
+        .bg-ph { background-color: #d0d5dd; color: #1a2332; }
+        .bg-fmt { background-color: #2563eb; }
+        .bg-type { background-color: #0d9488; }
+        .bg-tc { background-color: #dc2626; }
+        .bg-th { background-color: #7c3aed; }
+        .bg-td { background-color: #0e7490; }
+        .bg-ep { background-color: #b91c1c; }
+        .bg-attr { background-color: #16a34a; }
+        .bg-at { background-color: #0284c7; }
+        .bg-length { background-color: #1e293b; }
+        .bg-reqid { background-color: #d97706; }
+        .bg-tag { background-color: #7c3aed; }
+        .bg-lbe { background-color: #0d9488; }
+        .bg-fbe { background-color: #b91c1c; }
+        .bg-addr-high { background-color: #1e293b; }
+        .bg-addr-low { background-color: #475569; }
+        .bg-msgcode { background-color: #c2410c; }
+        .bg-status { background-color: #9d174d; }
+        .bg-bcm { background-color: #0369a1; }
+        .bg-bytecnt { background-color: #0e7490; }
+        .bg-lowaddr { background-color: #475569; }
+        .bg-cplid { background-color: #d97706; }
+        .bg-bus { background-color: #c2410c; }
+        .bg-devfn { background-color: #b45309; }
+        .bg-extreg { background-color: #0e7490; }
+        .bg-regnum { background-color: #2563eb; }
+        .bg-destbus { background-color: #c2410c; }
+        .bg-devfunc { background-color: #b45309; }
+        .bg-routing { background-color: #7c3aed; }
+        .bg-data { background-color: #6d28d9; }
+        /* TS */
+        .bg-com { background-color: #2563eb; }
+        .bg-tsid1 { background-color: #0d9488; }
+        .bg-tsid2 { background-color: #c2410c; }
+        .bg-link { background-color: #d97706; }
+        .bg-lane { background-color: #c2410c; }
+        .bg-nfts { background-color: #7c3aed; }
+        .bg-speed { background-color: #16a34a; }
+        .bg-enIdle { background-color: #0284c7; }
+        .bg-disScramble { background-color: #7c3aed; }
+        .bg-loopback { background-color: #0e7490; }
+        .bg-dislink { background-color: #b91c1c; }
+        .bg-hotreset { background-color: #dc2626; }
+        .bg-bitrate { background-color: #c2410c; }
+        .bg-vendor { background-color: #1e293b; }
+        .bg-end { background-color: #d0d5dd; color: #1a2332; }
 
-        /* 配色 (TLP & TS) */
-        .bg-fmt { background-color: #2980b9; }
-        .bg-type { background-color: #1abc9c; }
-        .bg-tc { background-color: #c0392b; }
-        .bg-r { background-color: #95a5a6; }
-        .bg-th { background-color: #8e44ad; }
-        .bg-td { background-color: #16a085; }
-        .bg-ep { background-color: #e74c3c; }
-        .bg-attr { background-color: #2ecc71; }
-        .bg-at { background-color: #3498db; }
-        .bg-length { background-color: #34495e; }
-        .bg-reqid { background-color: #f39c12; }
-        .bg-tag { background-color: #9b59b6; }
-        .bg-lbe { background-color: #1abc9c; }
-        .bg-fbe { background-color: #e74c3c; }
-        .bg-addr-high { background-color: #2c3e50; }
-        .bg-addr-low { background-color: #7f8c8d; }
-        .bg-ph { background-color: #bdc3c7; color: #222; }
-        .bg-reserved { background-color: #e0e0e0; color: #222; }
-        .bg-msgcode { background-color: #d35400; }
-        .bg-status { background-color: #be185d; }
-        .bg-bcm { background-color: #0284c7; }
-        .bg-bytecnt { background-color: #0891b2; }
-        .bg-lowaddr { background-color: #7f8c8d; }
-        .bg-cplid { background-color: #f39c12; }
-        .bg-bus { background-color: #e67e22; }
-        .bg-devfn { background-color: #d35400; }
-        .bg-extreg { background-color: #16a085; }
-        .bg-regnum { background-color: #2980b9; }
-        .bg-destbus { background-color: #e67e22; }
-        .bg-devfunc { background-color: #d35400; }
-        .bg-routing { background-color: #8e44ad; }
-        .bg-data { background-color: #7c3aed; }
-
-        /* TS 配色 */
-        .bg-com { background-color: #2980b9; }
-        .bg-tsid1 { background-color: #1abc9c; }
-        .bg-tsid2 { background-color: #d35400; }
-        .bg-link { background-color: #f39c12; }
-        .bg-lane { background-color: #e67e22; }
-        .bg-nfts { background-color: #9b59b6; }
-        .bg-speed { background-color: #2ecc71; }
-        .bg-enIdle { background-color: #3498db; }
-        .bg-disScramble { background-color: #8e44ad; }
-        .bg-loopback { background-color: #16a085; }
-        .bg-dislink { background-color: #c0392b; }
-        .bg-hotreset { background-color: #e74c3c; }
-        .bg-bitrate { background-color: #e67e22; }
-        .bg-vendor { background-color: #34495e; }
-        .bg-end { background-color: #bdc3c7; color: #222; }
-
-        /* 释义面板 — 紧挨表格，宽度一致 */
+        /* ===== 释义面板 ===== */
         .info-panel {
             width: 100%;
             max-width: 1000px;
-            margin: 12px auto 0;
-            background: #fff;
-            border: 1px solid #d0d5dd;
-            border-radius: 8px;
-            padding: 16px 22px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            min-height: 80px;
+            margin: 16px auto 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(26, 86, 219, 0.08);
+            border-radius: 16px;
+            padding: 20px 26px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255,255,255,0.6);
+            min-height: 100px;
             transition: all 0.3s ease;
         }
         .info-panel h3 {
-            margin: 0 0 4px 0;
+            margin: 0 0 6px 0;
             color: #1a2332;
-            border-bottom: 2px solid #eef2f7;
-            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(26, 86, 219, 0.08);
+            padding-bottom: 8px;
             display: flex;
             justify-content: space-between;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: 700;
         }
         .info-panel h3 span {
             color: #6b7c93;
-            font-weight: normal;
-            font-size: 13px;
+            font-weight: 400;
+            font-size: 14px;
         }
         .info-panel p.desc {
-            color: #444;
+            color: #4a5568;
             margin: 8px 0 12px;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.7;
         }
         .info-panel table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 6px;
-            font-size: 13px;
+            margin-top: 8px;
+            font-size: 14px;
             border: 1px solid #d0d5dd;
         }
         .info-panel th, .info-panel td {
             border: 1px solid #d0d5dd;
-            padding: 6px 12px;
+            padding: 8px 14px;
             text-align: left;
             cursor: default;
         }
         .info-panel th {
-            background: #f8f9fa;
+            background: rgba(26, 86, 219, 0.03);
             font-weight: 600;
+            color: #4a5568;
+        }
+        .info-panel td {
+            color: #1a2332;
         }
         .info-panel .empty-state {
             color: #8899b4;
             text-align: center;
-            padding: 20px 0;
-            font-size: 14px;
+            padding: 24px 0;
+            font-size: 15px;
         }
 
-        /* CFG 内部的 Tab 切换 */
+        /* ===== CFG Tab 按钮（已弃用，但仍保留样式以防万一） ===== */
         .cfg-tab-bar {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
-            justify-content: center;
-        }
-        .cfg-tab-btn {
-            padding: 6px 20px;
-            border-radius: 6px;
-            border: 1px solid #d0d5dd;
-            background: #fff;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            color: #4a5568;
-            transition: all 0.15s;
-        }
-        .cfg-tab-btn:hover {
-            background: #f0f5ff;
-        }
-        .cfg-tab-btn.active {
-            background: #1a56db;
-            color: #fff;
-            border-color: #1a56db;
-        }
-        .cfg-tab-content {
-            display: none;
-        }
-        .cfg-tab-content.active {
-            display: block;
+            display: none; /* 隐藏原有tab按钮 */
         }
 
-        /* 配置空间容器 — 与释义面板宽度一致 */
-        .cfg-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: #fff;
-            border: 1px solid #d0d5dd;
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 8px;
-            overflow-x: auto;
+        /* ===== 滚动条 ===== */
+        .content::-webkit-scrollbar,
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
         }
-        .cfg-container .cfg-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 6px;
+        .content::-webkit-scrollbar-track,
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
         }
-
-        .cfg-wrapper {
-            display: inline-block;
-            margin: 0 auto;
-            width: auto;
-            text-align: left;
+        .content::-webkit-scrollbar-thumb,
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #d0d5dd;
+            border-radius: 10px;
+        }
+        .content::-webkit-scrollbar-thumb:hover,
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #b0b8c8;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0.4; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-            animation: fadeIn 0.15s ease-out;
-        }
-
-        .content::-webkit-scrollbar { width: 4px; }
-        .content::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 4px; }
-        .sidebar::-webkit-scrollbar { width: 3px; }
-        .sidebar::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 3px; }
-
+        /* ===== 响应式 ===== */
         @media (max-width: 720px) {
             .main { flex-direction: column; height: auto; }
-            .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #d0d5dd; max-height: 200px; overflow-y: auto; }
-            .content { padding: 12px 14px; }
-            .topbar { padding: 6px 12px; }
-            .topbar h1 { font-size: 15px; }
-            .topbar .tab { font-size: 11px; padding: 4px 10px; }
-            .tlp-table, .ts-table, .cfg-table { font-size: 11px; }
-            .tlp-table .field-cell, .ts-table .field-cell, .cfg-table .field-cell { font-size: 10px; padding: 4px 2px !important; }
-            .tlp-table .row-label, .ts-table .row-label, .cfg-table .row-label { font-size: 10px; padding-right: 4px !important; }
+            .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid rgba(26, 86, 219, 0.08); max-height: 200px; overflow-y: auto; }
+            .content { padding: 16px 18px; }
+            .topbar { padding: 8px 16px; flex-wrap: wrap; gap: 12px; }
+            .topbar h1 { font-size: 20px; }
+            .topbar .tab { font-size: 14px; padding: 6px 14px; }
+            .tlp-table, .ts-table, .cfg-table { font-size: 12px; }
+            .tlp-table .field-cell, .ts-table .field-cell, .cfg-table .field-cell { font-size: 11px; padding: 4px 2px !important; }
+            .tlp-table .row-label, .ts-table .row-label, .cfg-table .row-label { font-size: 11px; padding-right: 4px !important; }
             .tlp-table .byte-label th, .tlp-table .bit-label th,
             .ts-table .byte-label th, .ts-table .bit-label th,
-            .cfg-table .byte-label th, .cfg-table .bit-label th { font-size: 9px; }
-            .info-panel { padding: 12px 14px; }
+            .cfg-table .byte-label th, .cfg-table .bit-label th { font-size: 10px; }
+            .info-panel { padding: 14px 16px; }
             .ts-table { max-width: 380px; }
             .cfg-table { width: 100%; max-width: 100%; }
             .cfg-wrapper { width: 100%; }
@@ -579,7 +585,7 @@
 <body>
 
 <div class="topbar">
-    <h1>🥭 PCIe 帧格式</h1>
+    <h1>PCIe 帧格式</h1>
     <div class="tabs" id="mainTabs">
         <div class="tab active" data-cat="tlp">TLP</div>
         <div class="tab" data-cat="ts">OS</div>
@@ -600,15 +606,15 @@
     <div class="sidebar" id="sidebar"></div>
     <div class="content" id="content">
         <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8899b4;flex-direction:column;gap:6px">
-            <div style="font-size:32px">🔍</div>
-            <div style="font-size:14px">选择左侧 TLP 类型查看</div>
+            <div style="font-size:40px;opacity:0.5">🔍</div>
+            <div style="font-size:16px">选择左侧 TLP 类型查看</div>
         </div>
     </div>
 </div>
 
 <script>
     // =====================================================================
-    //  1. 字段释义字典（合并 TLP + TS + CFG）
+    //  1. 字段释义字典（完整）
     // =====================================================================
     const fieldDefinitions = {
         // ---- TLP 字段 ----
@@ -1349,23 +1355,23 @@
             const bits = f[0] - f[1] + 1;
             const gap = currentBit - f[0];
             if (gap > 0) {
-                html += `<td colspan="${gap}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e0e0e0;color:#222;">R</td>`;
+                html += `<td colspan="${gap}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e8ecf1;color:#4a5568;">R</td>`;
                 currentBit = f[0];
             }
             const color = f[3];
             const name = f[2];
-            const bgColor = color || '#7f8c8d';
+            const bgColor = color || '#475569';
             html += `<td colspan="${bits}" class="field-cell" data-field="${name}" style="background-color:${bgColor};color:#fff;font-weight:600;">${name}</td>`;
             currentBit = f[1] - 1;
         }
         if (currentBit >= 0) {
-            html += `<td colspan="${currentBit+1}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e0e0e0;color:#222;">R</td>`;
+            html += `<td colspan="${currentBit+1}" class="field-cell bg-reserved dark-text" data-field="Reserved" style="background-color:#e8ecf1;color:#4a5568;">R</td>`;
         }
         return html;
     }
 
-    // CFG 渲染函数
-    function renderCFGContent() {
+    // 根据类型生成CFG表格（不再使用内部Tab）
+    function renderCFGTable(type) {
         // 定义颜色映射 (十六进制)
         const COLORS = {
             'dev-id': '#2980b9',
@@ -1531,7 +1537,7 @@
                 ] }
             ];
 
-            const rows = (type === 'type0') ? rowsType0 : rowsType1;
+            const rows = (type === 'Type0') ? rowsType0 : rowsType1;
             for (const row of rows) {
                 html += `<tr><td class="row-label">${row.offset}</td>`;
                 html += buildCFGColSpans(row.fields);
@@ -1541,20 +1547,16 @@
             return html;
         }
 
-        const type0Table = cfgTable('type0');
-        const type1Table = cfgTable('type1');
-
+        const tableHtml = cfgTable(type);
+        const typeLabel = type === 'Type0' ? 'Type 0 (Endpoint)' : 'Type 1 (Bridge)';
         return `
+            <div class="page-title"> ${type} 配置空间</div>
+            <div class="page-desc"> ${typeLabel} 配置空间</div>
             <div class="cfg-container">
-                <div class="cfg-label">配置空间寄存器布局</div>
-                <div class="cfg-tab-bar">
-                    <div class="cfg-tab-btn active" data-cfg="type0">Type 0 (Endpoint)</div>
-                    <div class="cfg-tab-btn" data-cfg="type1">Type 1 (Bridge)</div>
-                </div>
+                <div class="cfg-label">配置空间寄存器布局 — ${typeLabel}</div>
                 <div style="text-align: center;">
                     <div class="cfg-wrapper">
-                        <div class="cfg-tab-content active" id="cfg-type0">${type0Table}</div>
-                        <div class="cfg-tab-content" id="cfg-type1">${type1Table}</div>
+                        ${tableHtml}
                     </div>
                 </div>
             </div>
@@ -1568,6 +1570,7 @@
     let currentCategory = 'tlp';
     let currentType = 'MRd32';
     let currentTS = 'ts1';
+    let currentCfgType = 'Type0';   // 新增：CFG 类型选择
     let isFlit = false;
 
     const sidebar = document.getElementById('sidebar');
@@ -1626,6 +1629,7 @@
             currentCategory = this.dataset.cat;
             if (currentCategory === 'tlp') currentType = 'MRd32';
             else if (currentCategory === 'ts') currentTS = 'ts1';
+            else if (currentCategory === 'cfg') currentCfgType = 'Type0';
             renderSidebar();
             renderContent();
         });
@@ -1639,31 +1643,42 @@
         if (currentCategory === 'tlp') renderContent();
     });
 
+    // =====================================================================
+    //  renderSidebar 函数 — 分类组折叠 + CFG 子项
+    // =====================================================================
     function renderSidebar() {
         sidebar.innerHTML = '';
         if (currentCategory === 'tlp') {
             const head = document.createElement('div');
             head.className = 's-head';
-            head.textContent = '📦 TLP 事务类型';
+            head.textContent = 'TLP 事务类型';
             sidebar.appendChild(head);
 
-            const order = ['MRd32','MRd64','MWr32','MWr64','IORd','IOWr','CfgRd0','CfgWr0','CfgRd1','CfgWr1','Msg','MsgD','VDM','Cpl','CplD','FetchAdd','Swap','CAS','DMWr'];
             const groups = [
                 { label:'Memory', items:['MRd32','MRd64','MWr32','MWr64'] },
+                { label:'Completion', items:['Cpl','CplD'] },
                 { label:'I/O', items:['IORd','IOWr'] },
                 { label:'Configuration', items:['CfgRd0','CfgWr0','CfgRd1','CfgWr1'] },
-                { label:'Message', items:['Msg','MsgD','VDM'] },
-                { label:'Completion', items:['Cpl','CplD'] },
+                { label:'Message', items:['Msg','MsgD','VDM'] },                
                 { label:'AtomicOp', items:['FetchAdd','Swap','CAS'] },
                 { label:'Other', items:['DMWr'] }
             ];
+
             for (const g of groups) {
                 const items = g.items.filter(k => TLP_TYPES[k]);
                 if (!items.length) continue;
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group' + (items.includes(currentType) ? ' open' : '');
+
                 const label = document.createElement('div');
                 label.className = 'cat-label';
                 label.textContent = g.label;
-                sidebar.appendChild(label);
+                groupDiv.appendChild(label);
+
+                const itemsDiv = document.createElement('div');
+                itemsDiv.className = 'items';
+
                 for (const k of items) {
                     const el = document.createElement('div');
                     el.className = 'item' + (k === currentType ? ' active' : '');
@@ -1674,16 +1689,15 @@
                         renderSidebar();
                         renderContent();
                     });
-                    sidebar.appendChild(el);
+                    itemsDiv.appendChild(el);
                 }
-                const sep = document.createElement('div');
-                sep.className = 'sep';
-                sidebar.appendChild(sep);
+                groupDiv.appendChild(itemsDiv);
+                sidebar.appendChild(groupDiv);
             }
         } else if (currentCategory === 'ts') {
             const head = document.createElement('div');
             head.className = 's-head';
-            head.textContent = '🔁 训练序列';
+            head.textContent = '训练序列';
             sidebar.appendChild(head);
             const items = [{key:'ts1',label:'TS1'},{key:'ts2',label:'TS2'}];
             for (const it of items) {
@@ -1701,8 +1715,25 @@
         } else { // cfg
             const head = document.createElement('div');
             head.className = 's-head';
-            head.textContent = '⚙️ 配置空间';
+            head.textContent = '配置空间';
             sidebar.appendChild(head);
+            // 添加 Type0 和 Type1 子项，类似 OS
+            const types = [
+                { key: 'Type0', label: 'Type 0 (Endpoint)' },
+                { key: 'Type1', label: 'Type 1 (Bridge)' }
+            ];
+            for (const t of types) {
+                const el = document.createElement('div');
+                el.className = 'item' + (t.key === currentCfgType ? ' active' : '');
+                el.textContent = t.label;
+                el.dataset.key = t.key;
+                el.addEventListener('click', function() {
+                    currentCfgType = this.dataset.key;
+                    renderSidebar();
+                    renderContent();
+                });
+                sidebar.appendChild(el);
+            }
         }
     }
 
@@ -1732,7 +1763,10 @@
             html += renderTSTable(currentTS);
             html += `</div>`;
         } else { // cfg
-            html += renderCFGContent();
+            //html += `<div class="page-title"> 配置空间</div>`;
+            //html += `<div class="page-desc"> 配置空间</div>`;
+            // 使用新的 renderCFGTable 函数
+            html += renderCFGTable(currentCfgType);
         }
 
         html += `<div class="info-panel" id="info-panel">
@@ -1753,21 +1787,7 @@
             });
         });
 
-        // CFG 内部 Tab 切换
-        const cfgTabs = content.querySelectorAll('.cfg-tab-btn');
-        if (cfgTabs.length) {
-            cfgTabs.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    cfgTabs.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const target = this.dataset.cfg;
-                    const contents = content.querySelectorAll('.cfg-tab-content');
-                    contents.forEach(c => c.classList.remove('active'));
-                    const targetEl = content.querySelector(`#cfg-${target}`);
-                    if (targetEl) targetEl.classList.add('active');
-                });
-            });
-        }
+        // CFG 内部 Tab 已移除，无需处理
     }
 
     // =====================================================================
@@ -1775,7 +1795,7 @@
     // =====================================================================
     renderSidebar();
     renderContent();
-    console.log('PCIe 7.0 帧格式可视化 (CFG最终修复) 加载完成 ✓');
+    console.log('PCIe 7.0 帧格式可视化加载完成 ✓');
 </script>
 </body>
 </html>
