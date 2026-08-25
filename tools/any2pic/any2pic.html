@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>视觉传输</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f0f4f8; font-family: system-ui, sans-serif; padding: 20px; color: #1a2332; height: 100vh; overflow: hidden; }
+        .app { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 28px; padding: 24px 28px 32px; box-shadow: 0 20px 60px rgba(0,20,40,0.10); height: calc(100vh - 40px); overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 2px solid #e9edf4; padding-bottom: 14px; }
+        .header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #1a3a6b, #2d6db5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { font-size: 13px; background: #e9edf4; padding: 4px 16px; border-radius: 40px; color: #2d4a6b; }
+        .global-config { background: #f2f6fc; border-radius: 16px; padding: 12px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; border: 1px solid #dde4ed; }
+        .global-config .cfg-item { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+        .global-config .cfg-item label { font-weight: 500; color: #1e344a; }
+        .global-config .cfg-item input, .global-config .cfg-item select { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; text-align: center; }
+        .global-config .cfg-item input:focus { outline: 2px solid #2d6db5; border-color: transparent; }
+        .global-config .cfg-hint { font-size: 13px; color: #5b6f87; }
+        .global-config .btn-apply { background: #1a3a6b; border: none; color: #fff; padding: 6px 18px; border-radius: 40px; font-weight: 500; cursor: pointer; }
+        .global-config .btn-apply:hover { background: #234a82; }
+        .global-config .tolerance-info { font-size: 13px; color: #2d6db5; background: #e3ecf9; padding: 4px 12px; border-radius: 20px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e9edf4; padding-bottom: 0; }
+        .tab-btn { padding: 10px 28px; border: none; background: transparent; font-size: 17px; font-weight: 600; color: #5b6f87; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: #1a3a6b; }
+        .tab-btn.active { color: #1a3a6b; border-bottom-color: #1a3a6b; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: #f8fafc; border-radius: 20px; padding: 20px 22px 26px; border: 1px solid #e2e8f0; }
+        .card-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .card-desc { font-size: 14px; color: #5b6f87; margin-bottom: 16px; }
+        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 28px 16px; text-align: center; background: #fff; cursor: pointer; transition: all 0.25s; position: relative; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .drop-zone:hover { border-color: #6b8fc9; background: #f2f6fd; }
+        .drop-zone.dragover { border-color: #2d6db5; background: #e3ecf9; box-shadow: inset 0 0 0 4px rgba(45,109,181,0.15); }
+        .drop-zone .icon { font-size: 36px; margin-bottom: 4px; }
+        .drop-zone .hint { font-size: 15px; font-weight: 500; }
+        .drop-zone .sub-hint { font-size: 13px; color: #7a8aa0; }
+        .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #ccd7e6; padding: 7px 18px; border-radius: 40px; font-size: 14px; font-weight: 500; color: #1a2a3f; cursor: pointer; transition: all 0.2s; user-select: none; white-space: nowrap; }
+        .btn:hover { background: #f0f4fb; border-color: #96b0d0; }
+        .btn-primary { background: #1a3a6b; border-color: #1a3a6b; color: #fff; }
+        .btn-primary:hover { background: #234a82; }
+        .btn-success { background: #1d7a4f; border-color: #1d7a4f; color: #fff; }
+        .btn-success:hover { background: #238f5d; }
+        .btn-danger { background: #b13e3e; border-color: #b13e3e; color: #fff; }
+        .btn-danger:hover { background: #c94a4a; }
+        .btn-outline { background: transparent; border-color: #b8c8dd; }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+        .info-bar { margin-top: 12px; padding: 8px 14px; background: #eef3f9; border-radius: 10px; font-size: 14px; color: #1e344a; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; min-height: 40px; }
+        .info-bar .label { color: #4c6480; }
+        .info-bar .val { font-weight: 500; font-family: monospace; font-size: 13px; }
+        .status { margin-top: 10px; padding: 8px 14px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; min-height: 36px; flex-wrap: wrap; }
+        .status.info { background: #e3ecf9; color: #1a3a6b; }
+        .status.success { background: #ddf0e6; color: #14633d; }
+        .status.error { background: #fce6e6; color: #a13232; }
+        .status.warn { background: #fdf2d7; color: #8a6d1b; }
+        .status.hidden { display: none; }
+        .progress-wrap { margin-top: 10px; height: 6px; background: #dde4ed; border-radius: 20px; overflow: hidden; display: none; }
+        .progress-wrap.active { display: block; }
+        .progress-wrap .bar { height: 100%; width: 0%; background: linear-gradient(90deg, #1a3a6b, #4a8bcb); border-radius: 20px; transition: width 0.25s ease; }
+        .carousel-wrap { margin-top: 16px; border-radius: 12px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; display: none; }
+        .carousel-wrap.active { display: block; }
+        .carousel-wrap canvas { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; background: #ffffff; }
+        .carousel-controls { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 10px 0 4px; background: #ffffff; border-top: 1px solid #e9edf4; }
+        .carousel-controls .btn { background: #e9edf4; border: none; padding: 4px 18px; border-radius: 30px; font-size: 14px; color: #1a2332; }
+        .carousel-controls .btn:hover { background: #d0d9e6; }
+        .carousel-controls .page-indicator { font-size: 15px; font-weight: 600; color: #1a2332; min-width: 60px; text-align: center; }
+        .carousel-controls .btn-download-all { background: #1a3a6b; color: #fff; border: none; padding: 4px 18px; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .carousel-controls .btn-download-all:hover { background: #234a82; }
+        .collected-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 4px; }
+        .collected-item { background: #e9edf4; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 3px solid #1a3a6b; }
+        .collected-item .page-badge { background: #1a3a6b; color: #fff; border-radius: 12px; padding: 0 8px; font-size: 11px; line-height: 20px; }
+        .collected-item .file-name { font-weight: 600; color: #1a3a6b; }
+        .collected-item .file-size { color: #2d6db5; font-size: 12px; }
+        .collected-item .data-len { color: #4c6480; font-size: 12px; background: #f0f4f8; padding: 0 8px; border-radius: 10px; }
+        .collected-item .remove { cursor: pointer; color: #a13232; font-weight: bold; margin-left: auto; padding: 0 4px; }
+        .collected-item .remove:hover { color: #cc0000; }
+        .page-matrix { margin-top: 14px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .page-matrix-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: #4c6480; font-size: 13px; margin-bottom: 10px; }
+        .page-matrix-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+        .page-cell { width: 52px; min-height: 48px; padding: 5px 3px; border-radius: 9px; border: 1px solid #d9e2ee; background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; color: #1e344a; }
+        .page-cell .page-number { font-family: monospace; font-weight: 700; }
+        .page-cell.success { border-color: #79c99f; background: #edf9f1; color: #14633d; }
+        .page-cell.missing { border-color: #ebc867; background: #fff8e6; color: #8a6d1b; }
+        .page-cell.failed { border-color: #e39a9a; background: #fff0f0; color: #a13232; }
+        .page-cell.unknown { width: auto; padding: 8px 12px; color: #5b6f87; }
+        .missing-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+        .missing-list .missing-badge { background: #fdf2d7; color: #8a6d1b; padding: 0 8px; border-radius: 10px; font-size: 12px; }
+        .failed-list { margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+        .failed-item { background: #fce6e6; border-radius: 6px; padding: 4px 10px; margin-bottom: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+        .failed-item .error-msg { color: #a13232; }
+        .failed-item .btn-retry, .failed-item .btn-ignore { background: #fff; border: 1px solid #ccc; padding: 2px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; }
+        .failed-item .btn-retry:hover { background: #ddf0e6; }
+        .failed-item .btn-ignore:hover { background: #fce6e6; }
+        .parse-detail-toast { background: #e3ecf9; border-radius: 8px; padding: 6px 14px; margin-bottom: 6px; font-size: 14px; display: flex; flex-wrap: wrap; gap: 12px; border-left: 4px solid #1a3a6b; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .parse-detail-toast .label { font-weight: 600; color: #1a3a6b; }
+        .parse-detail-toast .time { color: #5b6f87; font-size: 12px; margin-left: auto; }
+        .cam-area { margin-top: 14px; border-radius: 12px; background: #0f1a2a; overflow: hidden; display: none; position: relative; }
+        .cam-area.active { display: block; }
+        .cam-area video { display: block; width: 100%; height: auto; max-height: 280px; background: #0a111f; object-fit: cover; }
+        .cam-overlay { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); padding: 6px 16px; border-radius: 40px; }
+        .cam-overlay .btn { background: rgba(255,255,255,0.9); border: none; font-size: 13px; padding: 4px 14px; }
+        .cam-overlay .btn-capture { background: #fff; font-weight: 600; }
+        .cam-overlay .btn-close-cam { background: rgba(220,80,80,0.85); color: #fff; }
+        #screenSelectOverlay { position: fixed; top: 5vh; left: 5vw; width: 90vw; height: 90vh; max-width: 95vw; max-height: 95vh; background: #1a2332; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 9999; display: none; overflow: hidden; resize: both; }
+        #screenSelectOverlay.active { display: block; }
+        #screenSelectOverlay .video-container { position: relative; width: 100%; height: 100%; }
+        #screenSelectOverlay video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        #screenSelectOverlay .selection-box { position: absolute; border: 2px dashed #00ff00; background: rgba(0,255,0,0.1); pointer-events: none; display: none; }
+        #screenSelectOverlay .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; background: rgba(0,0,0,0.7); padding: 10px 24px; border-radius: 40px; backdrop-filter: blur(4px); }
+        #screenSelectOverlay .controls .btn { background: #fff; border: none; padding: 6px 20px; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        #screenSelectOverlay .controls .btn-primary { background: #1a3a6b; color: #fff; }
+        #screenSelectOverlay .controls .btn-danger { background: #b13e3e; color: #fff; }
+        #screenSelectOverlay .controls .btn-primary:hover { background: #234a82; }
+        #screenSelectOverlay .controls .btn-danger:hover { background: #c94a4a; }
+        #screenSelectOverlay .drag-handle { position: absolute; top: 0; left: 0; right: 0; height: 36px; background: rgba(255,255,255,0.08); cursor: move; user-select: none; border-radius: 12px 12px 0 0; display: flex; align-items: center; padding: 0 16px; color: #fff; font-size: 14px; }
+        #screenSelectOverlay .drag-handle span { margin-left: auto; font-size: 12px; opacity: 0.6; }
+        .text-muted { color: #5b6f87; }
+        .text-sm { font-size: 13px; }
+        .hidden { display: none !important; }
+        .flex-center { display: flex; align-items: center; gap: 6px; }
+        .mt-8 { margin-top: 8px; }
+        .gap-8 { gap: 8px; }
+        .flex-wrap { display: flex; flex-wrap: wrap; align-items: center; }
+        .decode-result-prominent { display:none; margin: 14px 0 18px; padding: 18px 20px; border: 2px solid #24945d; border-radius: 14px; background: linear-gradient(135deg, #e8f8ee, #f6fffa); box-shadow: 0 8px 20px rgba(36, 148, 93, 0.14); }
+        .decode-result-prominent.active { display:block; }
+        .decode-result-title { font-size: 18px; font-weight: 700; color: #12663d; margin-bottom: 6px; }
+        .decode-result-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; color:#284f3b; font-size:14px; }
+        .decode-result-prominent .btn { margin-left:auto; font-size:16px; padding:10px 18px; box-shadow:0 3px 10px rgba(29,122,79,.2); }
+        .debug-section { margin-top: 20px; border-top: 2px solid #e9edf4; padding-top: 16px; }
+        .debug-toggle { background: #eef3f9; border: none; padding: 8px 20px; border-radius: 40px; font-size: 15px; font-weight: 600; cursor: pointer; color: #1a3a6b; }
+        .debug-toggle:hover { background: #dde4ed; }
+        .debug-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+        .debug-item { background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; text-align: center; }
+        .debug-item canvas { display: block; width: 100%; height: auto; background: #fff; }
+        .debug-item .label { padding: 6px 0; font-size: 13px; font-weight: 500; color: #1e344a; background: #f1f4f9; }
+        .debug-ruler-info { background: #f8fafc; border-radius: 8px; padding: 6px 12px; margin-top: 8px; font-size: 13px; border: 1px solid #e2e8f0; }
+        .debug-ruler-info .ok { color: #1d7a4f; }
+        .debug-ruler-info .err { color: #b13e3e; }
+        @media (max-width: 900px) { .debug-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .debug-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>视觉传输</h1>
+            <span class="badge">离线文件编码与还原</span>
+        </header>
+        <div class="global-config" id="globalConfig">
+            <div class="cfg-item"><label>色块大小 (px)</label><input type="number" id="blockSizeInput" value="8" min="4" max="32" step="2" /></div>
+            <div class="cfg-item"><label>图片边长 (px)</label><input type="number" id="imageSizeInput" value="1208" min="64" max="2048" step="16" /></div>
+            <div class="cfg-item"><label>编码模式</label><select id="encodeMode"><option value="bw">黑白 (1bit)</option><option value="color2">色板 2bit</option><option value="color3" selected>色板 3bit (8色)</option></select></div>
+            <div class="cfg-item"><label>纠错冗余</label><input type="number" id="eccLevelInput" value="0.15" min="0.05" max="0.30" step="0.01" style="width:60px;" /><span class="cfg-hint">(RS)</span></div>
+            <div class="cfg-item"><label>传输预设</label><select id="transferPreset"><option value="custom">自定义</option><option value="camera-safe">稳定实拍</option><option value="balanced">平衡传输</option><option value="screen-fast">高速屏幕</option></select></div>
+            <button class="btn-apply" id="configApplyBtn">应用配置</button>
+            <span class="tolerance-info">📐 标尺检测 + 魔数定位 + 自动修正填充</span>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="encode">📤 编码</button>
+            <button class="tab-btn" data-tab="decode">📥 解码</button>
+        </div>
+        <!-- 编码面板 -->
+        <div id="encodePanel" class="tab-content active">
+            <div class="card">
+                <div class="card-title">文件转图像</div>
+                <div class="card-desc">选择文件后生成可播放和下载的传输页</div>
+                <div class="drop-zone" id="encodeDrop"><div class="icon">📄</div><div class="hint">拖拽文件到此处</div><div class="sub-hint">或点击选择</div><input type="file" id="encodeFileInput" /></div>
+                <div class="btn-group"><button class="btn btn-primary" id="encodeSelectBtn">选择文件</button><span class="text-muted" style="margin-left:8px;font-size:13px;" id="capacityEstimate">每页净载荷: -</span></div>
+                <div class="progress-wrap" id="encodeProgressWrap"><div class="bar" id="encodeProgressBar"></div></div>
+                <div class="status hidden" id="encodeStatus"></div>
+                <div class="info-bar" id="encodeInfo"><span class="label">状态：</span><span class="val" id="encodeStateLabel">等待文件</span></div>
+                <div class="carousel-wrap" id="carouselWrap"><canvas id="carouselCanvas"></canvas><div class="carousel-controls"><button class="btn" id="carouselPrev" aria-label="上一页">◀</button><span class="page-indicator" id="carouselIndicator">1/1</span><button class="btn" id="carouselNext" aria-label="下一页">▶</button><button class="btn" id="carouselPlayBtn">暂停</button><label class="text-sm" for="carouselSpeedInput">播放间隔</label><select id="carouselSpeedInput" aria-label="播放间隔"><option value="1200">1.2 秒</option><option value="2000" selected>2 秒</option><option value="3000">3 秒</option><option value="5000">5 秒</option></select><button class="btn btn-download-all" id="downloadAllBtn">下载全部</button></div></div>
+            </div>
+        </div>
+        <!-- 解码面板 -->
+        <div id="decodePanel" class="tab-content">
+            <div class="card">
+                <div class="card-title">图像还原文件</div>
+                <div class="card-desc">可导入多张图片，或通过摄像头、屏幕选区持续收集传输页</div>
+                <div class="drop-zone" id="decodeDrop"><div class="icon">🖼️</div><div class="hint">拖拽图片到此处 (可多张)</div><div class="sub-hint">或点击选择 (支持多选)</div><input type="file" id="decodeFileInput" accept="image/*" multiple /></div>
+                <div class="btn-group"><button class="btn btn-primary" id="decodeSelectBtn">📂 添加图片</button><button class="btn btn-outline" id="decodeCamToggle">📷 打开摄像头</button><button class="btn btn-outline" id="decodeScreenBtn">🖥️ 屏幕选区</button><button class="btn btn-success" id="decodeAutoScanBtn" disabled>🔍 自动扫描</button><button class="btn btn-danger" id="decodeClearBtn">🗑️ 清空</button></div>
+                <div id="decodeResultArea" class="decode-result-prominent"><div class="decode-result-title">✅ 文件已还原，可立即下载</div><div class="decode-result-meta"><span id="decodeResultFileName"></span><span id="decodeResultFileSize"></span><span id="decodeResultSha"></span><button class="btn btn-success" id="decodeResultDownloadBtn">⬇️ 下载文件</button></div></div>
+                <div class="cam-area" id="camArea"><video id="camVideo" autoplay playsinline muted></video><div class="cam-overlay"><button class="btn btn-capture" id="camCaptureBtn">拍照添加</button><button class="btn btn-close-cam" id="camCloseBtn">关闭</button></div></div><div class="info-bar" id="cameraPreprocessOptions"><label class="flex-center"><input type="checkbox" id="cameraEnhanceInput" checked /> 摄像头图像增强</label><label class="flex-center">镜头校正 <select id="cameraLensInput"><option value="0">关闭</option><option value="-0.06" selected>轻度</option><option value="-0.12">中度</option></select></label><span class="text-muted text-sm">自动白平衡、透视归一化与方向检查</span></div>
+                <div class="status hidden" id="decodeStatus"></div>
+                <div class="info-bar" id="decodeInfo"><span class="label">✅ 成功：</span><span class="val" id="decodeSuccessCount">0</span><span class="label" style="margin-left:8px;">❌ 缺失：</span><span class="val" id="decodeMissingCount">-</span><span class="label" style="margin-left:8px;">⚠️ 失败：</span><span class="val" id="decodeFailCount">0</span></div>
+                <div id="decodePageMatrix" class="page-matrix"></div>
+                <div id="decodeCollectedList" class="collected-list"></div>
+                <div id="decodeMissingList" class="missing-list"></div>
+                <div id="decodeFailedList" class="failed-list"></div>
+                <div class="progress-wrap" id="decodeProgressWrap"><div class="bar" id="decodeProgressBar"></div></div>
+                <div class="debug-section" id="debugSection" style="display:none;"><button class="debug-toggle" id="debugToggle">🔍 显示调试图像</button><div class="debug-grid" id="debugGrid" style="display:none;"></div><div id="debugRulerInfo" class="debug-ruler-info hidden"></div></div>
+            </div>
+        </div>
+        <div style="margin-top:24px; padding-top:16px; border-top:1px solid #e2e8f0; font-size:13px; color:#6b7f97; display:flex; flex-wrap:wrap; justify-content:space-between;"><span>本地运行，数据不会上传</span><span>诊断信息可在解码页展开查看</span></div>
+    </div>
+
+    <div id="screenSelectOverlay">
+        <div class="drag-handle" id="screenDragHandle">🖥️ 屏幕选区 <span>拖动 | 调整大小</span></div>
+        <div class="video-container"><video id="screenVideo" autoplay playsinline muted></video><div class="selection-box" id="selectionBox"></div></div>
+        <div class="controls"><button class="btn btn-primary" id="screenStartScanBtn">▶ 开始扫描选区</button><button class="btn btn-danger" id="screenCancelBtn">✕ 关闭</button><span id="screenScanStatus" style="color:#fff; font-size:14px;">等待选区</span></div>
+    </div>
+
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert('全局脚本错误: ' + message + '\n行号: ' + lineno);
+            console.error('全局错误:', error);
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM 已加载，开始初始化...');
+            (function() {
+                'use strict';
+
+                // ---------- 配置 ----------
+                let BLOCK_SIZE = 8;
+                let IMAGE_SIZE = 1208;
+                let ENCODE_MODE = 'color3';
+                let ECC_LEVEL = 0.15;
+                const MAGIC = 0xDEADBEEF;
+                const BORDER_BLOCKS = 1;
+                const SYNC_PATTERN = 0xAAAA;
+                const SYNC_BITS = 16;
+                const PROTOCOL_SIGNATURE = new Uint8Array([0x56, 0x54, 0x03]); // "VT" + v3
+                const SESSION_ID_BYTES = 8;
+
+                const COLOR_PALETTES = {
+                    color2: [
+                        [255, 0, 0],
+                        [0, 255, 0],
+                        [0, 0, 255],
+                        [255, 255, 0]
+                    ],
+                    color3: [
+                        [255, 0, 0],
+                        [0, 255, 0],
+                        [0, 0, 255],
+                        [255, 255, 0],
+                        [255, 0, 255],
+                        [0, 255, 255],
+                        [0, 0, 0],
+                        [255, 255, 255]
+                    ]
+                };
+                const BPP = { bw: 1, color2: 2, color3: 3 };
+                const MAX_FILE_BYTES = 600 * 1024;
+
+                function getPageCapacity(blockSize, imageSize, mode, eccLevel) {
+                    const totalCols = imageSize / blockSize;
+                    if (!Number.isInteger(totalCols) || totalCols < 3 || totalCols % 2 === 0) {
+                        throw new Error('图片边长与色块大小组合无效：总色块数必须为不小于 3 的奇数');
+                    }
+                    const dataCols = totalCols - 2 * BORDER_BLOCKS;
+                    const rawBits = dataCols * dataCols * BPP[mode];
+                    const frameOverheadBytes = 16 + SYNC_BITS / 8;
+                    const usableBytes = Math.floor(rawBits / 8) - frameOverheadBytes;
+                    if (usableBytes <= 0) throw new Error('当前配置的数据容量不足');
+                    let low = 0;
+                    let high = usableBytes;
+                    while (low < high) {
+                        const mid = Math.ceil((low + high) / 2);
+                        if (mid + Math.ceil(mid * eccLevel) <= usableBytes) low = mid;
+                        else high = mid - 1;
+                    }
+                    return { totalCols, dataCols, rawBits, frameOverheadBytes, dataBytesPerPage: low, eccBytesPerFullPage: Math.ceil(low * eccLevel) };
+                }
+
+                function estimateFilePages(file, capacity) {
+                    const fileNameBytes = new TextEncoder().encode(file.name).length;
+                    const fileEnvelopeBytes = 4 + 2 + fileNameBytes + 1 + 4 + 4 + 32;
+                    const transportBytes = file.size + fileEnvelopeBytes;
+                    return {
+                        fileNameBytes,
+                        fileEnvelopeBytes,
+                        transportBytes,
+                        totalPages: Math.max(1, Math.ceil(transportBytes / capacity.dataBytesPerPage))
+                    };
+                }
+
+                // ---------- DOM 引用 ----------
+                const $ = id => document.getElementById(id);
+                const blockSizeInput = $('blockSizeInput');
+                const imageSizeInput = $('imageSizeInput');
+                const encodeModeSelect = $('encodeMode');
+                const eccLevelInput = $('eccLevelInput');
+                const transferPreset = $('transferPreset');
+                const configApplyBtn = $('configApplyBtn');
+
+                const tabBtns = document.querySelectorAll('.tab-btn');
+                const encodePanel = $('encodePanel');
+                const decodePanel = $('decodePanel');
+
+                const encodeDrop = $('encodeDrop');
+                const encodeFileInput = $('encodeFileInput');
+                const encodeSelectBtn = $('encodeSelectBtn');
+                const encodeProgressWrap = $('encodeProgressWrap');
+                const encodeProgressBar = $('encodeProgressBar');
+                const encodeStatus = $('encodeStatus');
+                const encodeStateLabel = $('encodeStateLabel');
+                const capacityEstimate = $('capacityEstimate');
+                const carouselWrap = $('carouselWrap');
+                const carouselCanvas = $('carouselCanvas');
+                const carouselIndicator = $('carouselIndicator');
+                const carouselPrev = $('carouselPrev');
+                const carouselNext = $('carouselNext');
+                const carouselPlayBtn = $('carouselPlayBtn');
+                const carouselSpeedInput = $('carouselSpeedInput');
+                const downloadAllBtn = $('downloadAllBtn');
+
+                const decodeDrop = $('decodeDrop');
+                const decodeFileInput = $('decodeFileInput');
+                const decodeSelectBtn = $('decodeSelectBtn');
+                const decodeCamToggle = $('decodeCamToggle');
+                const decodeScreenBtn = $('decodeScreenBtn');
+                const decodeAutoScanBtn = $('decodeAutoScanBtn');
+                const decodeClearBtn = $('decodeClearBtn');
+                const decodeStatus = $('decodeStatus');
+                const decodeSuccessCount = $('decodeSuccessCount');
+                const decodeMissingCount = $('decodeMissingCount');
+                const decodeFailCount = $('decodeFailCount');
+                const decodePageMatrix = $('decodePageMatrix');
+                const decodeCollectedList = $('decodeCollectedList');
+                const decodeMissingList = $('decodeMissingList');
+                const decodeFailedList = $('decodeFailedList');
+                const decodeProgressWrap = $('decodeProgressWrap');
+                const decodeProgressBar = $('decodeProgressBar');
+                const decodeResultArea = $('decodeResultArea');
+                const decodeResultFileName = $('decodeResultFileName');
+                const decodeResultFileSize = $('decodeResultFileSize');
+                const decodeResultSha = $('decodeResultSha');
+                const decodeResultDownloadBtn = $('decodeResultDownloadBtn');
+
+                const debugSection = $('debugSection');
+                const debugToggle = $('debugToggle');
+                const debugGrid = $('debugGrid');
+                const debugRulerInfo = $('debugRulerInfo');
+
+                const camArea = $('camArea');
+                const camVideo = $('camVideo');
+                const camCaptureBtn = $('camCaptureBtn');
+                const camCloseBtn = $('camCloseBtn');
+                const cameraEnhanceInput = $('cameraEnhanceInput');
+                const cameraLensInput = $('cameraLensInput');
+
+                const screenOverlay = $('screenSelectOverlay');
+                const screenVideo = $('screenVideo');
+                const selectionBox = $('selectionBox');
+                const screenStartScanBtn = $('screenStartScanBtn');
+                const screenCancelBtn = $('screenCancelBtn');
+                const screenScanStatus = $('screenScanStatus');
+                const screenDragHandle = $('screenDragHandle');
+
+                // ---------- 工具函数 ----------
+                function showStatus(el, type, msg) { el.className = 'status ' + type; el.textContent = msg;
+                    el.classList.remove('hidden'); }
+
+                function hideStatus(el) { el.classList.add('hidden'); }
+
+                function setProgress(wrap, bar, pct) { wrap.classList.add('active'); bar.style.width = Math.min(100, Math
+                        .max(0, pct)) + '%'; if (pct >= 100) { setTimeout(() => wrap.classList.remove('active'), 500); } }
+
+                function formatSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes /
+                    1024).toFixed(1) + ' KB'; if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB'; return (
+                        bytes / 1073741824).toFixed(1) + ' GB'; }
+
+                // ---------- 位操作 ----------
+                function createBits(length) { return new Uint8Array(length); }
+
+                function concatBits(a, b) { const c = createBits(a.length + b.length); c.set(a); c.set(b, a.length); return c; }
+
+                function bytesToBits(bytes) { const bits = createBits(bytes.length * 8); for (let i = 0; i < bytes.length; i++)
+                    { for (let b = 7; b >= 0; b--) { bits[i * 8 + (7 - b)] = (bytes[i] >> b) & 1; } } return bits; }
+
+                function bitsToBytes(bits) { const len = Math.floor(bits.length / 8); const bytes = new Uint8Array(len); for (
+                        let i = 0; i < len; i++) { let val = 0; for (let b = 0; b < 8; b++) { val = (val << 1) | bits[i * 8 +
+                            b]; } bytes[i] = val; } return bytes; }
+
+                function stringToBits(str) { const encoder = new TextEncoder(); return bytesToBits(encoder.encode(str)); }
+
+                function bitsToString(bits) { const bytes = bitsToBytes(bits); const decoder = new TextDecoder(); return decoder
+                        .decode(bytes); }
+
+                // ---------- CRC32 ----------
+                function crc32(data) { let crc = 0xFFFFFFFF; for (let i = 0; i < data.length; i++) { crc ^= data[i]; for (
+                        let j = 0; j < 8; j++) { if (crc & 1) crc = (crc >>> 1) ^ 0xEDB88320; else crc >>>= 1; } } return (
+                        crc ^ 0xFFFFFFFF) >>> 0; }
+
+                // ---------- 自适应 LZSS 无损压缩 ----------
+                function lzssCompress(input) {
+                    const output = [];
+                    const buckets = new Map();
+                    const keyAt = i => i + 2 < input.length ? `${input[i]}:${input[i + 1]}:${input[i + 2]}` : null;
+                    const remember = i => { const key = keyAt(i); if (!key) return; const items = buckets.get(key) || []; items.push(i); if (items.length > 16) items.shift(); buckets.set(key, items); };
+                    for (let i = 0; i < input.length;) {
+                        const flagsAt = output.length; output.push(0); let flags = 0;
+                        for (let bit = 0; bit < 8 && i < input.length; bit++) {
+                            const matches = buckets.get(keyAt(i)) || []; let bestLen = 0, bestOffset = 0;
+                            for (let m = matches.length - 1; m >= 0; m--) {
+                                const offset = i - matches[m]; if (offset < 1 || offset > 4095) continue;
+                                let len = 0; while (len < 18 && i + len < input.length && input[matches[m] + len] === input[i + len]) len++;
+                                if (len > bestLen) { bestLen = len; bestOffset = offset; }
+                            }
+                            if (bestLen >= 3) { output.push(bestOffset >> 4, ((bestOffset & 15) << 4) | (bestLen - 3)); for (let n = 0; n < bestLen; n++) remember(i++); }
+                            else { flags |= 1 << bit; output.push(input[i]); remember(i++); }
+                        }
+                        output[flagsAt] = flags;
+                    }
+                    return new Uint8Array(output);
+                }
+
+                function lzssDecompress(input, expectedSize) {
+                    const output = []; let pos = 0;
+                    while (pos < input.length && output.length < expectedSize) {
+                        const flags = input[pos++];
+                        for (let bit = 0; bit < 8 && pos < input.length && output.length < expectedSize; bit++) {
+                            if (flags & (1 << bit)) output.push(input[pos++]);
+                            else { if (pos + 1 >= input.length) throw new Error('压缩数据截断'); const offset = (input[pos] << 4) | (input[pos + 1] >> 4); const len = (input[pos + 1] & 15) + 3; pos += 2; if (!offset || offset > output.length) throw new Error('压缩数据引用无效'); for (let n = 0; n < len && output.length < expectedSize; n++) output.push(output[output.length - offset]); }
+                        }
+                    }
+                    if (output.length !== expectedSize) throw new Error(`解压长度异常：${output.length}/${expectedSize}`);
+                    return new Uint8Array(output);
+                }
+
+                // ---------- GF(256) 自初始化 ----------
+                const GF256 = (function() {
+                    const exp = new Uint8Array(512);
+                    const log = new Uint8Array(256);
+                    let x = 1;
+                    for (let i = 0; i < 255; i++) {
+                        exp[i] = x;
+                        log[x] = i;
+                        x <<= 1;
+                        if (x & 0x100) x ^= 0x11D;
+                    }
+                    for (let i = 255; i < 512; i++) exp[i] = exp[i - 255];
+                    return {
+                        exp,
+                        log,
+                        mul(a, b) {
+                            if (a === 0 || b === 0) return 0;
+                            return exp[log[a] + log[b]];
+                        },
+                        polyEval(coeffs, x) {
+                            let res = coeffs[0];
+                            for (let i = 1; i < coeffs.length; i++) {
+                                res = this.mul(res, x) ^ coeffs[i];
+                            }
+                            return res;
+                        }
+                    };
+                })();
+
+                function rsEncode(data, eccLen) {
+                    const n = data.length + eccLen;
+                    const gen = new Uint8Array(eccLen + 1);
+                    gen[0] = 1;
+                    for (let i = 0; i < eccLen; i++) {
+                        const g = new Uint8Array(i + 2);
+                        g[0] = 1;
+                        for (let j = 1; j < i + 2; j++) {
+                            g[j] = gen[j - 1] ^ GF256.mul(gen[j], GF256.exp[i]);
+                        }
+                        g[i + 1] = GF256.mul(gen[i], GF256.exp[i]);
+                        gen.set(g);
+                    }
+                    const msg = new Uint8Array(n);
+                    msg.set(data);
+                    for (let i = 0; i < data.length; i++) {
+                        const coef = msg[i];
+                        if (coef !== 0) {
+                            for (let j = 0; j < gen.length - 1; j++) {
+                                msg[i + j] ^= GF256.mul(gen[j], coef);
+                            }
+                        }
+                    }
+                    return msg.slice(data.length);
+                }
+
+                function rsDecode(dataWithEcc, eccLen) {
+                    const k = dataWithEcc.length - eccLen;
+                    if (k <= 0) throw new Error('无效 RS 参数');
+                    // 当前实现仅保留编码冗余与 CRC 完整性校验；真实 RS 纠错需独立完成并配套标准测试向量。
+                    return { data: dataWithEcc.slice(0, k), corrected: 0 };
+                }
+
+                // ---------- 编码核心 ----------
+                function encodeFileToPages(file, blockSize, imageSize, mode, eccLevel) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                    const fileData = new Uint8Array(e.target.result);
+                                    const compressedCandidate = lzssCompress(fileData);
+                                    const useCompression = compressedCandidate.length + 32 < fileData.length * 0.98;
+                                    const transportData = useCompression ? compressedCandidate : fileData;
+                                    const fileName = file.name;
+                                    const sessionId = crypto.getRandomValues(new Uint8Array(SESSION_ID_BYTES));
+                                    const sessionTag = new DataView(sessionId.buffer).getUint16(0, false);
+                                    const fileNameBytes = new TextEncoder().encode(fileName);
+                                    const fileNameBits = bytesToBits(fileNameBytes);
+                                    const fileNameLenBytes = fileNameBytes.length;
+
+                                const shaPromise = crypto.subtle.digest('SHA-256', fileData);
+                                Promise.resolve(shaPromise).then(shaBuf => {
+                                    const shaBytes = new Uint8Array(shaBuf);
+
+                                    const capacity = getPageCapacity(blockSize, imageSize, mode, eccLevel);
+                                    const totalCols = capacity.totalCols;
+                                    const dataCols = capacity.dataCols;
+                                    const dataRows = dataCols;
+                                    const bitsPerBlock = BPP[mode];
+                                    const maxDataBitsPerPageAligned = capacity.dataBytesPerPage * 8;
+
+                                    const magicBits = createBits(32);
+                                    for (let i = 0; i < 32; i++) magicBits[i] = (MAGIC >> (31 - i)) & 1;
+                                    const nameLenBits = createBits(16);
+                                    for (let i = 0; i < 16; i++) nameLenBits[i] = (fileNameLenBytes >> (15 - i)) & 1;
+                                    const protocolBits = bytesToBits(PROTOCOL_SIGNATURE);
+                                    const compressionBits = createBits(8);
+                                    compressionBits[7] = useCompression ? 1 : 0;
+                                    const originalSizeBits = createBits(32);
+                                    const transportSizeBits = createBits(32);
+                                    for (let i = 0; i < 32; i++) {
+                                        originalSizeBits[i] = (fileData.length >> (31 - i)) & 1;
+                                        transportSizeBits[i] = (transportData.length >> (31 - i)) & 1;
+                                    }
+
+                                    let totalBits = concatBits(magicBits, nameLenBits);
+                                    totalBits = concatBits(totalBits, fileNameBits);
+                                    totalBits = concatBits(totalBits, protocolBits);
+                                    totalBits = concatBits(totalBits, compressionBits);
+                                    totalBits = concatBits(totalBits, bytesToBits(sessionId));
+                                    totalBits = concatBits(totalBits, originalSizeBits);
+                                    totalBits = concatBits(totalBits, transportSizeBits);
+                                    const shaBits = bytesToBits(shaBytes);
+                                    totalBits = concatBits(totalBits, shaBits);
+                                    totalBits = concatBits(totalBits, bytesToBits(transportData));
+
+                                    const padBits = (8 - (totalBits.length % 8)) % 8;
+                                    if (padBits > 0) {
+                                        const pad = createBits(padBits);
+                                        totalBits = concatBits(totalBits, pad);
+                                    }
+
+                                    const totalPages = Math.ceil(totalBits.length / maxDataBitsPerPageAligned);
+                                    if (totalPages > 65535) throw new Error('页数过多');
+                                    const pages = [];
+                                    let dataOffset = 0;
+                                    for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+                                        const remaining = totalBits.length - dataOffset;
+                                        const chunkLen = Math.min(remaining, maxDataBitsPerPageAligned);
+                                        const chunk = totalBits.slice(dataOffset, dataOffset + chunkLen);
+
+                                        const metaBuf = new ArrayBuffer(16);
+                                        const dv = new DataView(metaBuf);
+                                        dv.setUint16(0, totalPages, false);
+                                        dv.setUint16(2, pageIdx, false);
+                                        dv.setUint32(4, chunkLen, false);
+                                        const metaBytes = new Uint8Array(metaBuf);
+                                        const dataBytes = bitsToBytes(chunk);
+                                        const crcVal = crc32(dataBytes);
+                                        dv.setUint32(8, crcVal, false);
+                                        const dataLenBytes = dataBytes.length;
+                                        const eccLenBytes = Math.ceil(dataLenBytes * eccLevel);
+                                        dv.setUint16(12, eccLenBytes, false);
+                                        dv.setUint16(14, sessionTag, false);
+
+                                        const eccBytes = rsEncode(dataBytes, eccLenBytes);
+                                        const pageBytes = new Uint8Array(metaBytes.length + dataBytes.length + eccBytes
+                                        .length);
+                                        pageBytes.set(metaBytes);
+                                        pageBytes.set(dataBytes, metaBytes.length);
+                                        pageBytes.set(eccBytes, metaBytes.length + dataBytes.length);
+
+                                        const pageBits = bytesToBits(pageBytes);
+                                        const syncBitsArr = createBits(SYNC_BITS);
+                                        for (let i = 0; i < SYNC_BITS; i++) {
+                                            syncBitsArr[i] = (SYNC_PATTERN >> (SYNC_BITS - 1 - i)) & 1;
+                                        }
+                                        let finalBits = concatBits(syncBitsArr, pageBits);
+                                        const totalBitLen = dataRows * dataCols * bitsPerBlock;
+                                        if (finalBits.length > totalBitLen) throw new Error('当前配置无法容纳页面数据，请增大图片边长或降低纠错冗余');
+                                        if (finalBits.length < totalBitLen) {
+                                            const pad = createBits(totalBitLen - finalBits.length);
+                                            finalBits = concatBits(finalBits, pad);
+                                        }
+
+                                        const canvas = document.createElement('canvas');
+                                        canvas.width = imageSize;
+                                        canvas.height = imageSize;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.fillStyle = '#ffffff';
+                                        ctx.fillRect(0, 0, imageSize, imageSize);
+
+                                        const borderPixels = BORDER_BLOCKS * blockSize;
+                                        for (let r = 0; r < totalCols; r++) {
+                                            for (let c = 0; c < totalCols; c++) {
+                                                const isBorder = r < BORDER_BLOCKS || r >= totalCols - BORDER_BLOCKS ||
+                                                    c < BORDER_BLOCKS || c >= totalCols - BORDER_BLOCKS;
+                                                if (isBorder) {
+                                                    const bit = (r + c) % 2 === 0 ? 1 : 0;
+                                                    ctx.fillStyle = bit === 1 ? '#0000ff' : '#ffffff';
+                                                    ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
+                                                }
+                                            }
+                                        }
+
+                                        let bitIdx = 0;
+                                        const palette = COLOR_PALETTES[mode] || null;
+                                        for (let r = BORDER_BLOCKS; r < totalCols - BORDER_BLOCKS; r++) {
+                                            for (let c = BORDER_BLOCKS; c < totalCols - BORDER_BLOCKS; c++) {
+                                                if (mode === 'bw') {
+                                                    const bit = finalBits[bitIdx++] || 0;
+                                                    ctx.fillStyle = bit === 1 ? '#ffffff' : '#000000';
+                                                    ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
+                                                } else {
+                                                    const bpp = BPP[mode];
+                                                    let val = 0;
+                                                    for (let i = 0; i < bpp; i++) {
+                                                        val = (val << 1) | (finalBits[bitIdx++] || 0);
+                                                    }
+                                                    const color = palette[val % palette.length];
+                                                    ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+                                                    ctx.fillRect(c * blockSize, r * blockSize, blockSize, blockSize);
+                                                }
+                                            }
+                                        }
+
+                                        pages.push({
+                                            canvas,
+                                            pageIndex: pageIdx,
+                                            totalPages,
+                                        fileName: file.name,
+                                        fileSize: fileData.length,
+                                        transportSize: transportData.length,
+                                        compressed: useCompression,
+                                        sessionId,
+                                        sessionTag,
+                                        rawChunkLen: chunkLen,
+                                        mode: mode
+                                        });
+                                        dataOffset += chunkLen;
+                                    }
+                                    resolve({ pages, fileName: file.name, fileSize: fileData.length, transportSize: transportData.length, compressed: useCompression, mode: mode,
+                                        totalPages });
+                                }).catch(err => reject(err));
+                            } catch (err) {
+                                reject(err);
+                            }
+                        };
+                        reader.onerror = () => reject(new Error('读取文件失败'));
+                        reader.readAsArrayBuffer(file);
+                    });
+                }
+
+                // ---------- 解码核心 ----------
+                function log(msg) { console.log('[解码] ' + msg); }
+
+                function detectBlueBorderHSV(imageData) {
+                    const { width, height, data } = imageData;
+                    const isBlue = (r, g, b) => {
+                        const max = Math.max(r, g, b);
+                        const min = Math.min(r, g, b);
+                        const delta = max - min;
+                        let h = 0;
+                        if (delta === 0) h = 0;
+                        else if (max === r) h = ((g - b) / delta) % 6;
+                        else if (max === g) h = (b - r) / delta + 2;
+                        else h = (r - g) / delta + 4;
+                        h = h * 60;
+                        if (h < 0) h += 360;
+                        const s = max === 0 ? 0 : delta / max;
+                        const v = max / 255;
+                        return (h >= 200 && h <= 240) && s > 0.2 && v > 0.2;
+                    };
+                    let minX = width,
+                        maxX = -1,
+                        minY = height,
+                        maxY = -1;
+                    let blueCount = 0;
+                    const step = 2;
+                    for (let y = 0; y < height; y += step) {
+                        for (let x = 0; x < width; x += step) {
+                            const idx = (y * width + x) * 4;
+                            if (isBlue(data[idx], data[idx + 1], data[idx + 2])) {
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                                blueCount++;
+                            }
+                        }
+                    }
+                    if (blueCount < 6 || (maxX - minX) < 20 || (maxY - minY) < 20) {
+                        throw new Error('未检测到蓝色边框标尺');
+                    }
+                    log(`边框外边界 (HSV): (${minX},${minY}) -> (${maxX},${maxY})`);
+                    return { minX, maxX, minY, maxY };
+                }
+
+                function imageDataToCanvas(imageData) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imageData.width;
+                    canvas.height = imageData.height;
+                    canvas.getContext('2d').putImageData(imageData, 0, 0);
+                    return canvas;
+                }
+
+                function rotateImageData(imageData, degrees) {
+                    const normalized = ((degrees % 360) + 360) % 360;
+                    if (!normalized) return imageData;
+                    const source = imageDataToCanvas(imageData);
+                    const swapSides = normalized === 90 || normalized === 270;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = swapSides ? imageData.height : imageData.width;
+                    canvas.height = swapSides ? imageData.width : imageData.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(normalized * Math.PI / 180);
+                    ctx.drawImage(source, -imageData.width / 2, -imageData.height / 2);
+                    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+                }
+
+                function normalizeCameraOrientation(imageData) {
+                    const candidates = [0, 90, 180, 270];
+                    let best = { imageData, degrees: 0, score: -1 };
+                    for (const degrees of candidates) {
+                        const candidate = rotateImageData(imageData, degrees);
+                        try {
+                            const box = detectBlueBorderHSV(candidate);
+                            const areaScore = (box.maxX - box.minX) * (box.maxY - box.minY);
+                            const aspectScore = 1 - Math.min(1, Math.abs((box.maxX - box.minX) / (box.maxY - box.minY) - 1));
+                            const score = areaScore * (0.8 + aspectScore * 0.2);
+                            if (score > best.score) best = { imageData: candidate, degrees, score };
+                        } catch (_) {}
+                    }
+                    if (best.score < 0) return { imageData, degrees: 0 };
+                    return best;
+                }
+
+                function enhanceCameraColors(imageData) {
+                    const out = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+                    const { data } = out;
+                    let rSum = 0, gSum = 0, bSum = 0, count = 0;
+                    for (let i = 0; i < data.length; i += 16) {
+                        rSum += data[i]; gSum += data[i + 1]; bSum += data[i + 2]; count++;
+                    }
+                    const average = (rSum + gSum + bSum) / (3 * count);
+                    const rGain = Math.min(1.35, Math.max(0.72, average / (rSum / count || 1)));
+                    const gGain = Math.min(1.35, Math.max(0.72, average / (gSum / count || 1)));
+                    const bGain = Math.min(1.35, Math.max(0.72, average / (bSum / count || 1)));
+                    for (let i = 0; i < data.length; i += 4) {
+                        data[i] = Math.max(0, Math.min(255, (data[i] * rGain - 128) * 1.12 + 128));
+                        data[i + 1] = Math.max(0, Math.min(255, (data[i + 1] * gGain - 128) * 1.12 + 128));
+                        data[i + 2] = Math.max(0, Math.min(255, (data[i + 2] * bGain - 128) * 1.12 + 128));
+                    }
+                    return { imageData: out, gains: { r: rGain, g: gGain, b: bGain } };
+                }
+
+                function correctRadialDistortion(imageData, k1) {
+                    if (!k1) return imageData;
+                    const { width, height, data } = imageData;
+                    const out = new ImageData(width, height);
+                    const cx = (width - 1) / 2;
+                    const cy = (height - 1) / 2;
+                    const scale = Math.max(cx, cy);
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const dx = (x - cx) / scale;
+                            const dy = (y - cy) / scale;
+                            const factor = 1 + k1 * (dx * dx + dy * dy);
+                            const srcX = Math.round(cx + dx * factor * scale);
+                            const srcY = Math.round(cy + dy * factor * scale);
+                            const target = (y * width + x) * 4;
+                            if (srcX >= 0 && srcX < width && srcY >= 0 && srcY < height) {
+                                const source = (srcY * width + srcX) * 4;
+                                out.data[target] = data[source]; out.data[target + 1] = data[source + 1]; out.data[target + 2] = data[source + 2]; out.data[target + 3] = 255;
+                            } else out.data[target + 3] = 255;
+                        }
+                    }
+                    return out;
+                }
+
+                function fitLine(points, vertical = false) {
+                    if (points.length < 8) return null;
+                    let sumA = 0, sumB = 0, sumAA = 0, sumAB = 0;
+                    for (const point of points) {
+                        const a = vertical ? point.y : point.x;
+                        const b = vertical ? point.x : point.y;
+                        sumA += a; sumB += b; sumAA += a * a; sumAB += a * b;
+                    }
+                    const den = points.length * sumAA - sumA * sumA;
+                    if (Math.abs(den) < 1e-6) return null;
+                    return { slope: (points.length * sumAB - sumA * sumB) / den, intercept: (sumB - ((points.length * sumAB - sumA * sumB) / den) * sumA) / points.length, vertical };
+                }
+
+                function intersectLines(first, second) {
+                    if (!first || !second) return null;
+                    // first: y = ax + b, second: x = cy + d
+                    const horizontal = first.vertical ? second : first;
+                    const vertical = first.vertical ? first : second;
+                    if (horizontal.vertical || !vertical.vertical) return null;
+                    const denominator = 1 - horizontal.slope * vertical.slope;
+                    if (Math.abs(denominator) < 1e-5) return null;
+                    const x = (vertical.slope * horizontal.intercept + vertical.intercept) / denominator;
+                    return { x, y: horizontal.slope * x + horizontal.intercept };
+                }
+
+                function detectBlueBorderQuad(imageData, fallbackBox) {
+                    const { width, height, data } = imageData;
+                    const isBlue = (r, g, b) => {
+                        const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+                        if (!delta || max < 50) return false;
+                        let hue = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+                        hue = (hue * 60 + 360) % 360;
+                        return hue >= 190 && hue <= 250 && delta / max > 0.22;
+                    };
+                    const spanX = fallbackBox.maxX - fallbackBox.minX + 1;
+                    const spanY = fallbackBox.maxY - fallbackBox.minY + 1;
+                    const edgeBand = Math.max(12, Math.min(spanX, spanY) * 0.18);
+                    const top = [], bottom = [], left = [], right = [];
+                    for (let y = Math.max(0, fallbackBox.minY - 2); y <= Math.min(height - 1, fallbackBox.maxY + 2); y += 2) {
+                        for (let x = Math.max(0, fallbackBox.minX - 2); x <= Math.min(width - 1, fallbackBox.maxX + 2); x += 2) {
+                            const idx = (y * width + x) * 4;
+                            if (!isBlue(data[idx], data[idx + 1], data[idx + 2])) continue;
+                            if (y <= fallbackBox.minY + edgeBand) top.push({ x, y });
+                            if (y >= fallbackBox.maxY - edgeBand) bottom.push({ x, y });
+                            if (x <= fallbackBox.minX + edgeBand) left.push({ x, y });
+                            if (x >= fallbackBox.maxX - edgeBand) right.push({ x, y });
+                        }
+                    }
+                    const topLine = fitLine(top);
+                    const bottomLine = fitLine(bottom);
+                    const leftLine = fitLine(left, true);
+                    const rightLine = fitLine(right, true);
+                    const quad = [intersectLines(topLine, leftLine), intersectLines(topLine, rightLine), intersectLines(bottomLine, rightLine), intersectLines(bottomLine, leftLine)];
+                    const valid = quad.every(point => point && point.x >= -spanX * 0.12 && point.x <= width + spanX * 0.12 && point.y >= -spanY * 0.12 && point.y <= height + spanY * 0.12);
+                    if (!valid) {
+                        log('四边线拟合不足，降级使用边框外接矩形');
+                        return [{ x: fallbackBox.minX, y: fallbackBox.minY }, { x: fallbackBox.maxX, y: fallbackBox.minY }, { x: fallbackBox.maxX, y: fallbackBox.maxY }, { x: fallbackBox.minX, y: fallbackBox.maxY }];
+                    }
+                    log(`四角拟合：${quad.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(' ')}`);
+                    return quad;
+                }
+
+                function solveLinearSystem(matrix, values) {
+                    const n = values.length;
+                    for (let col = 0; col < n; col++) {
+                        let pivot = col;
+                        for (let row = col + 1; row < n; row++) if (Math.abs(matrix[row][col]) > Math.abs(matrix[pivot][col])) pivot = row;
+                        if (Math.abs(matrix[pivot][col]) < 1e-9) return null;
+                        [matrix[col], matrix[pivot]] = [matrix[pivot], matrix[col]];
+                        [values[col], values[pivot]] = [values[pivot], values[col]];
+                        const divisor = matrix[col][col];
+                        for (let j = col; j < n; j++) matrix[col][j] /= divisor;
+                        values[col] /= divisor;
+                        for (let row = 0; row < n; row++) {
+                            if (row === col) continue;
+                            const factor = matrix[row][col];
+                            for (let j = col; j < n; j++) matrix[row][j] -= factor * matrix[col][j];
+                            values[row] -= factor * values[col];
+                        }
+                    }
+                    return values;
+                }
+
+                function perspectiveCorrection(imageData, corners, targetSize = null) {
+                    const quad = Array.isArray(corners) ? corners : [
+                        { x: corners.minX, y: corners.minY }, { x: corners.maxX, y: corners.minY },
+                        { x: corners.maxX, y: corners.maxY }, { x: corners.minX, y: corners.maxY }
+                    ];
+                    const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+                    const side = Math.max(96, Math.round(targetSize || Math.max((distance(quad[0], quad[1]) + distance(quad[2], quad[3])) / 2, (distance(quad[1], quad[2]) + distance(quad[3], quad[0])) / 2)));
+                    const max = side - 1;
+                    const destinations = [[0, 0], [max, 0], [max, max], [0, max]];
+                    const matrix = [], values = [];
+                    for (let i = 0; i < 4; i++) {
+                        const [u, v] = destinations[i];
+                        const { x, y } = quad[i];
+                        matrix.push([u, v, 1, 0, 0, 0, -u * x, -v * x]); values.push(x);
+                        matrix.push([0, 0, 0, u, v, 1, -u * y, -v * y]); values.push(y);
+                    }
+                    const h = solveLinearSystem(matrix, values);
+                    if (!h) throw new Error('透视校正参数求解失败');
+                    const out = new ImageData(side, side);
+                    const { width, height, data } = imageData;
+                    for (let y = 0; y < side; y++) for (let x = 0; x < side; x++) {
+                        const denominator = h[6] * x + h[7] * y + 1;
+                        const sx = Math.round((h[0] * x + h[1] * y + h[2]) / denominator);
+                        const sy = Math.round((h[3] * x + h[4] * y + h[5]) / denominator);
+                        const target = (y * side + x) * 4;
+                        if (sx >= 0 && sx < width && sy >= 0 && sy < height) {
+                            const source = (sy * width + sx) * 4;
+                            out.data[target] = data[source]; out.data[target + 1] = data[source + 1]; out.data[target + 2] = data[source + 2]; out.data[target + 3] = 255;
+                        } else { out.data[target] = out.data[target + 1] = out.data[target + 2] = 255; out.data[target + 3] = 255; }
+                    }
+                    log(`四角透视归一化：${side}×${side}`);
+                    return out;
+                }
+
+                function preprocessCameraImage(imageData, options = {}) {
+                    const stages = { original: imageData };
+                    const orientation = normalizeCameraOrientation(imageData);
+                    stages.oriented = orientation.imageData;
+                    let processed = orientation.imageData;
+                    let gains = null;
+                    if (options.enhance !== false) {
+                        const enhanced = enhanceCameraColors(processed);
+                        processed = enhanced.imageData;
+                        gains = enhanced.gains;
+                        stages.enhanced = processed;
+                    }
+                    processed = correctRadialDistortion(processed, Number(options.lensK1) || 0);
+                    stages.lensCorrected = processed;
+                    return { imageData: processed, stages, degrees: orientation.degrees, gains };
+                }
+
+                function sampleRulerEdges(imageData, box, expectedCols = null) {
+                    const { minX, maxX, minY, maxY } = box;
+                    const { width, height, data } = imageData;
+                    const isBlue = (r, g, b) => {
+                        const max = Math.max(r, g, b);
+                        const min = Math.min(r, g, b);
+                        const delta = max - min;
+                        if (!delta || max === 0) return false;
+                        let hue = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+                        hue = (hue * 60 + 360) % 360;
+                        return hue >= 195 && hue <= 245 && delta / max > 0.32 && max / 255 > 0.25;
+                    };
+                    const clamp = (value, lower, upper) => Math.min(upper, Math.max(lower, value));
+                    const median = values => {
+                        const sorted = [...values].sort((a, b) => a - b);
+                        return sorted[Math.floor(sorted.length / 2)];
+                    };
+                    const minRun = Math.max(2, Math.round(Math.min(width, height) / 500));
+                    const stripeDepth = clamp(Math.round(Math.min(width, height) / 180), 1, 8);
+                    const scanOffsets = expectedCols ? [-0.20, -0.10, 0, 0.10, 0.20] : [-0.15, 0, 0.15];
+
+                    function colorAt(x, y) {
+                        const index = (clamp(Math.round(y), 0, height - 1) * width + clamp(Math.round(x), 0, width - 1)) * 4;
+                        return isBlue(data[index], data[index + 1], data[index + 2]) ? 1 : 0;
+                    }
+
+                    function sampleExpectedGrid(side) {
+                        if (!expectedCols) return null;
+                        const horizontal = side === 'top' || side === 'bottom';
+                        const axisLength = horizontal ? maxX - minX + 1 : maxY - minY + 1;
+                        const cellSize = axisLength / expectedCols;
+                        const borderCenter = horizontal
+                            ? (side === 'top' ? minY + cellSize * 0.5 : maxY - cellSize * 0.5)
+                            : (side === 'left' ? minX + cellSize * 0.5 : maxX - cellSize * 0.5);
+                        const cells = [];
+                        for (let cell = 0; cell < expectedCols; cell++) {
+                            const center = (cell + 0.5) * cellSize;
+                            let blueVotes = 0;
+                            let totalVotes = 0;
+                            for (const offset of scanOffsets) {
+                                const axisPoint = (cell + 0.5 + offset) * cellSize;
+                                for (const depth of scanOffsets) {
+                                    const depthPoint = borderCenter + depth * cellSize;
+                                    blueVotes += horizontal ? colorAt(minX + axisPoint, depthPoint) : colorAt(depthPoint, minY + axisPoint);
+                                    totalVotes++;
+                                }
+                            }
+                            cells.push(blueVotes * 2 >= totalVotes ? 1 : 0);
+                        }
+                        return cells;
+                    }
+
+                    function sampleStripe(side) {
+                        const expectedCells = sampleExpectedGrid(side);
+                        if (expectedCells) return expectedCells;
+                        const length = side === 'left' || side === 'right' ? maxY - minY + 1 : maxX - minX + 1;
+                        const seq = [];
+                        for (let i = 0; i < length; i++) {
+                            let blueVotes = 0;
+                            for (let d = 0; d <= stripeDepth; d++) {
+                                const x = side === 'left' ? minX + d : side === 'right' ? maxX - d : minX + i;
+                                const y = side === 'top' ? minY + d : side === 'bottom' ? maxY - d : minY + i;
+                                blueVotes += colorAt(x, y);
+                            }
+                            seq.push(blueVotes > stripeDepth / 2 ? 1 : 0);
+                        }
+                        return seq;
+                    }
+
+                    function debounceRuns(seq) {
+                        const runs = [];
+                        for (const value of seq) {
+                            const last = runs[runs.length - 1];
+                            if (last && last.value === value) last.length++;
+                            else runs.push({ value, length: 1 });
+                        }
+                        for (let i = 1; i < runs.length - 1; i++) {
+                            if (runs[i].length < minRun && runs[i - 1].value === runs[i + 1].value) {
+                                runs[i - 1].length += runs[i].length + runs[i + 1].length;
+                                runs.splice(i, 2);
+                                i = Math.max(0, i - 2);
+                            }
+                        }
+                        return runs;
+                    }
+
+                    function countEdges(seq) {
+                        // 预期网格模式已经按“一个色块一个样本”完成了多点投票，不能再按像素去抖，
+                        // 否则 1 格宽的蓝白交替会被错误合并。
+                        if (expectedCols) {
+                            let edges = 0;
+                            for (let i = 1; i < seq.length; i++) if (seq[i] !== seq[i - 1]) edges++;
+                            return edges;
+                        }
+                        return Math.max(0, debounceRuns(seq).length - 1);
+                    }
+
+                    const leftEdges = countEdges(sampleStripe('left'));
+                    const rightEdges = countEdges(sampleStripe('right'));
+                    const topEdges = countEdges(sampleStripe('top'));
+                    const bottomEdges = countEdges(sampleStripe('bottom'));
+                    const edgeCounts = [leftEdges, rightEdges, topEdges, bottomEdges];
+                    const verticalEdges = median([leftEdges, rightEdges]);
+                    const horizontalEdges = median([topEdges, bottomEdges]);
+                    const spread = Math.max(...edgeCounts) - Math.min(...edgeCounts);
+                    const expectedEdges = expectedCols ? expectedCols - 1 : null;
+                    const edgeTolerance = expectedEdges ? Math.max(3, Math.round(expectedEdges * 0.045)) : 0;
+                    const withinExpected = expectedEdges == null || edgeCounts.every(count => Math.abs(count - expectedEdges) <= edgeTolerance);
+                    let totalCols = horizontalEdges + 1;
+                    let totalRows = verticalEdges + 1;
+                    const tolerance = expectedCols ? Math.max(3, Math.round(expectedCols * 0.04)) : 2;
+                    if (expectedCols && Math.abs(totalCols - expectedCols) <= tolerance && Math.abs(totalRows - expectedCols) <= tolerance) {
+                        totalCols = expectedCols;
+                        totalRows = expectedCols;
+                    }
+                    if (!expectedCols && totalCols % 2 === 0) totalCols += 1;
+                    if (!expectedCols && totalRows % 2 === 0) totalRows += 1;
+                    const spreadLimit = Math.max(4, Math.round(Math.max(totalCols, totalRows) * 0.08));
+                    if (spread > spreadLimit && !withinExpected) {
+                        throw new Error(`标尺采样不稳定：左=${leftEdges} 右=${rightEdges} 上=${topEdges} 下=${bottomEdges}。请确保蓝白边框完整且画面稳定。`);
+                    }
+                    const samplingMode = expectedCols ? '预期网格多点投票（未使用去噪图）' : '原始边框条带投票（未使用去噪图）';
+                    log(`标尺稳定采样：左=${leftEdges} 右=${rightEdges} 上=${topEdges} 下=${bottomEdges}，网格 ${totalCols}×${totalRows}，${samplingMode}`);
+                    return { totalCols, totalRows, leftEdges, rightEdges, topEdges, bottomEdges, spread, stripeDepth, minRun, samplingMode, withinExpected };
+                }
+
+                function calibrateColorGains(imageData) {
+                    const { data } = imageData;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    for (let i = 0; i < data.length; i += 16) {
+                        const max = Math.max(data[i], data[i + 1], data[i + 2]);
+                        const min = Math.min(data[i], data[i + 1], data[i + 2]);
+                        if (max > 135 && max - min < 42) { r += data[i]; g += data[i + 1]; b += data[i + 2]; count++; }
+                    }
+                    if (!count) return { r: 1, g: 1, b: 1, samples: 0 };
+                    const mean = (r + g + b) / (3 * count);
+                    const gain = value => Math.min(1.35, Math.max(0.72, mean / (value / count || 1)));
+                    return { r: gain(r), g: gain(g), b: gain(b), samples: count };
+                }
+
+                // ---------- 主解码函数（最终修正版） ----------
+                function decodeImageFromSource(source, mode, options = {}) {
+                    log('========== 开始解码 ==========');
+                    try {
+                        const rawImageData = getImageDataFromSource(source);
+                        const cameraPreprocess = options.camera ? preprocessCameraImage(rawImageData, options.camera) : null;
+                        const imageData = cameraPreprocess ? cameraPreprocess.imageData : rawImageData;
+                        if (cameraPreprocess) log(`摄像头预处理：旋转 ${cameraPreprocess.degrees}°${cameraPreprocess.gains ? `，白平衡增益 R${cameraPreprocess.gains.r.toFixed(2)} G${cameraPreprocess.gains.g.toFixed(2)} B${cameraPreprocess.gains.b.toFixed(2)}` : ''}`);
+                        const box = detectBlueBorderHSV(imageData);
+                        const quad = options.camera ? detectBlueBorderQuad(imageData, box) : box;
+                        const corrected = perspectiveCorrection(imageData, quad, options.camera ? IMAGE_SIZE : null);
+                        const width = corrected.width,
+                            height = corrected.height;
+                        log(`校正后尺寸: ${width}x${height}`);
+
+                        const expectedCols = Number.isInteger(IMAGE_SIZE / BLOCK_SIZE) ? IMAGE_SIZE / BLOCK_SIZE : null;
+                        const rulerData = sampleRulerEdges(corrected, { minX: 0, maxX: width - 1, minY: 0, maxY: height - 1 }, expectedCols);
+                        const { totalCols, totalRows } = rulerData;
+
+                        const dataCols = totalCols - 2;
+                        const dataRows = totalRows - 2;
+                        if (dataCols <= 0 || dataRows <= 0) throw new Error('数据区为空');
+
+                        const bitsPerBlock = BPP[mode];
+                        const colorGains = mode === 'bw' ? { r: 1, g: 1, b: 1, samples: 0 } : calibrateColorGains(corrected);
+                        if (mode !== 'bw') log(`色彩自校准：样本 ${colorGains.samples}，增益 R${colorGains.r.toFixed(2)} G${colorGains.g.toFixed(2)} B${colorGains.b.toFixed(2)}`);
+                        const totalBits = dataRows * dataCols * bitsPerBlock;
+                        const bits = createBits(totalBits);
+                        const points = [];
+                        let idx = 0;
+                        const palette = COLOR_PALETTES[mode] || null;
+                        const borderPixels = Math.round(width / totalCols);
+                        const dataMinX = borderPixels;
+                        const dataMaxX = width - borderPixels - 1;
+                        const dataMinY = borderPixels;
+                        const dataMaxY = height - borderPixels - 1;
+
+                        function mapGridToPixel(r, c) {
+                            const u = (c + 0.5) / dataCols;
+                            const v = (r + 0.5) / dataRows;
+                            const x = (1 - u) * (1 - v) * dataMinX + u * (1 - v) * dataMaxX + (1 - u) * v * dataMinX + u * v *
+                                dataMaxX;
+                            const y = (1 - u) * (1 - v) * dataMinY + u * (1 - v) * dataMinY + (1 - u) * v * dataMaxY + u * v *
+                                dataMaxY;
+                            return [x, y];
+                        }
+
+                        const bin = binarize(corrected);
+                        const opened = opening5x5(bin, width, height);
+
+                        if (mode === 'bw') {
+                            for (let r = 0; r < dataRows; r++) {
+                                for (let c = 0; c < dataCols; c++) {
+                                    const [px, py] = mapGridToPixel(r, c);
+                                    const centerX = Math.round(px);
+                                    const centerY = Math.round(py);
+                                    points.push({ x: centerX, y: centerY });
+                                    let ones = 0;
+                                    for (let dy = -1; dy <= 1; dy++) {
+                                        const yy = centerY + dy;
+                                        if (yy < 0 || yy >= height) continue;
+                                        for (let dx = -1; dx <= 1; dx++) {
+                                            const xx = centerX + dx;
+                                            if (xx < 0 || xx >= width) continue;
+                                            ones += opened[yy * width + xx];
+                                        }
+                                    }
+                                    bits[idx++] = ones >= 5 ? 1 : 0;
+                                }
+                            }
+                        } else {
+                            for (let r = 0; r < dataRows; r++) {
+                                for (let c = 0; c < dataCols; c++) {
+                                    const [px, py] = mapGridToPixel(r, c);
+                                    const centerX = Math.round(px);
+                                    const centerY = Math.round(py);
+                                    points.push({ x: centerX, y: centerY });
+                                    let rSum = 0,
+                                        gSum = 0,
+                                        bSum = 0,
+                                        cnt = 0;
+                                    for (let dy = -1; dy <= 1; dy++) {
+                                        const yy = centerY + dy;
+                                        if (yy < 0 || yy >= height) continue;
+                                        for (let dx = -1; dx <= 1; dx++) {
+                                            const xx = centerX + dx;
+                                            if (xx < 0 || xx >= width) continue;
+                                            const idx2 = (yy * width + xx) * 4;
+                                            rSum += corrected.data[idx2];
+                                            gSum += corrected.data[idx2 + 1];
+                                            bSum += corrected.data[idx2 + 2];
+                                            cnt++;
+                                        }
+                                    }
+                                    const rAvg = Math.min(255, (rSum / cnt) * colorGains.r),
+                                        gAvg = Math.min(255, (gSum / cnt) * colorGains.g),
+                                        bAvg = Math.min(255, (bSum / cnt) * colorGains.b);
+                                    let minDist = Infinity,
+                                        bestIdx = 0;
+                                    for (let p = 0; p < palette.length; p++) {
+                                        const dr = rAvg - palette[p][0];
+                                        const dg = gAvg - palette[p][1];
+                                        const db = bAvg - palette[p][2];
+                                        const dist = dr * dr + dg * dg + db * db;
+                                        if (dist < minDist) { minDist = dist;
+                                            bestIdx = p; }
+                                    }
+                                    const bpp = BPP[mode];
+                                    for (let i = bpp - 1; i >= 0; i--) {
+                                        bits[idx++] = (bestIdx >> i) & 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        log(`位流长度: ${bits.length} bits`);
+                        const debugImages = {
+                            original: rawImageData,
+                            oriented: cameraPreprocess?.stages.oriented,
+                            enhanced: cameraPreprocess?.stages.enhanced || cameraPreprocess?.stages.lensCorrected,
+                            cropped: corrected,
+                            denoised: binToImageData(opened, width, height),
+                            samplingMarked: markSamplingPoints(corrected, points, '#ff4d4f')
+                        };
+                        displayDebugImages(debugImages, rulerData);
+
+                        // ---------- 定位页头 ----------
+                        let foundOffset = -1;
+                        let bestTotalPages = 0,
+                            bestPageIdx = 0,
+                            bestDataLen = 0,
+                            bestCrc = 0,
+                            bestEccLen = 0;
+                        let bestDataBytes = null;
+
+                        let syncPos = -1;
+                        for (let i = 0; i <= Math.min(bits.length - SYNC_BITS, 16); i++) {
+                            let match = true;
+                            for (let j = 0; j < SYNC_BITS; j++) {
+                                if (bits[i + j] !== ((SYNC_PATTERN >> (SYNC_BITS - 1 - j)) & 1)) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (match) { syncPos = i; break; }
+                        }
+                        let startOffset = (syncPos !== -1) ? syncPos + SYNC_BITS : 0;
+                        if (syncPos !== -1) log(`同步头位置: ${syncPos}`);
+                        else log('未找到同步头，尝试位偏移CRC定位');
+
+                        for (let off = 0; off < 16; off++) {
+                            const absOff = startOffset + off;
+                            if (bits.length < absOff + 128) break;
+                            const candidateBits = bits.slice(absOff);
+                            const headerBytes = bitsToBytes(candidateBits.slice(0, 128));
+                            const dv = new DataView(headerBytes.buffer);
+                            const totalPages = dv.getUint16(0, false);
+                            const pageIdx = dv.getUint16(2, false);
+                            const dataLen = dv.getUint32(4, false);
+                            const crcStored = dv.getUint32(8, false);
+                            const eccLen = dv.getUint16(12, false);
+                            const sessionTag = dv.getUint16(14, false);
+
+                            if (totalPages < 1 || totalPages > 1000) continue;
+                            if (pageIdx >= totalPages) continue;
+                            if (dataLen === 0 || dataLen > bits.length * 8) continue;
+
+                            const dataBytesLen = Math.floor(dataLen / 8);
+                            const totalBytesLen = dataBytesLen + eccLen;
+                            if (candidateBits.length < 128 + totalBytesLen * 8) continue;
+
+                            const dataWithEccBytes = bitsToBytes(candidateBits.slice(128, 128 + totalBytesLen * 8));
+                            const rsResult = rsDecode(dataWithEccBytes, eccLen);
+                            let dataBytes = rsResult.data;
+                            if (dataBytes.length > dataBytesLen) dataBytes = dataBytes.slice(0, dataBytesLen);
+                            const crcCalc = crc32(dataBytes);
+                            if (crcCalc === crcStored) {
+                                foundOffset = absOff;
+                                bestTotalPages = totalPages;
+                                bestPageIdx = pageIdx;
+                                bestDataLen = dataLen;
+                                bestCrc = crcStored;
+                                bestEccLen = eccLen;
+                                var bestSessionTag = sessionTag;
+                                bestDataBytes = dataBytes;
+                                log(`CRC校验通过，偏移 ${absOff}${rsResult.corrected ? `，RS 已纠正 ${rsResult.corrected} 字节` : ''}`);
+                                break;
+                            }
+                        }
+
+                        if (foundOffset === -1) {
+                            throw new Error('所有偏移尝试均未通过CRC校验');
+                        }
+
+                        const totalPages = bestTotalPages;
+                        const pageIdx = bestPageIdx;
+                        const dataLen = bestDataLen;
+                        const eccLen = bestEccLen;
+                        let dataBytes = bestDataBytes;
+
+                        log(`总页数: ${totalPages}, 当前页: ${pageIdx}, 数据长度: ${dataLen} bits, ECC: ${eccLen} bytes`);
+
+                        // ---------- 第0页解析（正确提取全部数据） ----------
+                        let fileName = null,
+                            fileSize = 0,
+                            transportSize = 0,
+                            compression = 'none',
+                            originalSha = null,
+                            sessionId = null,
+                            protocolVersion = 1;
+                        if (pageIdx === 0) {
+                            console.log('===== 第0页详细诊断 =====');
+                            console.log('dataBytes 总长度:', dataBytes.length);
+
+                            // 在 dataBytes 中搜索魔数 0xDEADBEEF
+                            const magicBytes = new Uint8Array(4);
+                            new DataView(magicBytes.buffer).setUint32(0, MAGIC, false);
+                            let magicOffset = -1;
+                            for (let i = 0; i <= dataBytes.length - 4; i++) {
+                                let match = true;
+                                for (let j = 0; j < 4; j++) {
+                                    if (dataBytes[i + j] !== magicBytes[j]) { match = false; break; }
+                                }
+                                if (match) { magicOffset = i; break; }
+                            }
+                            console.log('魔数偏移:', magicOffset);
+                            if (magicOffset === -1) throw new Error('未找到魔数 0xDEADBEEF');
+
+                            const magicStart = magicOffset;
+                            console.log('magicStart:', magicStart);
+                            const dv2 = new DataView(dataBytes.buffer, dataBytes.byteOffset + magicStart, dataBytes
+                                .byteLength - magicStart);
+                            const magic = dv2.getUint32(0, false);
+                            if (magic !== MAGIC) throw new Error(`魔数不匹配: 0x${magic.toString(16)}`);
+
+                            let nameLen = dv2.getUint16(4, false);
+                            console.log('nameLenBytes:', nameLen);
+                            const v3EnvelopeBytes = 6 + PROTOCOL_SIGNATURE.length + 1 + SESSION_ID_BYTES + 4 + 4 + 32;
+                            const legacyEnvelopeBytes = 6 + 4 + 32;
+                            const maxNameLen = dataBytes.length - legacyEnvelopeBytes - magicStart;
+                            if (nameLen > maxNameLen || nameLen < 0) {
+                                console.warn(`nameLen 异常，截断至 ${Math.max(0, maxNameLen)}`);
+                                nameLen = Math.max(0, Math.min(nameLen, maxNameLen));
+                            }
+                            const nameBytes = dataBytes.slice(magicStart + 6, magicStart + 6 + nameLen);
+                            fileName = new TextDecoder().decode(nameBytes) || 'restored_file';
+                            const metaStart = magicStart + 6 + nameLen;
+                            const signatureMatches = PROTOCOL_SIGNATURE.every((value, index) => dataBytes[metaStart + index] === value);
+                            const isV3Envelope = signatureMatches && dataBytes.length >= magicStart + nameLen + v3EnvelopeBytes;
+                            if (isV3Envelope) {
+                                const compressionType = dataBytes[metaStart + PROTOCOL_SIGNATURE.length];
+                                const sessionStart = metaStart + PROTOCOL_SIGNATURE.length + 1;
+                                sessionId = dataBytes.slice(sessionStart, sessionStart + SESSION_ID_BYTES);
+                                const metadataView = new DataView(dataBytes.buffer, dataBytes.byteOffset + sessionStart + SESSION_ID_BYTES, 8);
+                                fileSize = metadataView.getUint32(0, false);
+                                transportSize = metadataView.getUint32(4, false);
+                                const shaStart = sessionStart + SESSION_ID_BYTES + 8;
+                                originalSha = dataBytes.slice(shaStart, shaStart + 32);
+                                dataBytes = dataBytes.slice(shaStart + 32);
+                                compression = compressionType === 1 ? 'lzss' : 'none';
+                                protocolVersion = 3;
+                                console.log('v3 传输元数据:', { compression, fileSize, transportSize, sessionId: Array.from(sessionId) });
+                            } else {
+                                // 兼容此前生成的页面：名称后直接是文件大小、数据和末尾 SHA-256。
+                                if (dataBytes.length < magicStart + nameLen + legacyEnvelopeBytes) throw new Error('旧版文件元数据不完整');
+                                fileSize = new DataView(dataBytes.buffer, dataBytes.byteOffset + metaStart, 4).getUint32(0, false);
+                                transportSize = fileSize;
+                                dataBytes = dataBytes.slice(metaStart + 4);
+                                compression = 'none';
+                                originalSha = null;
+                                console.log('旧版传输元数据:', { fileSize, transportSize });
+                            }
+                        }
+
+                        log('========== 解码成功 ==========');
+                        return {
+                            fileName,
+                            fileSize,
+                            pageIdx,
+                            totalPages,
+                            fileData: dataBytes,
+                            transportSize,
+                            compression,
+                            originalSha,
+                            sessionId,
+                            sessionTag: bestSessionTag || 0,
+                            protocolVersion,
+                            crcOk: true,
+                            shaOk: false
+                        };
+                    } catch (err) {
+                        log('解码异常: ' + err.message);
+                        throw err;
+                    }
+                }
+
+                // ---------- 辅助函数 ----------
+                function getImageDataFromSource(source) {
+                    let canvas, ctx, w, h;
+                    if (source instanceof HTMLImageElement) {
+                        w = source.naturalWidth || source.width;
+                        h = source.naturalHeight || source.height;
+                        canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        ctx = canvas.getContext('2d');
+                        ctx.drawImage(source, 0, 0);
+                    } else if (source instanceof HTMLCanvasElement) {
+                        canvas = source;
+                        w = canvas.width;
+                        h = canvas.height;
+                        ctx = canvas.getContext('2d');
+                    } else {
+                        throw new Error('不支持的图片源');
+                    }
+                    if (w === 0 || h === 0) throw new Error('图片尺寸为零');
+                    return ctx.getImageData(0, 0, w, h);
+                }
+
+                function binarize(imageData) {
+                    const { width, height, data } = imageData;
+                    const bin = new Uint8Array(width * height);
+                    for (let i = 0; i < width * height; i++) {
+                        const idx = i * 4;
+                        const gray = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                        bin[i] = gray > 128 ? 1 : 0;
+                    }
+                    return bin;
+                }
+
+                function erode5x5(bin, width, height) {
+                    const eroded = new Uint8Array(bin.length);
+                    const half = 2;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            let allOnes = true;
+                            for (let dy = -half; dy <= half; dy++) {
+                                for (let dx = -half; dx <= half; dx++) {
+                                    const px = Math.min(Math.max(x + dx, 0), width - 1);
+                                    const py = Math.min(Math.max(y + dy, 0), height - 1);
+                                    if (bin[py * width + px] === 0) { allOnes = false; break; }
+                                }
+                                if (!allOnes) break;
+                            }
+                            eroded[y * width + x] = allOnes ? 1 : 0;
+                        }
+                    }
+                    return eroded;
+                }
+
+                function dilate5x5(bin, width, height) {
+                    const dilated = new Uint8Array(bin.length);
+                    const half = 2;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            let anyOne = false;
+                            for (let dy = -half; dy <= half; dy++) {
+                                for (let dx = -half; dx <= half; dx++) {
+                                    const px = Math.min(Math.max(x + dx, 0), width - 1);
+                                    const py = Math.min(Math.max(y + dy, 0), height - 1);
+                                    if (bin[py * width + px] === 1) { anyOne = true; break; }
+                                }
+                                if (anyOne) break;
+                            }
+                            dilated[y * width + x] = anyOne ? 1 : 0;
+                        }
+                    }
+                    return dilated;
+                }
+
+                function opening5x5(bin, width, height) {
+                    const eroded = erode5x5(bin, width, height);
+                    return dilate5x5(eroded, width, height);
+                }
+
+                function binToImageData(bin, width, height) {
+                    const imageData = new ImageData(width, height);
+                    const data = imageData.data;
+                    for (let i = 0; i < width * height; i++) {
+                        const val = bin[i] * 255;
+                        const idx = i * 4;
+                        data[idx] = val;
+                        data[idx + 1] = val;
+                        data[idx + 2] = val;
+                        data[idx + 3] = 255;
+                    }
+                    return imageData;
+                }
+
+                function markSamplingPoints(imageData, points, color) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imageData.width;
+                    canvas.height = imageData.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.putImageData(imageData, 0, 0);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    for (const p of points) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x - 4, p.y);
+                        ctx.lineTo(p.x + 4, p.y);
+                        ctx.moveTo(p.x, p.y - 4);
+                        ctx.lineTo(p.x, p.y + 4);
+                        ctx.stroke();
+                    }
+                    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+                }
+
+                function displayDebugImages(images, rulerData) {
+                    debugSection.style.display = 'block';
+                    const grid = debugGrid;
+                    grid.innerHTML = '';
+                    const labels = [
+                        { key: 'original', label: '原始图像' },
+                        { key: 'oriented', label: '方向归一化' },
+                        { key: 'enhanced', label: '颜色与镜头校正' },
+                        { key: 'cropped', label: '边框归一化裁剪' },
+                        { key: 'denoised', label: '数据区去噪' },
+                        { key: 'samplingMarked', label: '采样点标记' }
+                    ].filter(item => images[item.key]);
+                    for (const item of labels) {
+                        const div = document.createElement('div');
+                        div.className = 'debug-item';
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 300;
+                        canvas.height = 300;
+                        const ctx = canvas.getContext('2d');
+                        const imgData = images[item.key];
+                        if (imgData) {
+                            const tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = imgData.width;
+                            tempCanvas.height = imgData.height;
+                            tempCanvas.getContext('2d').putImageData(imgData, 0, 0);
+                            ctx.drawImage(tempCanvas, 0, 0, 300, 300);
+                        }
+                        div.appendChild(canvas);
+                        const label = document.createElement('div');
+                        label.className = 'label';
+                        label.textContent = item.label;
+                        div.appendChild(label);
+                        grid.appendChild(div);
+                    }
+                    if (rulerData) {
+                        const { leftEdges, rightEdges, topEdges, bottomEdges, totalCols, totalRows, spread, stripeDepth, minRun, samplingMode } = rulerData;
+                        const ok = spread <= Math.max(4, Math.round(Math.max(totalCols, totalRows) * 0.08));
+                        debugRulerInfo.classList.remove('hidden');
+                        debugRulerInfo.innerHTML = `
+                            <span>标尺跳变计数：左=${leftEdges} 右=${rightEdges} 上=${topEdges} 下=${bottomEdges}</span>
+                            <span class="${ok ? 'ok' : 'err'}">→ 采用稳健统计网格: ${totalCols}×${totalRows} ${ok ? '✅' : '❌ 不稳定'}</span>
+                            <span>${samplingMode}；采样深度=${stripeDepth}px，最短色段=${minRun}px</span>
+                        `;
+                    }
+                    if (!debugVisible) {
+                        debugGrid.style.display = 'none';
+                        debugToggle.textContent = '🔍 显示调试图像';
+                    } else {
+                        debugGrid.style.display = 'grid';
+                        debugToggle.textContent = '🔍 隐藏调试图像';
+                    }
+                }
+
+                let debugVisible = false;
+                debugToggle.addEventListener('click', function() {
+                    debugVisible = !debugVisible;
+                    debugGrid.style.display = debugVisible ? 'grid' : 'none';
+                    this.textContent = debugVisible ? '🔍 隐藏调试图像' : '🔍 显示调试图像';
+                });
+
+                function loadImageFromBlob(blob) {
+                    return new Promise((resolve, reject) => {
+                        const url = URL.createObjectURL(blob);
+                        const img = new Image();
+                        img.onload = () => { resolve(img);
+                            URL.revokeObjectURL(url); };
+                        img.onerror = () => { reject(new Error('图片加载失败'));
+                            URL.revokeObjectURL(url); };
+                        img.src = url;
+                    });
+                }
+
+                // ---------- 状态管理 ----------
+                let collectedPages = [];
+                let failedItems = [];
+                let lastScanFailureKey = '';
+                let lastScanFailureAt = 0;
+
+                function getKnownTotalPages() {
+                    const totals = collectedPages.map(item => item.totalPages).filter(Number.isInteger);
+                    return totals.length ? Math.max(...totals) : 0;
+                }
+
+                function renderPageMatrix() {
+                    const total = getKnownTotalPages();
+                    decodePageMatrix.innerHTML = '';
+                    const header = document.createElement('div');
+                    header.className = 'page-matrix-header';
+                    if (!total) {
+                        header.textContent = '页状态将在成功读取任意一张传输页后显示。';
+                        decodePageMatrix.appendChild(header);
+                        return;
+                    }
+                    const successIndexes = new Set(collectedPages.map(item => item.pageIdx));
+                    const failedByIndex = new Map();
+                    for (const item of failedItems) {
+                        if (Number.isInteger(item.pageIdx) && item.pageIdx >= 0 && item.pageIdx < total) failedByIndex.set(item.pageIdx, item);
+                    }
+                    const successCount = successIndexes.size;
+                    const failedCount = failedByIndex.size;
+                    header.innerHTML = `<span>页状态：✅ 已收集 ${successCount} · 🟠 未检测 ${total - successCount - failedCount} · ❌ 有错误 ${failedCount}</span><span>共 ${total} 页</span>`;
+                    const grid = document.createElement('div');
+                    grid.className = 'page-matrix-grid';
+                    for (let index = 0; index < total; index++) {
+                        const cell = document.createElement('div');
+                        const state = successIndexes.has(index) ? 'success' : failedByIndex.has(index) ? 'failed' : 'missing';
+                        cell.className = `page-cell ${state}`;
+                        cell.title = state === 'success' ? `第 ${index + 1} 页已收集` : state === 'failed' ? `第 ${index + 1} 页检测有错误：${failedByIndex.get(index).errorMsg}` : `第 ${index + 1} 页尚未检测到`;
+                        cell.innerHTML = `<span class="page-number">${String(index + 1).padStart(2, '0')}</span><span>${state === 'success' ? '✅' : state === 'failed' ? '❌' : '🟠'}</span>`;
+                        grid.appendChild(cell);
+                    }
+                    decodePageMatrix.append(header, grid);
+                }
+
+                function updateDecodeUI() {
+                    try {
+                        const list = decodeCollectedList;
+                        list.innerHTML = '';
+                        for (const item of collectedPages) {
+                            const div = document.createElement('div');
+                            div.className = 'collected-item';
+                            const pageSpan = document.createElement('span');
+                            pageSpan.className = 'page-badge';
+                            pageSpan.textContent = `第 ${item.pageIdx+1}/${item.totalPages} 页`;
+                            div.appendChild(pageSpan);
+
+                            if (item.pageIdx === 0 && item.fileName) {
+                                const nameSpan = document.createElement('span');
+                                nameSpan.className = 'file-name';
+                                nameSpan.textContent = `📎 ${item.fileName}`;
+                                div.appendChild(nameSpan);
+                                if (item.fileSize) {
+                                    const sizeSpan = document.createElement('span');
+                                    sizeSpan.className = 'file-size';
+                                    sizeSpan.textContent = `(${formatSize(item.fileSize)})`;
+                                    div.appendChild(sizeSpan);
+                                }
+                            } else {
+                                const dataLabel = document.createElement('span');
+                                dataLabel.textContent = `📦 数据块`;
+                                dataLabel.style.color = '#5b6f87';
+                                div.appendChild(dataLabel);
+                            }
+                            if (item.fileData) {
+                                const lenSpan = document.createElement('span');
+                                lenSpan.className = 'data-len';
+                                lenSpan.textContent = `📊 ${item.fileData.length} bytes`;
+                                div.appendChild(lenSpan);
+                            }
+                            const crcSpan = document.createElement('span');
+                            crcSpan.textContent = item.crcOk ? '✅' : '❌';
+                            crcSpan.style.fontSize = '14px';
+                            div.appendChild(crcSpan);
+
+                            const removeBtn = document.createElement('span');
+                            removeBtn.className = 'remove';
+                            removeBtn.textContent = '×';
+                            removeBtn.addEventListener('click', () => {
+                                const idx = collectedPages.indexOf(item);
+                                if (idx > -1) {
+                                    collectedPages.splice(idx, 1);
+                                    updateDecodeUI();
+                                }
+                            });
+                            div.appendChild(removeBtn);
+                            list.appendChild(div);
+                        }
+
+                        renderPageMatrix();
+                        const missingList = decodeMissingList;
+                        missingList.innerHTML = '';
+                        if (collectedPages.length > 0) {
+                            const total = collectedPages[0].totalPages;
+                            const existing = new Set(collectedPages.map(p => p.pageIdx));
+                            const missing = [];
+                            for (let i = 0; i < total; i++) {
+                                if (!existing.has(i)) missing.push(i);
+                            }
+                            if (missing.length > 0) {
+                            const label = document.createElement('span');
+                            label.textContent = `下一步：补传第 ${missing.slice(0, 8).map(index => index + 1).join('、')}${missing.length > 8 ? ' 等' : ''} 页`;
+                            label.style.fontWeight = 'bold';
+                            missingList.appendChild(label);
+                                for (const m of missing) {
+                                    const badge = document.createElement('span');
+                                    badge.className = 'missing-badge';
+                                    badge.textContent = m + 1;
+                                    missingList.appendChild(badge);
+                                }
+                            } else {
+                                const label = document.createElement('span');
+                                label.textContent = '✅ 所有页已收集';
+                                label.style.color = '#1d7a4f';
+                                missingList.appendChild(label);
+                            }
+                        } else {
+                            const label = document.createElement('span');
+                            label.textContent = '尚未收集任何页';
+                            label.style.color = '#5b6f87';
+                            missingList.appendChild(label);
+                        }
+
+                        const failedList = decodeFailedList;
+                        failedList.innerHTML = '';
+                        if (failedItems.length > 0) {
+                            const header = document.createElement('div');
+                            header.textContent = '⚠️ 失败记录';
+                            header.style.fontWeight = 'bold';
+                            failedList.appendChild(header);
+                            for (const item of failedItems) {
+                                const div = document.createElement('div');
+                                div.className = 'failed-item';
+                                const msg = document.createElement('span');
+                                msg.className = 'error-msg';
+                                msg.textContent = `页 ${item.pageIdx !== undefined ? item.pageIdx+1 : '?'}: ${item.errorMsg}`;
+                                div.appendChild(msg);
+                                const retryBtn = document.createElement('button');
+                                retryBtn.className = 'btn-retry';
+                                retryBtn.textContent = '重试';
+                                retryBtn.addEventListener('click', () => {
+                                    retryFailedItem(item);
+                                });
+                                div.appendChild(retryBtn);
+                                const ignoreBtn = document.createElement('button');
+                                ignoreBtn.className = 'btn-ignore';
+                                ignoreBtn.textContent = '忽略';
+                                ignoreBtn.addEventListener('click', () => {
+                                    const idx = failedItems.indexOf(item);
+                                    if (idx > -1) { failedItems.splice(idx, 1);
+                                        updateDecodeUI(); }
+                                });
+                                div.appendChild(ignoreBtn);
+                                failedList.appendChild(div);
+                            }
+                        }
+
+                        const successCount = collectedPages.length;
+                        decodeSuccessCount.textContent = successCount;
+                        const totalPages = collectedPages.length > 0 ? collectedPages[0].totalPages : 0;
+                        decodeMissingCount.textContent = totalPages > 0 ? (totalPages - successCount) : '-';
+                        decodeFailCount.textContent = failedItems.length;
+
+                        const complete = collectedPages.length > 0 && collectedPages.length === collectedPages[0]?.totalPages && collectedPages.every(item => item.crcOk);
+                        if (complete) queueAutomaticAssembly();
+                    } catch (err) {
+                        console.error('updateDecodeUI 错误:', err);
+                    }
+                }
+
+                function retryFailedItem(item) {
+                    const source = item.source;
+                    const mode = ENCODE_MODE;
+                    try {
+                        const result = decodeImageFromSource(source, mode);
+                        if (collectedPages.some(p => p.pageIdx === result.pageIdx)) {
+                            showStatus(decodeStatus, 'warn', '⚠️ 页面已存在');
+                            return;
+                        }
+                        const newItem = {
+                            source,
+                            pageIdx: result.pageIdx,
+                            totalPages: result.totalPages,
+                            fileName: result.fileName,
+                            fileSize: result.fileSize,
+                            fileData: result.fileData,
+                            transportSize: result.transportSize,
+                            compression: result.compression,
+                            originalSha: result.originalSha,
+                            sessionId: result.sessionId,
+                            sessionTag: result.sessionTag,
+                            protocolVersion: result.protocolVersion,
+                            crcOk: result.crcOk
+                        };
+                        collectedPages.push(newItem);
+                        collectedPages.sort((a, b) => a.pageIdx - b.pageIdx);
+                        const idx = failedItems.indexOf(item);
+                        if (idx > -1) failedItems.splice(idx, 1);
+                        updateDecodeUI();
+                        showStatus(decodeStatus, 'success', `✅ 重试成功，已添加第 ${result.pageIdx+1} 页`);
+                    } catch (err) {
+                        showStatus(decodeStatus, 'error', '❌ 重试失败：' + err.message);
+                        item.errorMsg = err.message;
+                        item.retryCount++;
+                        updateDecodeUI();
+                    }
+                }
+
+                async function tryAddImageSource(source, options = {}) {
+                    try {
+                        const result = decodeImageFromSource(source, ENCODE_MODE, options);
+                        const activePageZero = collectedPages.find(item => item.pageIdx === 0);
+                        const activeTag = activePageZero?.sessionTag || collectedPages[0]?.sessionTag || 0;
+                        if (activeTag && result.sessionTag && activeTag !== result.sessionTag) {
+                            showStatus(decodeStatus, 'warn', '⚠️ 检测到另一传输批次的页面，已忽略');
+                            return { success: false, reason: 'other-session' };
+                        }
+                        if (collectedPages.some(item => item.pageIdx === result.pageIdx)) {
+                            showStatus(decodeStatus, 'warn', '⚠️ 页面已存在');
+                            return { success: false, reason: 'duplicate' };
+                        }
+                        const item = {
+                            source,
+                            pageIdx: result.pageIdx,
+                            totalPages: result.totalPages,
+                            fileName: result.fileName,
+                            fileSize: result.fileSize,
+                            fileData: result.fileData,
+                            transportSize: result.transportSize,
+                            compression: result.compression,
+                            originalSha: result.originalSha,
+                            sessionId: result.sessionId,
+                            sessionTag: result.sessionTag,
+                            protocolVersion: result.protocolVersion,
+                            crcOk: result.crcOk
+                        };
+                        collectedPages.push(item);
+                        collectedPages.sort((a, b) => a.pageIdx - b.pageIdx);
+                        updateDecodeUI();
+                        showParseDetail(item);
+                        showStatus(decodeStatus, 'success', `✅ 成功解析第 ${result.pageIdx+1} 页`);
+                        return { success: true, pageIdx: result.pageIdx, totalPages: result.totalPages };
+                    } catch (err) {
+                        log(`❌ 添加失败: ${err.message}`);
+                        const failureKey = err.message;
+                        const now = Date.now();
+                        const suppressFailure = options.silentFailure || (failureKey === lastScanFailureKey && now - lastScanFailureAt < 2500);
+                        lastScanFailureKey = failureKey;
+                        lastScanFailureAt = now;
+                        if (!suppressFailure) {
+                            showStatus(decodeStatus, 'error', '❌ 解码失败：' + err.message);
+                            let pageIdx = undefined;
+                            const match = err.message.match(/页\s*(\d+)/);
+                            if (match) pageIdx = parseInt(match[1]) - 1;
+                            failedItems.push({
+                                pageIdx,
+                                errorMsg: err.message,
+                                source,
+                                retryCount: 0,
+                                timestamp: now
+                            });
+                            updateDecodeUI();
+                        }
+                        return { success: false, reason: err.message };
+                    }
+                }
+
+                function showParseDetail(item) {
+                    const toast = document.createElement('div');
+                    toast.className = 'parse-detail-toast';
+                    const time = new Date().toLocaleTimeString();
+                    let html = `<span class="label">✅ 解析成功</span>`;
+                    html += `<span>页 ${item.pageIdx+1}/${item.totalPages}</span>`;
+                    if (item.fileName) {
+                        html += `<span>📎 <strong>${item.fileName}</strong></span>`;
+                    }
+                    if (item.fileSize) {
+                        html += `<span>📦 ${formatSize(item.fileSize)}</span>`;
+                    }
+                    if (item.fileData) {
+                        html += `<span>📊 数据长度 ${item.fileData.length} bytes</span>`;
+                    }
+                    html += `<span class="time">⏱️ ${time}</span>`;
+                    toast.innerHTML = html;
+                    const list = decodeCollectedList;
+                    list.parentNode.insertBefore(toast, list);
+                    setTimeout(() => {
+                        if (toast.parentNode) toast.remove();
+                    }, 5000);
+                }
+
+                // ---------- 自动拼接与还原 ----------
+                let assemblyInProgress = false;
+                let assemblyCompleted = false;
+
+                function queueAutomaticAssembly() {
+                    if (assemblyInProgress || assemblyCompleted) return;
+                    const total = collectedPages[0]?.totalPages || 0;
+                    if (!total || collectedPages.length !== total || !collectedPages.every(item => item.crcOk)) return;
+                    showStatus(decodeStatus, 'info', `✅ 已收集全部 ${total} 页，正在自动还原…`);
+                    setTimeout(() => assemblePages(), 0);
+                }
+
+                async function assemblePages() {
+                    if (assemblyInProgress || assemblyCompleted) return;
+                    const first = collectedPages.find(item => item.pageIdx === 0);
+                    const total = first?.totalPages || 0;
+                    const sessionMismatch = first.protocolVersion >= 3 && collectedPages.some(item => item.sessionTag !== first.sessionTag);
+                    if (!first || collectedPages.length !== total || !collectedPages.every(item => item.totalPages === total && item.crcOk) || sessionMismatch) {
+                        showStatus(decodeStatus, 'warn', sessionMismatch ? '⚠️ 检测到混入另一传输批次的页面，暂不自动还原' : '⚠️ 页面未全部通过校验，暂不自动还原');
+                        return;
+                    }
+                    assemblyInProgress = true;
+                    setProgress(decodeProgressWrap, decodeProgressBar, 20);
+                    try {
+                        const ordered = [...collectedPages].sort((a, b) => a.pageIdx - b.pageIdx);
+                        const transportSize = first.transportSize || first.fileSize;
+                        const chunks = ordered.map(item => item.fileData);
+                        const combined = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
+                        let pos = 0;
+                        for (const chunk of chunks) { combined.set(chunk, pos); pos += chunk.length; }
+                        const requiredBytes = transportSize + (first.protocolVersion < 3 ? 32 : 0);
+                        if (combined.length < requiredBytes) throw new Error(`传输数据不完整：${combined.length}/${requiredBytes} B`);
+                        const transportData = combined.slice(0, transportSize);
+                        const expectedSha = first.protocolVersion < 3 ? combined.slice(transportSize, transportSize + 32) : first.originalSha;
+                        setProgress(decodeProgressWrap, decodeProgressBar, 55);
+                        const restored = first.compression === 'lzss' ? lzssDecompress(transportData, first.fileSize) : transportData;
+                        if (restored.length !== first.fileSize) throw new Error(`还原长度异常：${restored.length}/${first.fileSize} B`);
+                        const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', restored));
+                        const shaOk = expectedSha && digest.length === expectedSha.length && digest.every((byte, index) => byte === expectedSha[index]);
+                        if (!shaOk) throw new Error('SHA-256 校验失败，请重新收集异常页');
+                        const blob = new Blob([restored]);
+                        decodeResultArea.classList.add('active');
+                        decodeResultFileName.textContent = `文件：${first.fileName}`;
+                        decodeResultFileSize.textContent = `大小：${formatSize(first.fileSize)}`;
+                        decodeResultSha.textContent = `校验通过 · ${first.compression === 'lzss' ? `LZSS 已解压（传输 ${formatSize(transportSize)}）` : '原始传输'}`;
+                        decodeResultDownloadBtn.textContent = `⬇️ 下载 ${first.fileName}`;
+                        decodeResultDownloadBtn._blob = blob;
+                        decodeResultDownloadBtn._fileName = first.fileName;
+                        assemblyCompleted = true;
+                        setProgress(decodeProgressWrap, decodeProgressBar, 100);
+                        showStatus(decodeStatus, 'success', '✅ 文件已自动还原，下载链接已置顶');
+                        decodeResultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } catch (err) {
+                        showStatus(decodeStatus, 'error', '❌ 自动还原失败：' + err.message);
+                    } finally {
+                        assemblyInProgress = false;
+                    }
+                }
+
+                decodeResultDownloadBtn.addEventListener('click', () => {
+                    const blob = decodeResultDownloadBtn._blob;
+                    const name = decodeResultDownloadBtn._fileName || 'restored_file';
+                    if (!blob) return;
+                    const link = document.createElement('a');
+                    link.download = name;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+                });
+
+                decodeClearBtn.addEventListener('click', () => {
+                    collectedPages = [];
+                    failedItems = [];
+                    assemblyInProgress = false;
+                    assemblyCompleted = false;
+                    decodeResultArea.classList.remove('active');
+                    stopAutoScan();
+                    updateDecodeUI();
+                    hideStatus(decodeStatus);
+                    showStatus(decodeStatus, 'info', '🗑️ 已清空');
+                });
+
+                // ---------- 摄像头 ----------
+                let camStream = null;
+                let camActive = false;
+                let autoScanRunning = false;
+                let autoScanFrameId = null;
+
+                async function startCamera() {
+                    if (camActive) return;
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                        camStream = stream;
+                        camVideo.srcObject = stream;
+                        await camVideo.play();
+                        camArea.classList.add('active');
+                        camActive = true;
+                        decodeCamToggle.textContent = '📷 摄像头开';
+                        decodeCamToggle.classList.add('btn-danger');
+                        decodeAutoScanBtn.disabled = false;
+                        hideStatus(decodeStatus);
+                        showStatus(decodeStatus, 'info', '📷 摄像头已开启，点击「自动扫描」开始智能识别');
+                    } catch (err) {
+                        showStatus(decodeStatus, 'error', '❌ 摄像头启动失败：' + err.message);
+                    }
+                }
+
+                function stopCamera() {
+                    stopAutoScan();
+                    if (camStream) {
+                        camStream.getTracks().forEach(t => t.stop());
+                        camStream = null;
+                    }
+                    camVideo.srcObject = null;
+                    camArea.classList.remove('active');
+                    camActive = false;
+                    decodeCamToggle.textContent = '📷 打开摄像头';
+                    decodeCamToggle.classList.remove('btn-danger');
+                    decodeAutoScanBtn.disabled = true;
+                    decodeAutoScanBtn.textContent = '🔍 自动扫描';
+                }
+
+                function stopAutoScan() {
+                    autoScanRunning = false;
+                    if (autoScanFrameId) {
+                        cancelAnimationFrame(autoScanFrameId);
+                        autoScanFrameId = null;
+                    }
+                    decodeAutoScanBtn.textContent = '🔍 自动扫描';
+                }
+
+                function startAutoScan() {
+                    if (!camActive || !camVideo.videoWidth) {
+                        showStatus(decodeStatus, 'error', '⚠️ 摄像头未就绪');
+                        return;
+                    }
+                    if (autoScanRunning) {
+                        stopAutoScan();
+                        return;
+                    }
+                    autoScanRunning = true;
+                    decodeAutoScanBtn.textContent = '⏹ 停止扫描';
+                    showStatus(decodeStatus, 'info', '🔍 实时扫描中...');
+
+                    function scanFrame() {
+                        if (!autoScanRunning || !camActive) {
+                            stopAutoScan();
+                            return;
+                        }
+                        try {
+                            const w = camVideo.videoWidth;
+                            const h = camVideo.videoHeight;
+                            if (w > 0 && h > 0) {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = w;
+                                canvas.height = h;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(camVideo, 0, 0);
+                                tryAddImageSource(canvas, { ...getCameraDecodeOptions(), silentFailure: true }).then(result => {
+                                    if (result.success) {
+                                        showStatus(decodeStatus, 'success', `📥 自动捕获页 ${result.pageIdx+1}/${result.totalPages}`);
+                                        if (collectedPages.length === collectedPages[0]?.totalPages) {
+                                            showStatus(decodeStatus, 'success', '✅ 已收集全部页面，停止扫描');
+                                            stopAutoScan();
+                                            return;
+                                        }
+                                    }
+                                }).catch(() => {});
+                            }
+                        } catch (e) {}
+                        autoScanFrameId = requestAnimationFrame(scanFrame);
+                    }
+                    scanFrame();
+                }
+
+                decodeAutoScanBtn.addEventListener('click', () => {
+                    if (!camActive) {
+                        showStatus(decodeStatus, 'warn', '⚠️ 请先打开摄像头');
+                        return;
+                    }
+                    if (autoScanRunning) {
+                        stopAutoScan();
+                    } else {
+                        startAutoScan();
+                    }
+                });
+
+                function getCameraDecodeOptions() {
+                    return { camera: { enhance: cameraEnhanceInput.checked, lensK1: Number(cameraLensInput.value) || 0 } };
+                }
+
+                camCaptureBtn.addEventListener('click', () => {
+                    if (!camActive || !camVideo.videoWidth) {
+                        showStatus(decodeStatus, 'error', '⚠️ 摄像头未就绪');
+                        return;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = camVideo.videoWidth;
+                    canvas.height = camVideo.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(camVideo, 0, 0);
+                    tryAddImageSource(canvas, getCameraDecodeOptions()).then(result => {
+                        if (result.success) {
+                            showStatus(decodeStatus, 'success', `已添加第 ${result.pageIdx+1} 页`);
+                        } else {
+                            showStatus(decodeStatus, 'error', '❌ 拍照解码失败：' + result.reason);
+                        }
+                    });
+                });
+
+                camCloseBtn.addEventListener('click', stopCamera);
+
+                // ---------- 屏幕选区 ----------
+                let screenStream = null;
+                let isSelecting = false;
+                let startX, startY, endX, endY;
+                let screenScanRunning = false;
+                let screenScanFrameId = null;
+                let selectedRegion = null;
+                let screenDecodeInFlight = false;
+                let screenFrameSignature = '';
+                let screenFrameChangedAt = 0;
+                let screenSlowWarningAt = 0;
+
+                async function startScreenSelection() {
+                    try {
+                        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                        screenVideo.srcObject = screenStream;
+                        await screenVideo.play();
+                        screenOverlay.classList.add('active');
+                        selectionBox.style.display = 'none';
+                        screenScanStatus.textContent = '拖拽框选区域';
+                        isSelecting = false;
+                        startX = startY = endX = endY = 0;
+                        selectedRegion = null;
+                        screenVideo.addEventListener('mousedown', onMouseDown);
+                        screenVideo.addEventListener('mousemove', onMouseMove);
+                        screenVideo.addEventListener('mouseup', onMouseUp);
+                        screenVideo.addEventListener('touchstart', onTouchStart, { passive: false });
+                        screenVideo.addEventListener('touchmove', onTouchMove, { passive: false });
+                        screenVideo.addEventListener('touchend', onTouchEnd, { passive: false });
+                    } catch (err) {
+                        showStatus(decodeStatus, 'error', '❌ 屏幕共享失败：' + err.message);
+                    }
+                }
+
+                function closeScreenSelection() {
+                    stopScreenScan();
+                    screenOverlay.classList.remove('active');
+                    if (screenStream) {
+                        screenStream.getTracks().forEach(t => t.stop());
+                        screenStream = null;
+                    }
+                    screenVideo.srcObject = null;
+                    screenVideo.removeEventListener('mousedown', onMouseDown);
+                    screenVideo.removeEventListener('mousemove', onMouseMove);
+                    screenVideo.removeEventListener('mouseup', onMouseUp);
+                    screenVideo.removeEventListener('touchstart', onTouchStart);
+                    screenVideo.removeEventListener('touchmove', onTouchMove);
+                    screenVideo.removeEventListener('touchend', onTouchEnd);
+                    selectionBox.style.display = 'none';
+                    screenScanStatus.textContent = '已关闭';
+                }
+
+                let isDragging = false,
+                    dragOffsetX, dragOffsetY;
+                screenDragHandle.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.controls')) return;
+                    isDragging = true;
+                    const rect = screenOverlay.getBoundingClientRect();
+                    dragOffsetX = e.clientX - rect.left;
+                    dragOffsetY = e.clientY - rect.top;
+                    document.addEventListener('mousemove', onDragMove);
+                    document.addEventListener('mouseup', onDragEnd);
+                });
+
+                function onDragMove(e) {
+                    if (!isDragging) return;
+                    screenOverlay.style.left = (e.clientX - dragOffsetX) + 'px';
+                    screenOverlay.style.top = (e.clientY - dragOffsetY) + 'px';
+                    screenOverlay.style.right = 'auto';
+                    screenOverlay.style.bottom = 'auto';
+                }
+
+                function onDragEnd() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onDragMove);
+                    document.removeEventListener('mouseup', onDragEnd);
+                }
+
+                function getScreenVideoGeometry() {
+                    const rect = screenVideo.getBoundingClientRect();
+                    const videoAspect = screenVideo.videoWidth / screenVideo.videoHeight;
+                    const boxAspect = rect.width / rect.height;
+                    let displayWidth = rect.width;
+                    let displayHeight = rect.height;
+                    let offsetX = 0;
+                    let offsetY = 0;
+                    if (videoAspect > boxAspect) {
+                        displayHeight = rect.width / videoAspect;
+                        offsetY = (rect.height - displayHeight) / 2;
+                    } else {
+                        displayWidth = rect.height * videoAspect;
+                        offsetX = (rect.width - displayWidth) / 2;
+                    }
+                    return { rect, displayWidth, displayHeight, offsetX, offsetY };
+                }
+
+                function getVideoPixelPos(e) {
+                    const geometry = getScreenVideoGeometry();
+                    const localX = Math.min(geometry.displayWidth, Math.max(0, e.clientX - geometry.rect.left - geometry.offsetX));
+                    const localY = Math.min(geometry.displayHeight, Math.max(0, e.clientY - geometry.rect.top - geometry.offsetY));
+                    return {
+                        x: localX * screenVideo.videoWidth / geometry.displayWidth,
+                        y: localY * screenVideo.videoHeight / geometry.displayHeight
+                    };
+                }
+
+                function onMouseDown(e) {
+                    isSelecting = true;
+                    const pos = getVideoPixelPos(e);
+                    startX = pos.x;
+                    startY = pos.y;
+                    selectionBox.style.display = 'block';
+                    const geometry = getScreenVideoGeometry();
+                    const startDisplayX = geometry.offsetX + pos.x * geometry.displayWidth / screenVideo.videoWidth;
+                    const startDisplayY = geometry.offsetY + pos.y * geometry.displayHeight / screenVideo.videoHeight;
+                    selectionBox.style.left = startDisplayX + 'px';
+                    selectionBox.style.top = startDisplayY + 'px';
+                    selectionBox.style.width = '0px';
+                    selectionBox.style.height = '0px';
+                    screenScanStatus.textContent = '框选中...';
+                }
+
+                function onMouseMove(e) {
+                    if (!isSelecting) return;
+                    const pos = getVideoPixelPos(e);
+                    endX = pos.x;
+                    endY = pos.y;
+                    const geometry = getScreenVideoGeometry();
+                    const startDisplayX = geometry.rect.left + geometry.offsetX + startX * geometry.displayWidth / screenVideo.videoWidth;
+                    const startDisplayY = geometry.rect.top + geometry.offsetY + startY * geometry.displayHeight / screenVideo.videoHeight;
+                    const currentDisplayX = geometry.rect.left + geometry.offsetX + pos.x * geometry.displayWidth / screenVideo.videoWidth;
+                    const currentDisplayY = geometry.rect.top + geometry.offsetY + pos.y * geometry.displayHeight / screenVideo.videoHeight;
+                    const left = Math.min(currentDisplayX, startDisplayX) - geometry.rect.left;
+                    const top = Math.min(currentDisplayY, startDisplayY) - geometry.rect.top;
+                    const width = Math.abs(currentDisplayX - startDisplayX);
+                    const height = Math.abs(currentDisplayY - startDisplayY);
+                    selectionBox.style.left = left + 'px';
+                    selectionBox.style.top = top + 'px';
+                    selectionBox.style.width = width + 'px';
+                    selectionBox.style.height = height + 'px';
+                }
+
+                function onMouseUp(e) {
+                    if (!isSelecting) return;
+                    isSelecting = false;
+                    const pos = getVideoPixelPos(e);
+                    endX = pos.x;
+                    endY = pos.y;
+                    const x = Math.min(startX, endX);
+                    const y = Math.min(startY, endY);
+                    const w = Math.abs(endX - startX);
+                    const h = Math.abs(endY - startY);
+                    if (w > 10 && h > 10) {
+                        selectedRegion = { x, y, w, h };
+                        screenScanStatus.textContent = '选区已固定，点击「开始扫描选区」';
+                        screenStartScanBtn.textContent = '▶ 开始扫描选区';
+                    } else {
+                        selectedRegion = null;
+                        screenScanStatus.textContent = '选区太小，请重新框选';
+                    }
+                }
+
+                function onTouchStart(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    onMouseDown(mouseEvent);
+                }
+
+                function onTouchMove(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    onMouseMove(mouseEvent);
+                }
+
+                function onTouchEnd(e) {
+                    e.preventDefault();
+                    const touch = e.changedTouches[0];
+                    const mouseEvent = new MouseEvent('mouseup', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    onMouseUp(mouseEvent);
+                }
+
+                function getFrameSignature(canvas) {
+                    const sampleWidth = 32;
+                    const sampleHeight = 32;
+                    const probe = document.createElement('canvas');
+                    probe.width = sampleWidth;
+                    probe.height = sampleHeight;
+                    const probeCtx = probe.getContext('2d', { willReadFrequently: true });
+                    probeCtx.drawImage(canvas, 0, 0, sampleWidth, sampleHeight);
+                    const pixels = probeCtx.getImageData(0, 0, sampleWidth, sampleHeight).data;
+                    let hash = 2166136261;
+                    for (let i = 0; i < pixels.length; i += 16) hash = Math.imul(hash ^ pixels[i] ^ pixels[i + 1] ^ pixels[i + 2], 16777619);
+                    return (hash >>> 0).toString(16);
+                }
+
+                function startScreenScan() {
+                    if (!selectedRegion) {
+                        screenScanStatus.textContent = '⚠️ 请先框选一个区域';
+                        return;
+                    }
+                    if (screenScanRunning) {
+                        stopScreenScan();
+                        return;
+                    }
+                    screenScanRunning = true;
+                    screenDecodeInFlight = false;
+                    screenFrameSignature = '';
+                    let stableSignature = '';
+                    let stableFrames = 0;
+                    screenFrameChangedAt = 0;
+                    screenSlowWarningAt = 0;
+                    screenStartScanBtn.textContent = '⏹ 停止扫描';
+                    screenScanStatus.textContent = '扫描中，等待传输页稳定...';
+
+                    function scanLoop() {
+                        if (!screenScanRunning) return;
+                        try {
+                            const { x, y, w, h } = selectedRegion;
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w;
+                            canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(screenVideo, x, y, w, h, 0, 0, w, h);
+                            const signature = getFrameSignature(canvas);
+                            const now = performance.now();
+                            if (signature !== screenFrameSignature) {
+                                if (screenDecodeInFlight && screenFrameSignature) {
+                                    screenFrameChangedAt = now;
+                                    if (now - screenSlowWarningAt > 1200) {
+                                        screenSlowWarningAt = now;
+                                        screenScanStatus.textContent = '检测到传输页在解析完成前切换，请降低编码页播放速度';
+                                        showStatus(decodeStatus, 'warn', '播放过快：上一页尚未完成解析，建议将播放间隔调至 3 秒或更长');
+                                    }
+                                }
+                                screenFrameSignature = signature;
+                            }
+                            if (signature === stableSignature) stableFrames++;
+                            else { stableSignature = signature; stableFrames = 1; }
+                            if (!screenDecodeInFlight && stableFrames >= 2) {
+                                screenDecodeInFlight = true;
+                                const startedSignature = signature;
+                                tryAddImageSource(canvas, { silentFailure: true, source: 'screen' }).then(result => {
+                                    if (result.success) {
+                                        const total = result.totalPages || getKnownTotalPages();
+                                        const current = collectedPages.length;
+                                        screenScanStatus.textContent = `已收集 ${current}/${total} 页`;
+                                        if (total > 0 && current === total) {
+                                            screenScanStatus.textContent = `已收集全部 ${total} 页，正在自动还原…`;
+                                            stopScreenScan();
+                                            queueAutomaticAssembly();
+                                            setTimeout(closeScreenSelection, 800);
+                                        }
+                                    }
+                                }).finally(() => {
+                                    screenDecodeInFlight = false;
+                                    if (startedSignature !== screenFrameSignature && performance.now() - screenFrameChangedAt < 1500) {
+                                        screenScanStatus.textContent = '画面已变化，等待下一页稳定后继续识别';
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('屏幕扫描帧处理失败：', e);
+                        }
+                        screenScanFrameId = requestAnimationFrame(scanLoop);
+                    }
+                    scanLoop();
+                }
+
+                function stopScreenScan() {
+                    screenScanRunning = false;
+                    screenDecodeInFlight = false;
+                    if (screenScanFrameId) {
+                        cancelAnimationFrame(screenScanFrameId);
+                        screenScanFrameId = null;
+                    }
+                    screenStartScanBtn.textContent = '▶ 开始扫描选区';
+                    if (!screenScanStatus.textContent.startsWith('✅')) {
+                        screenScanStatus.textContent = '已停止扫描';
+                    }
+                }
+
+                screenStartScanBtn.addEventListener('click', () => {
+                    if (!screenOverlay.classList.contains('active')) return;
+                    if (screenScanRunning) {
+                        stopScreenScan();
+                    } else {
+                        startScreenScan();
+                    }
+                });
+
+                screenCancelBtn.addEventListener('click', () => {
+                    closeScreenSelection();
+                    showStatus(decodeStatus, 'info', '已取消屏幕选区');
+                });
+
+                decodeScreenBtn.addEventListener('click', startScreenSelection);
+
+                // ---------- 事件绑定 ----------
+                function applyConfig() {
+                    try {
+                        let bs = parseInt(blockSizeInput.value);
+                        let is = parseInt(imageSizeInput.value);
+                        let ecc = parseFloat(eccLevelInput.value);
+                        if (isNaN(bs) || bs < 2) bs = 4;
+                        if (isNaN(is) || is < 64) is = 256;
+                        if (isNaN(ecc) || ecc < 0.05) ecc = 0.05;
+                        if (ecc > 0.30) ecc = 0.30;
+                        if (is % bs !== 0) {
+                            showStatus(encodeStatus, 'error', '⚠️ 边长必须能被色块大小整除');
+                            return;
+                        }
+                        const totalBlocks = is / bs;
+                        if (totalBlocks % 2 === 0) {
+                            showStatus(encodeStatus, 'error', `⚠️ 总色块数 ${totalBlocks} 必须为奇数`);
+                            return;
+                        }
+                        BLOCK_SIZE = bs;
+                        IMAGE_SIZE = is;
+                        ENCODE_MODE = encodeModeSelect.value;
+                        ECC_LEVEL = ecc;
+                        const capacity = getPageCapacity(BLOCK_SIZE, IMAGE_SIZE, ENCODE_MODE, ECC_LEVEL);
+                        capacityEstimate.textContent = `每页净载荷 ${formatSize(capacity.dataBytesPerPage)} · 页头 ${capacity.frameOverheadBytes} B · ECC ${capacity.eccBytesPerFullPage} B`;
+
+                        const modeLabel = ENCODE_MODE === 'bw' ? '黑白 1bit' : ENCODE_MODE === 'color2' ? '色板 2bit' : '色板 3bit';
+                        showStatus(encodeStatus, 'info', `配置已应用：色块 ${BLOCK_SIZE}px，边长 ${IMAGE_SIZE}px，${modeLabel}，ECC ${(ECC_LEVEL * 100).toFixed(0)}%`);
+                        if (collectedPages.length > 0 || failedItems.length > 0) {
+                            collectedPages = [];
+                            failedItems = [];
+                            assemblyInProgress = false;
+                            assemblyCompleted = false;
+                            decodeResultArea.classList.remove('active');
+                            updateDecodeUI();
+                            showStatus(decodeStatus, 'warn', '🔄 配置已更改，已清空收集的图片');
+                        }
+                        stopCarousel();
+                        encodedPages = [];
+                        encodeStateLabel.textContent = '等待文件';
+                    } catch (err) {
+                        console.error('applyConfig 错误:', err);
+                        showStatus(encodeStatus, 'error', '配置应用失败：' + err.message);
+                    }
+                }
+
+                const PRESETS = {
+                    'camera-safe': { block: 12, size: 1200, mode: 'bw', ecc: 0.24, speed: '5000', label: '稳定实拍' },
+                    balanced: { block: 8, size: 1208, mode: 'color2', ecc: 0.18, speed: '3000', label: '平衡传输' },
+                    'screen-fast': { block: 8, size: 1208, mode: 'color3', ecc: 0.12, speed: '2000', label: '高速屏幕' }
+                };
+                transferPreset.addEventListener('change', () => {
+                    const preset = PRESETS[transferPreset.value];
+                    if (!preset) return;
+                    blockSizeInput.value = preset.block;
+                    imageSizeInput.value = preset.size;
+                    encodeModeSelect.value = preset.mode;
+                    eccLevelInput.value = preset.ecc;
+                    carouselSpeedInput.value = preset.speed;
+                    showStatus(encodeStatus, 'info', `已载入「${preset.label}」预设，请点击「应用配置」确认`);
+                });
+                configApplyBtn.addEventListener('click', applyConfig);
+
+                // ---------- 编码 UI ----------
+                let encodedPages = [];
+                let carouselTimer = null;
+                let carouselIndex = 0;
+                let isPlaying = true;
+
+                function startCarousel() {
+                    if (!encodedPages.length) return;
+                    carouselWrap.classList.add('active');
+                    showCarouselPage(0);
+                    if (carouselTimer) clearInterval(carouselTimer);
+                    carouselTimer = setInterval(() => {
+                        if (isPlaying) showCarouselPage((carouselIndex + 1) % encodedPages.length);
+                    }, Number(carouselSpeedInput.value));
+                    carouselPlayBtn.textContent = '暂停';
+                }
+
+                function stopCarousel() {
+                    if (carouselTimer) {
+                        clearInterval(carouselTimer);
+                        carouselTimer = null;
+                    }
+                    carouselWrap.classList.remove('active');
+                }
+
+                function showCarouselPage(idx) {
+                    if (!encodedPages.length) return;
+                    if (idx < 0) idx = encodedPages.length - 1;
+                    if (idx >= encodedPages.length) idx = 0;
+                    carouselIndex = idx;
+                    const canvas = carouselCanvas;
+                    const srcCanvas = encodedPages[idx].canvas;
+                    canvas.width = srcCanvas.width;
+                    canvas.height = srcCanvas.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(srcCanvas, 0, 0);
+                    carouselIndicator.textContent = `${idx+1}/${encodedPages.length}`;
+                }
+
+                carouselPrev.addEventListener('click', () => {
+                    if (!encodedPages.length) return;
+                    showCarouselPage(carouselIndex - 1);
+                });
+                carouselNext.addEventListener('click', () => {
+                    if (!encodedPages.length) return;
+                    showCarouselPage(carouselIndex + 1);
+                });
+                carouselPlayBtn.addEventListener('click', () => {
+                    if (!encodedPages.length) return;
+                    isPlaying = !isPlaying;
+                    carouselPlayBtn.textContent = isPlaying ? '暂停' : '播放';
+                });
+                carouselSpeedInput.addEventListener('change', () => {
+                    if (encodedPages.length && isPlaying) startCarousel();
+                });
+
+                downloadAllBtn.addEventListener('click', () => {
+                    if (!encodedPages.length) {
+                        showStatus(encodeStatus, 'warn', '⚠️ 没有可下载的图片');
+                        return;
+                    }
+                    showStatus(encodeStatus, 'info', `⏳ 开始下载 ${encodedPages.length} 张图片...`);
+                    let idx = 0;
+                    const safeStem = (encodedPages[0].fileName || 'visual-transfer').replace(/[\\/:*?"<>|]/g, '_');
+
+                    function downloadNext() {
+                        if (idx >= encodedPages.length) {
+                            showStatus(encodeStatus, 'success', `✅ 全部 ${encodedPages.length} 张图片下载完成`);
+                            return;
+                        }
+                        const page = encodedPages[idx];
+                        const link = document.createElement('a');
+                        link.download = `${safeStem}_slice_${String(page.pageIndex + 1).padStart(4, '0')}_of_${String(page.totalPages).padStart(4, '0')}.png`;
+                        page.canvas.toBlob((blob) => {
+                            link.href = URL.createObjectURL(blob);
+                            link.click();
+                            setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+                        }, 'image/png');
+                        idx++;
+                        setTimeout(downloadNext, 400);
+                    }
+                    downloadNext();
+                });
+
+                async function handleEncodeFile(file) {
+                    if (!file) return;
+                    hideStatus(encodeStatus);
+                    if (file.size > MAX_FILE_BYTES) {
+                        showStatus(encodeStatus, 'warn', `文件为 ${formatSize(file.size)}，建议控制在 ${formatSize(MAX_FILE_BYTES)} 以内以保证传输稳定`);
+                    }
+                    stopCarousel();
+                    encodeStateLabel.textContent = '编码中…';
+                    setProgress(encodeProgressWrap, encodeProgressBar, 0);
+
+                    try {
+                        const capacity = getPageCapacity(BLOCK_SIZE, IMAGE_SIZE, ENCODE_MODE, ECC_LEVEL);
+                        const estimate = estimateFilePages(file, capacity);
+                        const result = await encodeFileToPages(file, BLOCK_SIZE, IMAGE_SIZE, ENCODE_MODE, ECC_LEVEL);
+                        encodedPages = result.pages;
+                        const transportLabel = result.compressed ? `LZSS 压缩：${formatSize(file.size)} → ${formatSize(result.transportSize)}` : '未压缩（压缩收益不足）';
+                        capacityEstimate.textContent = `${transportLabel} · 协议 ${estimate.fileEnvelopeBytes} B · 实际 ${encodedPages.length} 页 · 每页净载荷 ${formatSize(capacity.dataBytesPerPage)}`;
+                        encodeStateLabel.textContent = `编码完成，共 ${encodedPages.length} 页${result.compressed ? '（已压缩）' : ''}`;
+                        showStatus(encodeStatus, 'success', `已生成 ${encodedPages.length} 页，${transportLabel}`);
+                        startCarousel();
+                    } catch (err) {
+                        encodeStateLabel.textContent = '❌ 编码失败';
+                        showStatus(encodeStatus, 'error', '❌ ' + err.message);
+                    }
+                }
+
+                // ---------- 编码拖放 ----------
+                encodeDrop.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    encodeDrop.classList.add('dragover');
+                });
+                encodeDrop.addEventListener('dragleave', () => {
+                    encodeDrop.classList.remove('dragover');
+                });
+                encodeDrop.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    encodeDrop.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files && files.length > 0) {
+                        handleEncodeFile(files[0]);
+                    }
+                });
+                encodeDrop.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        encodeFileInput.click();
+                    }
+                });
+                encodeFileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        handleEncodeFile(e.target.files[0]);
+                    }
+                    e.target.value = '';
+                });
+                encodeSelectBtn.addEventListener('click', () => {
+                    encodeFileInput.click();
+                });
+
+                // ---------- 解码拖放 ----------
+                decodeDrop.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    decodeDrop.classList.add('dragover');
+                });
+                decodeDrop.addEventListener('dragleave', () => {
+                    decodeDrop.classList.remove('dragover');
+                });
+                decodeDrop.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    decodeDrop.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (!files || files.length === 0) return;
+                    for (const file of files) {
+                        if (!file.type.startsWith('image/')) continue;
+                        try {
+                            const img = await loadImageFromBlob(file);
+                            await tryAddImageSource(img);
+                        } catch (err) {
+                            showStatus(decodeStatus, 'error', '❌ 加载图片失败：' + err.message);
+                        }
+                    }
+                });
+                decodeDrop.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        decodeFileInput.click();
+                    }
+                });
+                decodeFileInput.addEventListener('change', async (e) => {
+                    const files = e.target.files;
+                    if (!files || files.length === 0) return;
+                    for (const file of files) {
+                        if (!file.type.startsWith('image/')) continue;
+                        try {
+                            const img = await loadImageFromBlob(file);
+                            await tryAddImageSource(img);
+                        } catch (err) {
+                            showStatus(decodeStatus, 'error', '❌ 加载图片失败：' + err.message);
+                        }
+                    }
+                    e.target.value = '';
+                });
+                decodeSelectBtn.addEventListener('click', () => {
+                    decodeFileInput.click();
+                });
+
+                decodeCamToggle.addEventListener('click', () => {
+                    if (camActive) stopCamera();
+                    else startCamera();
+                });
+
+
+                // ---------- Tab 切换 ----------
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const appScrollTop = document.querySelector('.app').scrollTop;
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        const target = this.dataset.tab;
+                        if (target === 'encode') {
+                            encodePanel.classList.add('active');
+                            decodePanel.classList.remove('active');
+                        } else {
+                            decodePanel.classList.add('active');
+                            encodePanel.classList.remove('active');
+                        }
+                        requestAnimationFrame(() => {
+                            document.querySelector('.app').scrollTop = appScrollTop;
+                            this.focus({ preventScroll: true });
+                        });
+                    });
+                });
+
+                // ---------- 初始化 ----------
+                hideStatus(encodeStatus);
+                hideStatus(decodeStatus);
+                updateDecodeUI();
+                applyConfig();
+                console.log('📡 视觉传输 · 高密度编码 (最终修正版) 已加载');
+
+            })();
+        });
+    </script>
+</body>
+</html>

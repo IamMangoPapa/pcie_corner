@@ -887,6 +887,13 @@
             transform: scale(1.1) rotate(-5deg);
         }
 
+        .tool-card .icon-wrapper img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            display: block;
+        }
+
         .tool-card .label {
             font-size: 13px;
             font-weight: 600;
@@ -1353,6 +1360,7 @@
                     { name: 'HitU', path: './games/hitu.html', icon: '👊', badge: 'Game' },
                     { name: 'LanBiTou', path: './../../lanbitou/index.html', icon: '✒️', badge: 'Work' },
                     { name: 'State Weaver', path: './tools/StateWeaver.html', icon: '⇆', badge: 'State' },
+                    { name: '光栈', path: './tools/any2pic/any2pic.html', icon: './tools/any2pic/any2pic.webp', iconAlt: '光栈图标', badge: '传输' },
                 ];
 
                 function render() {
@@ -1366,7 +1374,10 @@
                         card.setAttribute('role', 'listitem');
                         card.setAttribute('aria-label', `${tool.name} - ${tool.badge}`);
                         card.style.setProperty('--card-index', i);
-                        card.innerHTML = `<div class="icon-wrapper" aria-hidden="true">${tool.icon}</div><span class="label">${tool.name}</span><span class="badge">${tool.badge}</span>`;
+                        const iconMarkup = tool.iconAlt
+                            ? `<img src="${tool.icon}" alt="${tool.iconAlt}">`
+                            : tool.icon;
+                        card.innerHTML = `<div class="icon-wrapper" aria-hidden="true">${iconMarkup}</div><span class="label">${tool.name}</span><span class="badge">${tool.badge}</span>`;
                         UIModule.attachRipple(card);
                         grid.appendChild(card);
                     });
